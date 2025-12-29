@@ -432,20 +432,16 @@ export default function Page() {
 									<ChartTooltip
 										content={
 											<ChartTooltipContent
+												hideLabel
+												hideIndicator
 												formatter={(value, name, props) => (
-													<div className="flex flex-col gap-1">
+													<div className="flex flex-col gap-0.5">
 														<span className="font-medium">
 															{props.payload.displayName}
 														</span>
-														<span>
-															Accuracy:{" "}
-															<span className="font-mono font-bold">
-																{Number(value).toFixed(1)}%
-															</span>
-														</span>
 														<span className="text-muted-foreground">
 															{props.payload.correct}/{props.payload.total}{" "}
-															puzzles solved
+															solved ({Number(value).toFixed(1)}%)
 														</span>
 													</div>
 												)}
