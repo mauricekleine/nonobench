@@ -1,0 +1,17 @@
+{
+	"name": "nonobench",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@openrouter/ai-sdk-provider": "^1.5.4",
+		"@types/common-tags": "^1.8.4",
+		"ai": "^6.0.3",
+		"common-tags": "^1.8.2",
+		"zod": "^4.2.1"
+	}
+}
