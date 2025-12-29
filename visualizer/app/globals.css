@@ -143,3 +143,15 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.45 0.02 270);
 }
+
+/* Grid pattern background for Nonogram theme */
+.grid-pattern {
+  background-image: 
+    radial-gradient(circle, oklch(0.5 0 0 / 0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .grid-pattern {
+  background-image: 
+    radial-gradient(circle, oklch(0.7 0 0 / 0.08) 1px, transparent 1px);
+}
