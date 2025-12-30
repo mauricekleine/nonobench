@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-29T16:45:26.636Z",
+  "timestamp": "2025-12-30T10:49:32.120Z",
   "summary": {
     "models": [
       "claude-4.5-sonnet",
@@ -7,7 +7,10 @@
       "gemini-3-flash-preview",
       "kimi-k2",
       "gpt-5.2",
-      "glm-4.7"
+      "glm-4.7",
+      "gemini-3-pro-preview",
+      "grok-4",
+      "grok-4.1-fast"
     ],
     "sizes": [
       "5x5",
@@ -261,6 +264,129 @@
           "totalCost": 0.22438744
         }
       ]
+    },
+    {
+      "model": "gemini-3-pro-preview",
+      "overallAccuracy": 53.333333333333336,
+      "overallCorrect": 8,
+      "overallTotal": 15,
+      "bySize": [
+        {
+          "size": "5x5",
+          "accuracy": 80,
+          "correct": 4,
+          "total": 5,
+          "avgDurationMs": 53066.46731680001,
+          "avgTokens": 4441.8,
+          "totalTokens": 22209,
+          "avgCost": 0.053981600000000005,
+          "totalCost": 0.26990800000000004
+        },
+        {
+          "size": "10x10",
+          "accuracy": 40,
+          "correct": 2,
+          "total": 5,
+          "avgDurationMs": 212220.66211660003,
+          "avgTokens": 21982.8,
+          "totalTokens": 109914,
+          "avgCost": 0.2647284,
+          "totalCost": 1.323642
+        },
+        {
+          "size": "15x15",
+          "accuracy": 40,
+          "correct": 2,
+          "total": 5,
+          "avgDurationMs": 181233.4482665997,
+          "avgTokens": 19232,
+          "totalTokens": 96160,
+          "avgCost": 0.23195359999999998,
+          "totalCost": 1.159768
+        }
+      ]
+    },
+    {
+      "model": "grok-4",
+      "overallAccuracy": 33.33333333333333,
+      "overallCorrect": 5,
+      "overallTotal": 15,
+      "bySize": [
+        {
+          "size": "5x5",
+          "accuracy": 40,
+          "correct": 2,
+          "total": 5,
+          "avgDurationMs": 156682.97974159996,
+          "avgTokens": 8361.2,
+          "totalTokens": 41806,
+          "avgCost": 0.1271217,
+          "totalCost": 0.6356085
+        },
+        {
+          "size": "10x10",
+          "accuracy": 40,
+          "correct": 2,
+          "total": 5,
+          "avgDurationMs": 736424.26105,
+          "avgTokens": 38858.4,
+          "totalTokens": 194292,
+          "avgCost": 0.5849529,
+          "totalCost": 2.9247645
+        },
+        {
+          "size": "15x15",
+          "accuracy": 20,
+          "correct": 1,
+          "total": 5,
+          "avgDurationMs": 845842.6057502001,
+          "avgTokens": 26615.2,
+          "totalTokens": 133076,
+          "avgCost": 0.4011048,
+          "totalCost": 2.005524
+        }
+      ]
+    },
+    {
+      "model": "grok-4.1-fast",
+      "overallAccuracy": 26.666666666666668,
+      "overallCorrect": 4,
+      "overallTotal": 15,
+      "bySize": [
+        {
+          "size": "5x5",
+          "accuracy": 40,
+          "correct": 2,
+          "total": 5,
+          "avgDurationMs": 44705.25807520001,
+          "avgTokens": 5900.8,
+          "totalTokens": 29504,
+          "avgCost": 0.00303753,
+          "totalCost": 0.01518765
+        },
+        {
+          "size": "10x10",
+          "accuracy": 40,
+          "correct": 2,
+          "total": 5,
+          "avgDurationMs": 370671.2561415999,
+          "avgTokens": 47616.8,
+          "totalTokens": 238084,
+          "avgCost": 0.023920410000000003,
+          "totalCost": 0.11960205000000002
+        },
+        {
+          "size": "15x15",
+          "accuracy": 0,
+          "correct": 0,
+          "total": 5,
+          "avgDurationMs": 229449.37140019983,
+          "avgTokens": 30405,
+          "totalTokens": 152025,
+          "avgCost": 0.01533523,
+          "totalCost": 0.07667615
+        }
+      ]
     }
   ],
   "chartData": [
@@ -479,6 +605,114 @@
       "totalTokens": 122038,
       "avgCost": 0.044877488,
       "totalCost": 0.22438744
+    },
+    {
+      "model": "gemini-3-pro-preview",
+      "size": "5x5",
+      "accuracy": 80,
+      "correct": 4,
+      "total": 5,
+      "avgDurationMs": 53066.46731680001,
+      "avgTokens": 4441.8,
+      "totalTokens": 22209,
+      "avgCost": 0.053981600000000005,
+      "totalCost": 0.26990800000000004
+    },
+    {
+      "model": "gemini-3-pro-preview",
+      "size": "10x10",
+      "accuracy": 40,
+      "correct": 2,
+      "total": 5,
+      "avgDurationMs": 212220.66211660003,
+      "avgTokens": 21982.8,
+      "totalTokens": 109914,
+      "avgCost": 0.2647284,
+      "totalCost": 1.323642
+    },
+    {
+      "model": "gemini-3-pro-preview",
+      "size": "15x15",
+      "accuracy": 40,
+      "correct": 2,
+      "total": 5,
+      "avgDurationMs": 181233.4482665997,
+      "avgTokens": 19232,
+      "totalTokens": 96160,
+      "avgCost": 0.23195359999999998,
+      "totalCost": 1.159768
+    },
+    {
+      "model": "grok-4",
+      "size": "5x5",
+      "accuracy": 40,
+      "correct": 2,
+      "total": 5,
+      "avgDurationMs": 156682.97974159996,
+      "avgTokens": 8361.2,
+      "totalTokens": 41806,
+      "avgCost": 0.1271217,
+      "totalCost": 0.6356085
+    },
+    {
+      "model": "grok-4",
+      "size": "10x10",
+      "accuracy": 40,
+      "correct": 2,
+      "total": 5,
+      "avgDurationMs": 736424.26105,
+      "avgTokens": 38858.4,
+      "totalTokens": 194292,
+      "avgCost": 0.5849529,
+      "totalCost": 2.9247645
+    },
+    {
+      "model": "grok-4",
+      "size": "15x15",
+      "accuracy": 20,
+      "correct": 1,
+      "total": 5,
+      "avgDurationMs": 845842.6057502001,
+      "avgTokens": 26615.2,
+      "totalTokens": 133076,
+      "avgCost": 0.4011048,
+      "totalCost": 2.005524
+    },
+    {
+      "model": "grok-4.1-fast",
+      "size": "5x5",
+      "accuracy": 40,
+      "correct": 2,
+      "total": 5,
+      "avgDurationMs": 44705.25807520001,
+      "avgTokens": 5900.8,
+      "totalTokens": 29504,
+      "avgCost": 0.00303753,
+      "totalCost": 0.01518765
+    },
+    {
+      "model": "grok-4.1-fast",
+      "size": "10x10",
+      "accuracy": 40,
+      "correct": 2,
+      "total": 5,
+      "avgDurationMs": 370671.2561415999,
+      "avgTokens": 47616.8,
+      "totalTokens": 238084,
+      "avgCost": 0.023920410000000003,
+      "totalCost": 0.11960205000000002
+    },
+    {
+      "model": "grok-4.1-fast",
+      "size": "15x15",
+      "accuracy": 0,
+      "correct": 0,
+      "total": 5,
+      "avgDurationMs": 229449.37140019983,
+      "avgTokens": 30405,
+      "totalTokens": 152025,
+      "avgCost": 0.01533523,
+      "totalCost": 0.07667615
     }
   ]
 }
