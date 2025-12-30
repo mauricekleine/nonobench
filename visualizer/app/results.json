@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-30T17:35:29.389Z",
+  "timestamp": "2025-12-30T17:54:20.732Z",
   "summary": {
     "models": [
       "gpt-5.2",
@@ -20,7 +20,6 @@
       "claude-4.5-sonnet",
       "claude-4.5-opus",
       "deepseek-v3.2",
-      "deepseek-v3.2-speciale",
       "gemini-3-flash-preview",
       "kimi-k2",
       "mimo-v2-flash",
@@ -468,10 +467,10 @@
     },
     {
       "model": "olmo-3.1-32b-think",
-      "overallAccuracy": 25,
+      "overallAccuracy": 23.52941176470588,
       "overallCorrect": 4,
       "overallFailed": 0,
-      "overallTotal": 16,
+      "overallTotal": 17,
       "bySize": [
         {
           "size": "5x5",
@@ -488,14 +487,14 @@
         },
         {
           "size": "10x10",
-          "timestamp": "2025-12-30T17:28:25.315Z",
+          "timestamp": "2025-12-30T17:49:13.921Z",
           "accuracy": 0,
           "correct": 0,
           "failed": 0,
-          "total": 6,
-          "avgDurationMs": 1510741.5015418334,
-          "avgTokens": 25242.833333333332,
-          "totalTokens": 151457,
+          "total": 7,
+          "avgDurationMs": 1473289.0575537144,
+          "avgTokens": 25381.14285714286,
+          "totalTokens": 177668,
           "avgCost": 0,
           "totalCost": 0
         }
@@ -882,54 +881,6 @@
           "totalTokens": 837,
           "avgCost": 0.000206447,
           "totalCost": 0.00206447
-        }
-      ]
-    },
-    {
-      "model": "deepseek-v3.2-speciale",
-      "overallAccuracy": 0,
-      "overallCorrect": 0,
-      "overallFailed": 30,
-      "overallTotal": 30,
-      "bySize": [
-        {
-          "size": "5x5",
-          "timestamp": "2025-12-30T14:18:15.672Z",
-          "accuracy": 0,
-          "correct": 0,
-          "failed": 10,
-          "total": 10,
-          "avgDurationMs": 7064.2526333999995,
-          "avgTokens": 0,
-          "totalTokens": 0,
-          "avgCost": 0,
-          "totalCost": 0
-        },
-        {
-          "size": "10x10",
-          "timestamp": "2025-12-30T14:19:26.679Z",
-          "accuracy": 0,
-          "correct": 0,
-          "failed": 10,
-          "total": 10,
-          "avgDurationMs": 7099.664304200001,
-          "avgTokens": 0,
-          "totalTokens": 0,
-          "avgCost": 0,
-          "totalCost": 0
-        },
-        {
-          "size": "15x15",
-          "timestamp": "2025-12-30T14:20:38.470Z",
-          "accuracy": 0,
-          "correct": 0,
-          "failed": 10,
-          "total": 10,
-          "avgDurationMs": 7177.93866669999,
-          "avgTokens": 0,
-          "totalTokens": 0,
-          "avgCost": 0,
-          "totalCost": 0
         }
       ]
     },
@@ -1342,48 +1293,6 @@
       "totalTokens": 837,
       "avgCost": 0.000206447,
       "totalCost": 0.00206447
-    },
-    {
-      "model": "deepseek-v3.2-speciale",
-      "size": "5x5",
-      "timestamp": "2025-12-30T14:18:15.672Z",
-      "accuracy": 0,
-      "correct": 0,
-      "failed": 10,
-      "total": 10,
-      "avgDurationMs": 7064.2526333999995,
-      "avgTokens": 0,
-      "totalTokens": 0,
-      "avgCost": 0,
-      "totalCost": 0
-    },
-    {
-      "model": "deepseek-v3.2-speciale",
-      "size": "10x10",
-      "timestamp": "2025-12-30T14:19:26.679Z",
-      "accuracy": 0,
-      "correct": 0,
-      "failed": 10,
-      "total": 10,
-      "avgDurationMs": 7099.664304200001,
-      "avgTokens": 0,
-      "totalTokens": 0,
-      "avgCost": 0,
-      "totalCost": 0
-    },
-    {
-      "model": "deepseek-v3.2-speciale",
-      "size": "15x15",
-      "timestamp": "2025-12-30T14:20:38.470Z",
-      "accuracy": 0,
-      "correct": 0,
-      "failed": 10,
-      "total": 10,
-      "avgDurationMs": 7177.93866669999,
-      "avgTokens": 0,
-      "totalTokens": 0,
-      "avgCost": 0,
-      "totalCost": 0
     },
     {
       "model": "gemini-3-flash-preview",
@@ -2116,14 +2025,14 @@
     {
       "model": "olmo-3.1-32b-think",
       "size": "10x10",
-      "timestamp": "2025-12-30T17:28:25.315Z",
+      "timestamp": "2025-12-30T17:49:13.921Z",
       "accuracy": 0,
       "correct": 0,
       "failed": 0,
-      "total": 6,
-      "avgDurationMs": 1510741.5015418334,
-      "avgTokens": 25242.833333333332,
-      "totalTokens": 151457,
+      "total": 7,
+      "avgDurationMs": 1473289.0575537144,
+      "avgTokens": 25381.14285714286,
+      "totalTokens": 177668,
       "avgCost": 0,
       "totalCost": 0
     },
