@@ -1,35 +1,39 @@
 "use client";
 
 import {
-  ArrowLeft,
-  ArrowRight,
   CaretLeft,
   CaretRight,
   GridFour,
   House,
 } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { parseAsInteger, useQueryState } from "nuqs";
+import { useCallback, useEffect } from "react";
 
 import { Nonogram } from "@/components/nonogram/nonogram";
 import { PUZZLES } from "@/components/puzzles";
 import { Button } from "@/components/ui/button";
 
 export default function PuzzlesPage() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useQueryState(
+    "puzzle",
+    parseAsInteger.withDefault(0)
+  );
 
-  const puzzle = PUZZLES[currentIndex];
+  // Clamp index to valid range (in case of invalid URL values)
+  const safeIndex = Math.max(0, Math.min(currentIndex, PUZZLES.length - 1));
+  const puzzle = PUZZLES[safeIndex];
 
   // Clean solution string (remove whitespace from codeBlock solutions)
   const cleanSolution = puzzle.solution.replace(/\s/g, "");
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev === 0 ? PUZZLES.length - 1 : prev - 1));
-  }, []);
+  }, [setCurrentIndex]);
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev === PUZZLES.length - 1 ? 0 : prev + 1));
-  }, []);
+  }, [setCurrentIndex]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -110,7 +114,7 @@ export default function PuzzlesPage() {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Puzzle</span>
               <span className="font-mono text-lg font-bold text-foreground">
-                {currentIndex + 1}
+                {safeIndex + 1}
               </span>
               <span className="text-sm text-muted-foreground">
                 of {PUZZLES.length}
@@ -128,7 +132,7 @@ export default function PuzzlesPage() {
           {/* Nonogram */}
           <div className="p-6 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/20">
             <Nonogram
-              key={currentIndex}
+              key={safeIndex}
               height={puzzle.height}
               width={puzzle.width}
               solution={cleanSolution}
@@ -167,7 +171,7 @@ export default function PuzzlesPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-center gap-1.5 flex-wrap">
             {PUZZLES.map((p, idx) => {
-              const isActive = idx === currentIndex;
+              const isActive = idx === safeIndex;
               const dotColor =
                 p.width === 5
                   ? "bg-emerald-500"

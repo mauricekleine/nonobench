@@ -2,6 +2,8 @@
 
 import {
 	CaretDown,
+	CaretUp,
+	CaretUpDown,
 	ChartBar,
 	Coffee,
 	DownloadSimple,
@@ -47,13 +49,20 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import resultsData from "./results.json";
+import { PUZZLES } from "@/components/puzzles";
 
 type SizeData = {
 	size: string;
 	accuracy: number;
 	correct: number;
+	failed: number;
 	total: number;
 	avgDurationMs: number;
 	avgTokens: number;
@@ -66,9 +75,13 @@ type ModelData = {
 	model: string;
 	overallAccuracy: number;
 	overallCorrect: number;
+	overallFailed: number;
 	overallTotal: number;
 	bySize: SizeData[];
 };
+
+type SortColumn = "accuracy" | "totalCost" | "avgCost" | "totalTime" | "avgTime";
+type SortDirection = "asc" | "desc";
 
 type Results = {
 	timestamp: string;
@@ -128,21 +141,53 @@ function getAccuracyForSize(modelData: ModelData, size: string): number {
 	return sizeData?.accuracy ?? 0;
 }
 
-// Helper to get model stats
+// Helper to get model stats (excluding failed tests from averages)
 function getModelStats(modelData: ModelData) {
 	const totalDuration = modelData.bySize.reduce(
 		(sum, s) => sum + s.avgDurationMs * s.total,
 		0,
 	);
 	const totalPuzzles = modelData.overallTotal;
-	const avgDuration = totalDuration / totalPuzzles;
+	const totalFailed = modelData.overallFailed;
+	const runs = totalPuzzles - totalFailed; // Successful runs only
+	const correct = modelData.overallCorrect;
+
+	// Calculate averages based on successful runs only
+	const avgDuration = runs > 0 ? totalDuration / runs : 0;
 	const totalCost = modelData.bySize.reduce((sum, s) => sum + s.totalCost, 0);
-	return { avgDuration, totalCost };
+	const avgCost = runs > 0 ? totalCost / runs : 0;
+
+	// Recalculate accuracy excluding failed tests
+	const accuracy = runs > 0 ? (correct / runs) * 100 : 0;
+
+	return { avgDuration, totalDuration, totalCost, avgCost, totalFailed, runs, correct, accuracy };
 }
 
 export default function Page() {
 	const [selectedSize, setSelectedSize] = useState<string>("all");
 	const [aboutOpen, setAboutOpen] = useState(false);
+	const [sortColumn, setSortColumn] = useState<SortColumn>("accuracy");
+	const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+	const handleSort = (column: SortColumn) => {
+		if (sortColumn === column) {
+			setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+		} else {
+			setSortColumn(column);
+			setSortDirection(column === "accuracy" ? "desc" : "asc");
+		}
+	};
+
+	const getSortIcon = (column: SortColumn) => {
+		if (sortColumn !== column) {
+			return <CaretUpDown className="size-3 text-muted-foreground/50" />;
+		}
+		return sortDirection === "asc" ? (
+			<CaretUp className="size-3 text-primary" weight="bold" />
+		) : (
+			<CaretDown className="size-3 text-primary" weight="bold" />
+		);
+	};
 
 	const sizes = useMemo(() => ["all", ...results.summary.sizes], []);
 
@@ -152,7 +197,7 @@ export default function Page() {
 	}, []);
 
 	const chartData = useMemo(() => {
-		const getModelStats = (model: ModelData) => {
+		const getChartModelStats = (model: ModelData) => {
 			if (selectedSize === "all") {
 				const totalDuration = model.bySize.reduce(
 					(sum, s) => sum + s.avgDurationMs * s.total,
@@ -162,33 +207,54 @@ export default function Page() {
 					(sum, s) => sum + s.totalCost,
 					0,
 				);
+				// Exclude failed tests from calculations
+				const runs = model.overallTotal - model.overallFailed;
+				const accuracy = runs > 0 ? (model.overallCorrect / runs) * 100 : 0;
 				return {
 					model: model.model,
 					displayName: formatModelName(model.model),
-					accuracy: model.overallAccuracy,
+					accuracy,
 					correct: model.overallCorrect,
-					total: model.overallTotal,
-					avgDuration: totalDuration / model.overallTotal,
+					total: runs,
+					avgDuration: runs > 0 ? totalDuration / runs : 0,
 					totalCost,
 				};
 			}
 
 			const sizeData = model.bySize.find((s) => s.size === selectedSize);
+			if (!sizeData) {
+				return {
+					model: model.model,
+					displayName: formatModelName(model.model),
+					accuracy: 0,
+					correct: 0,
+					total: 0,
+					avgDuration: 0,
+					totalCost: 0,
+				};
+			}
+			// Exclude failed tests from calculations
+			const runs = sizeData.total - sizeData.failed;
+			const accuracy = runs > 0 ? (sizeData.correct / runs) * 100 : 0;
 			return {
 				model: model.model,
 				displayName: formatModelName(model.model),
-				accuracy: sizeData?.accuracy ?? 0,
-				correct: sizeData?.correct ?? 0,
-				total: sizeData?.total ?? 0,
-				avgDuration: sizeData?.avgDurationMs ?? 0,
-				totalCost: sizeData?.totalCost ?? 0,
+				accuracy,
+				correct: sizeData.correct,
+				total: runs,
+				avgDuration: runs > 0 ? (sizeData.avgDurationMs * sizeData.total) / runs : 0,
+				totalCost: sizeData.totalCost,
 			};
 		};
 
-		const data = results.byModel.map((model) => getModelStats(model));
+		const data = results.byModel.map((model) => getChartModelStats(model));
 
-		// Sort by accuracy (highest first), then assign colors based on rank
-		const sorted = data.sort((a, b) => b.accuracy - a.accuracy);
+		// Sort by accuracy (highest first), then alphabetically for ties
+		const sorted = data.sort((a, b) => {
+			const diff = b.accuracy - a.accuracy;
+			if (diff !== 0) return diff;
+			return a.model.localeCompare(b.model);
+		});
 		return sorted.map((item, rank) => ({
 			...item,
 			fill: getRankColor(rank, sorted.length),
@@ -196,16 +262,45 @@ export default function Page() {
 	}, [selectedSize]);
 
 	const sortedModels = useMemo(() => {
-		return [...results.byModel].sort(
-			(a, b) => b.overallAccuracy - a.overallAccuracy,
-		);
-	}, []);
+		return [...results.byModel].sort((a, b) => {
+			const statsA = getModelStats(a);
+			const statsB = getModelStats(b);
+
+			let comparison = 0;
+			switch (sortColumn) {
+				case "accuracy":
+					comparison = statsA.accuracy - statsB.accuracy;
+					break;
+				case "totalCost":
+					comparison = statsA.totalCost - statsB.totalCost;
+					break;
+				case "avgCost":
+					comparison = statsA.avgCost - statsB.avgCost;
+					break;
+				case "totalTime":
+					comparison = statsA.totalDuration - statsB.totalDuration;
+					break;
+				case "avgTime":
+					comparison = statsA.avgDuration - statsB.avgDuration;
+					break;
+			}
+
+			const primaryResult = sortDirection === "asc" ? comparison : -comparison;
+
+			// Secondary sort: alphabetically by model name when primary values are equal
+			if (primaryResult === 0) {
+				return a.model.localeCompare(b.model);
+			}
+
+			return primaryResult;
+		});
+	}, [sortColumn, sortDirection]);
 
 	// Calculate benchmark stats
 	const benchmarkStats = useMemo(() => {
 		const totalModels = results.summary.models.length;
-		const puzzlesPerModel = results.byModel[0]?.overallTotal ?? 0;
-		const totalRuns = totalModels * puzzlesPerModel;
+		const puzzlesPerModel = PUZZLES.length;
+		const totalRuns = results.byModel.reduce((sum, model) => sum + model.overallTotal - model.overallFailed, 0);
 		return { totalModels, totalPuzzles: puzzlesPerModel, totalRuns };
 	}, []);
 
@@ -454,8 +549,14 @@ export default function Page() {
 										<th className="sticky left-0 bg-muted/30 backdrop-blur-sm text-left font-medium px-4 py-3 border-r border-border">
 											Model
 										</th>
-										<th className="text-left font-medium px-4 py-3 whitespace-nowrap">
-											Overall
+										<th
+											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors select-none"
+											onClick={() => handleSort("accuracy")}
+										>
+											<div className="flex items-center gap-1">
+												Overall
+												{getSortIcon("accuracy")}
+											</div>
 										</th>
 										<th className="text-left font-medium px-4 py-3 whitespace-nowrap">
 											5×5
@@ -467,10 +568,64 @@ export default function Page() {
 											15×15
 										</th>
 										<th className="text-left font-medium px-4 py-3 whitespace-nowrap">
-											Total Cost
+											Runs
 										</th>
 										<th className="text-left font-medium px-4 py-3 whitespace-nowrap">
-											Avg Time
+											Correct
+										</th>
+										<th
+											className="text-left font-medium px-4 py-3 whitespace-nowrap hover:bg-muted/50 transition-colors select-none"
+										>
+											<div className="flex items-center gap-1">
+												Failed
+												<Tooltip>
+													<TooltipTrigger
+														className="p-0.5 rounded hover:bg-muted"
+														onClick={(e) => e.stopPropagation()}
+													>
+														<Info className="size-3.5 text-muted-foreground" weight="bold" />
+													</TooltipTrigger>
+													<TooltipContent side="top" className="max-w-xs">
+														Failed requests due to various reasons such as invalid JSON responses, timeouts, rate limits, or other API errors.
+													</TooltipContent>
+												</Tooltip>
+											</div>
+										</th>
+										<th
+											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors select-none"
+											onClick={() => handleSort("totalCost")}
+										>
+											<div className="flex items-center gap-1">
+												Total Cost
+												{getSortIcon("totalCost")}
+											</div>
+										</th>
+										<th
+											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors select-none"
+											onClick={() => handleSort("avgCost")}
+										>
+											<div className="flex items-center gap-1">
+												Avg Cost
+												{getSortIcon("avgCost")}
+											</div>
+										</th>
+										<th
+											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors select-none"
+											onClick={() => handleSort("totalTime")}
+										>
+											<div className="flex items-center gap-1">
+												Total Time
+												{getSortIcon("totalTime")}
+											</div>
+										</th>
+										<th
+											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors select-none"
+											onClick={() => handleSort("avgTime")}
+										>
+											<div className="flex items-center gap-1">
+												Avg Time
+												{getSortIcon("avgTime")}
+											</div>
 										</th>
 									</tr>
 								</thead>
@@ -499,7 +654,7 @@ export default function Page() {
 													<span className="font-mono font-bold text-primary" style={{
 														color: getRankColor(index, sortedModels.length),
 													}}>
-														{modelData.overallAccuracy.toFixed(1)}%
+														{stats.accuracy.toFixed(1)}%
 													</span>
 												</td>
 												<td className="text-left px-4 py-3">
@@ -519,7 +674,32 @@ export default function Page() {
 												</td>
 												<td className="text-left px-4 py-3">
 													<span className="font-mono text-muted-foreground">
+														{stats.runs}
+													</span>
+												</td>
+												<td className="text-left px-4 py-3">
+													<span className="font-mono text-muted-foreground">
+														{stats.correct}
+													</span>
+												</td>
+												<td className="text-left px-4 py-3">
+													<span className={`font-mono ${stats.totalFailed > 0 ? "text-amber-500" : "text-muted-foreground"}`}>
+														{stats.totalFailed}
+													</span>
+												</td>
+												<td className="text-left px-4 py-3">
+													<span className="font-mono text-muted-foreground">
 														{formatCost(stats.totalCost)}
+													</span>
+												</td>
+												<td className="text-left px-4 py-3">
+													<span className="font-mono text-muted-foreground">
+														{formatCost(stats.avgCost)}
+													</span>
+												</td>
+												<td className="text-left px-4 py-3">
+													<span className="font-mono text-muted-foreground">
+														{formatDuration(stats.totalDuration)}
 													</span>
 												</td>
 												<td className="text-left px-4 py-3">
