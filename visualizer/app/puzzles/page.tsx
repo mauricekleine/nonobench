@@ -8,13 +8,13 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 
 import { Nonogram } from "@/components/nonogram/nonogram";
 import { PUZZLES } from "@/components/puzzles";
 import { Button } from "@/components/ui/button";
 
-export default function PuzzlesPage() {
+function PuzzlesContent() {
   const [currentIndex, setCurrentIndex] = useQueryState(
     "puzzle",
     parseAsInteger.withDefault(0)
@@ -212,3 +212,25 @@ export default function PuzzlesPage() {
   );
 }
 
+function PuzzlesLoading() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="fixed inset-0 grid-pattern pointer-events-none" />
+      <div className="fixed inset-0 bg-linear-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
+      <div className="relative flex flex-col items-center gap-4">
+        <div className="p-3 bg-primary/20 rounded-xl animate-pulse">
+          <GridFour className="size-8 text-primary" weight="duotone" />
+        </div>
+        <p className="text-sm text-muted-foreground">Loading puzzles...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function PuzzlesPage() {
+  return (
+    <Suspense fallback={<PuzzlesLoading />}>
+      <PuzzlesContent />
+    </Suspense>
+  );
+}
