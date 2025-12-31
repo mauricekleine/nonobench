@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-31T00:01:04.632Z",
+  "timestamp": "2025-12-31T07:30:17.769Z",
   "summary": {
     "models": [
       "gpt-5.2-pro-high",
@@ -212,12 +212,12 @@
         },
         {
           "size": "15x15",
-          "timestamp": "2025-12-30T23:48:04.580Z",
+          "timestamp": "2025-12-31T00:38:50.208Z",
           "accuracy": 20,
           "correct": 2,
           "failed": 6,
           "total": 10,
-          "avgDurationMs": 1637272.3368207996,
+          "avgDurationMs": 1941829.2906999998,
           "avgTokens": 9962.6,
           "totalTokens": 99626,
           "avgCost": 0.139853,
@@ -1632,12 +1632,12 @@
     {
       "model": "gpt-5.2-xhigh",
       "size": "15x15",
-      "timestamp": "2025-12-30T23:48:04.580Z",
+      "timestamp": "2025-12-31T00:38:50.208Z",
       "accuracy": 20,
       "correct": 2,
       "failed": 6,
       "total": 10,
-      "avgDurationMs": 1637272.3368207996,
+      "avgDurationMs": 1941829.2906999998,
       "avgTokens": 9962.6,
       "totalTokens": 99626,
       "avgCost": 0.139853,

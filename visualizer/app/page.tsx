@@ -578,7 +578,7 @@ export default function Page() {
 									<tr className="border-b border-border bg-muted/30">
 										<th
 											rowSpan={2}
-											className="sticky left-0 bg-muted/30 backdrop-blur-sm text-left font-medium px-4 py-3 border-r border-border align-bottom"
+											className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-muted/30 backdrop-blur-sm text-left font-medium px-4 py-3 border-r border-border align-bottom"
 										>
 											Model
 										</th>
@@ -683,7 +683,7 @@ export default function Page() {
 												key={modelData.model}
 												className="border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors"
 											>
-												<td className="sticky left-0 bg-card/30 backdrop-blur-sm px-4 py-3 border-r border-border">
+												<td className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-card/30 backdrop-blur-sm px-4 py-3 border-r border-border">
 													<div className="flex items-center gap-2">
 														<div
 															className="w-2.5 h-2.5 mt-0.5 rounded-full shrink-0"
