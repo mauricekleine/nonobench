@@ -790,7 +790,17 @@ export default function Page() {
 								/>
 							</CollapsibleTrigger>
 							<CollapsibleContent>
-								<div className="mt-3 space-y-4">
+								<div className="mt-3 p-4 rounded-lg bg-muted/30 border border-border text-sm text-muted-foreground space-y-2">
+									<p>
+										Most errors occur when models exceed their maximum output token limit, particularly on larger grid sizes.
+										Increased puzzle complexity leads to excessive reasoning, and reasoning tokens bloat the total output context window—causing truncated or empty responses.
+									</p>
+									<p>
+										Other errors stem from models failing to consistently produce valid JSON output.
+										Notably, smaller models like <span className="font-mono text-foreground">ministral-14b-2512</span> struggle more with larger grids, often failing to output a properly structured JSON object.
+									</p>
+								</div>
+								<div className="mt-4 space-y-4">
 									{results.errorsByModel.map((modelErrors) => (
 										<div key={modelErrors.model} className="p-4 rounded-lg bg-muted/20 border border-border">
 											<div className="flex items-center justify-between mb-3">
