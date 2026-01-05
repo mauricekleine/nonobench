@@ -1,4 +1,4 @@
-import { generateText, Output } from "ai";
+import { generateObject, generateText, Output } from "ai";
 import { codeBlock } from "common-tags";
 import { z } from "zod";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
@@ -93,13 +93,12 @@ async function runBenchmark(
 	let errorMessage: string | undefined;
 
 	try {
-		const resp = await generateText({
+		const resp = await generateObject({
+			maxOutputTokens: 32000,
 			model: model.llm,
 			prompt: puzzle.clues.canonical,
-			output: Output.object({
-				schema: z.object({
-					solution: z.string(),
-				}),
+			schema: z.object({
+				solution: z.string(),
 			}),
 			system: codeBlock`
         You are solving a nonogram (also known as picross or griddlers).
@@ -123,10 +122,12 @@ async function runBenchmark(
 
         Respond with only a JSON object:
         { "solution": "<your ${puzzle.width * puzzle.height}-character string>" }
+
+				Important: Do not include any other text in your response. Only respond with the JSON object.
       `,
 		});
 
-		const llmSolution = resp.output.solution.replace(/\s+/g, "");
+		const llmSolution = resp.object.solution.replace(/\s+/g, "");
 		correct = llmSolution === puzzle.solution.replace(/\s+/g, "");
 
 		if (resp.providerMetadata) {
@@ -140,7 +141,7 @@ async function runBenchmark(
 			}
 		}
 
-		tokens = resp.totalUsage?.outputTokens ?? 0;
+		tokens = resp.usage?.outputTokens ?? 0;
 		if (resp.providerMetadata?.google) {
 			const googleMeta = resp.providerMetadata.google as any;
 			if (
