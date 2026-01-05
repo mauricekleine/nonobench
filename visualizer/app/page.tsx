@@ -644,19 +644,19 @@ export default function Page() {
 											</div>
 										</th>
 										<th
-											colSpan={6}
+											colSpan={5}
 											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-blue-500/10"
 										>
 											5×5
 										</th>
 										<th
-											colSpan={6}
+											colSpan={5}
 											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-emerald-500/10"
 										>
 											10×10
 										</th>
 										<th
-											colSpan={6}
+											colSpan={5}
 											className="text-center font-medium px-4 py-2 whitespace-nowrap bg-amber-500/10"
 										>
 											15×15
