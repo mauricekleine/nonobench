@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-07T07:44:01.476Z",
+  "timestamp": "2026-01-07T08:01:05.841Z",
   "runs": [
     {
       "model": "claude-4.5-opus-high",
@@ -7278,21 +7278,6 @@
     },
     {
       "model": "gpt-oss-120b-high",
-      "puzzleId": "8d05eb82f9942411",
-      "size": "10x10",
-      "timestamp": "2026-01-06T15:58:57.880Z",
-      "reasoning": true,
-      "correct": false,
-      "status": "failed",
-      "durationMs": 33981.293249999995,
-      "tokens": 0,
-      "cost": 0,
-      "errorMessage": "Failed to process successful response",
-      "rawInput": "You are solving a nonogram (also known as picross or griddlers).\n\n## Rules\n- Each row and column has clues: numbers indicating consecutive groups of filled cells\n- Groups are separated by at least one empty cell\n- The clues appear in order from left-to-right (for rows) or top-to-bottom (for columns)\n\n## Example\nA row clue \"2 1\" on a 5-cell row means: 2 filled cells, then a gap, then 1 filled cell.\nPossible solutions: \"11010\" or \"11001\" (but only one will satisfy all column constraints)\n\n## Your Task\nSolve the puzzle so ALL row AND column clues are satisfied simultaneously.\n\n## Output Format\nOutput ONLY the solution as a single string of 100 characters.\n- Use \"1\" for filled cells, \"0\" for empty cells\n- Read left-to-right, top-to-bottom (row 1 first, then row 2, etc.)\n\nIMPORTANT:\n- Do NOT include any explanation, reasoning, or intermediate steps\n- Do NOT include any other text, formatting, or symbols\n- Before outputting, ensure the solution satisfies every row and every column clue\n- If no solution satisfies all constraints, do NOT guess; output \"0\" instead\n\nYou MUST ONLY output the 100-character solution string and nothing else.\n\nRow clues:\n  Row 1: 4 2\n  Row 2: 1 3\n  Row 3: 3 4\n  Row 4: 4 2\n  Row 5: 1 1\n  Row 6: 4 2 1\n  Row 7: 2 3\n  Row 8: 4 1\n  Row 9: 1 1 1 1\n  Row 10: 5 1\n\nColumn clues:\n  Column 1: 1 1 2\n  Column 2: 1 2 2 2\n  Column 3: 4 1 1\n  Column 4: 1 7\n  Column 5: 1 2 1\n  Column 6: 3 1\n  Column 7: 2 1 2\n  Column 8: 4 1\n  Column 9: 3 1\n  Column 10: 2 1 2",
-      "rawOutput": ""
-    },
-    {
-      "model": "gpt-oss-120b-high",
       "puzzleId": "a1768b5ed90b204b",
       "size": "10x10",
       "timestamp": "2026-01-06T16:01:20.360Z",
@@ -7349,6 +7334,21 @@
       "cost": 0.02309166,
       "errorMessage": null,
       "rawInput": "You are solving a nonogram (also known as picross or griddlers).\n\n## Rules\n- Each row and column has clues: numbers indicating consecutive groups of filled cells\n- Groups are separated by at least one empty cell\n- The clues appear in order from left-to-right (for rows) or top-to-bottom (for columns)\n\n## Example\nA row clue \"2 1\" on a 5-cell row means: 2 filled cells, then a gap, then 1 filled cell.\nPossible solutions: \"11010\" or \"11001\" (but only one will satisfy all column constraints)\n\n## Your Task\nSolve the puzzle so ALL row AND column clues are satisfied simultaneously.\n\n## Output Format\nOutput ONLY the solution as a single string of 100 characters.\n- Use \"1\" for filled cells, \"0\" for empty cells\n- Read left-to-right, top-to-bottom (row 1 first, then row 2, etc.)\n\nIMPORTANT:\n- Do NOT include any explanation, reasoning, or intermediate steps\n- Do NOT include any other text, formatting, or symbols\n- Before outputting, ensure the solution satisfies every row and every column clue\n- If no solution satisfies all constraints, do NOT guess; output \"0\" instead\n\nYou MUST ONLY output the 100-character solution string and nothing else.\n\nRow clues:\n  Row 1: 2 1\n  Row 2: 2 1 2\n  Row 3: 1 1 1\n  Row 4: 1 4 2\n  Row 5: 1 1\n  Row 6: 2 2\n  Row 7: 1 3 1\n  Row 8: 1 1 1\n  Row 9: 2 1 1 2\n  Row 10: 5\n\nColumn clues:\n  Column 1: 1\n  Column 2: 1 1 4\n  Column 3: 2 2 1\n  Column 4: 3 1\n  Column 5: 1 4\n  Column 6: 2 1 1 1\n  Column 7: 2 4\n  Column 8: 1\n  Column 9: 1 3 1\n  Column 10: 1 1 2 1",
+      "rawOutput": ""
+    },
+    {
+      "model": "gpt-oss-120b-high",
+      "puzzleId": "8d05eb82f9942411",
+      "size": "10x10",
+      "timestamp": "2026-01-07T07:49:47.745Z",
+      "reasoning": true,
+      "correct": false,
+      "status": "success",
+      "durationMs": 188607.53737499999,
+      "tokens": 64000,
+      "cost": 0.02309148,
+      "errorMessage": null,
+      "rawInput": "You are solving a nonogram (also known as picross or griddlers).\n\n## Rules\n- Each row and column has clues: numbers indicating consecutive groups of filled cells\n- Groups are separated by at least one empty cell\n- The clues appear in order from left-to-right (for rows) or top-to-bottom (for columns)\n\n## Example\nA row clue \"2 1\" on a 5-cell row means: 2 filled cells, then a gap, then 1 filled cell.\nPossible solutions: \"11010\" or \"11001\" (but only one will satisfy all column constraints)\n\n## Your Task\nSolve the puzzle so ALL row AND column clues are satisfied simultaneously.\n\n## Output Format\nOutput ONLY the solution as a single string of 100 characters.\n- Use \"1\" for filled cells, \"0\" for empty cells\n- Read left-to-right, top-to-bottom (row 1 first, then row 2, etc.)\n\nIMPORTANT:\n- Do NOT include any explanation, reasoning, or intermediate steps\n- Do NOT include any other text, formatting, or symbols\n- Before outputting, ensure the solution satisfies every row and every column clue\n- If no solution satisfies all constraints, do NOT guess; output \"0\" instead\n\nYou MUST ONLY output the 100-character solution string and nothing else.\n\nRow clues:\n  Row 1: 4 2\n  Row 2: 1 3\n  Row 3: 3 4\n  Row 4: 4 2\n  Row 5: 1 1\n  Row 6: 4 2 1\n  Row 7: 2 3\n  Row 8: 4 1\n  Row 9: 1 1 1 1\n  Row 10: 5 1\n\nColumn clues:\n  Column 1: 1 1 2\n  Column 2: 1 2 2 2\n  Column 3: 4 1 1\n  Column 4: 1 7\n  Column 5: 1 2 1\n  Column 6: 3 1\n  Column 7: 2 1 2\n  Column 8: 4 1\n  Column 9: 3 1\n  Column 10: 2 1 2",
       "rawOutput": ""
     },
     {

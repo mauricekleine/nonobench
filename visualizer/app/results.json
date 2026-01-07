@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-07T07:44:01.470Z",
+  "timestamp": "2026-01-07T08:01:05.836Z",
   "summary": {
     "models": [
       "claude-4.5-opus-high",
@@ -9,8 +9,8 @@
       "gpt-5.2-xhigh",
       "gemini-3-flash-preview-high",
       "gpt-5.2-low",
-      "gpt-oss-120b-high",
       "deepseek-v3.2-high",
+      "gpt-oss-120b-high",
       "grok-4",
       "gpt-oss-120b-low",
       "qwen3-next-80b-a3b-thinking",
@@ -437,62 +437,6 @@
       ]
     },
     {
-      "model": "gpt-oss-120b-high",
-      "reasoning": true,
-      "overallAccuracy": 37.93103448275862,
-      "overallCorrect": 11,
-      "overallFailed": 1,
-      "overallTotal": 30,
-      "overallRuns": 29,
-      "bySize": [
-        {
-          "size": "5x5",
-          "timestamp": "2026-01-06T10:06:41.917Z",
-          "accuracy": 80,
-          "correct": 8,
-          "failed": 0,
-          "total": 10,
-          "runs": 10,
-          "avgDurationMs": 86897.34842089999,
-          "totalDurationMs": 868973.4842089999,
-          "avgTokens": 9059.7,
-          "totalTokens": 90597,
-          "avgCost": 0.0017730676000000001,
-          "totalCost": 0.017730676
-        },
-        {
-          "size": "10x10",
-          "timestamp": "2026-01-06T16:03:22.535Z",
-          "accuracy": 33.33333333333333,
-          "correct": 3,
-          "failed": 1,
-          "total": 10,
-          "runs": 9,
-          "avgDurationMs": 263014.6977036667,
-          "totalDurationMs": 2367132.279333,
-          "avgTokens": 45342.333333333336,
-          "totalTokens": 408081,
-          "avgCost": 0.013048436666666666,
-          "totalCost": 0.11743593
-        },
-        {
-          "size": "15x15",
-          "timestamp": "2026-01-06T16:08:29.990Z",
-          "accuracy": 0,
-          "correct": 0,
-          "failed": 0,
-          "total": 10,
-          "runs": 10,
-          "avgDurationMs": 135169.44134170003,
-          "totalDurationMs": 1351694.4134170003,
-          "avgTokens": 25584.5,
-          "totalTokens": 255845,
-          "avgCost": 0.008951607,
-          "totalCost": 0.08951607
-        }
-      ]
-    },
-    {
       "model": "deepseek-v3.2-high",
       "reasoning": true,
       "overallAccuracy": 36.666666666666664,
@@ -545,6 +489,62 @@
           "totalTokens": 285657,
           "avgCost": 0.028999437099999997,
           "totalCost": 0.289994371
+        }
+      ]
+    },
+    {
+      "model": "gpt-oss-120b-high",
+      "reasoning": true,
+      "overallAccuracy": 36.666666666666664,
+      "overallCorrect": 11,
+      "overallFailed": 0,
+      "overallTotal": 30,
+      "overallRuns": 30,
+      "bySize": [
+        {
+          "size": "5x5",
+          "timestamp": "2026-01-06T10:06:41.917Z",
+          "accuracy": 80,
+          "correct": 8,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 86897.34842089999,
+          "totalDurationMs": 868973.4842089999,
+          "avgTokens": 9059.7,
+          "totalTokens": 90597,
+          "avgCost": 0.0017730676000000001,
+          "totalCost": 0.017730676
+        },
+        {
+          "size": "10x10",
+          "timestamp": "2026-01-07T07:49:47.745Z",
+          "accuracy": 30,
+          "correct": 3,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 255573.98167079999,
+          "totalDurationMs": 2555739.816708,
+          "avgTokens": 47208.1,
+          "totalTokens": 472081,
+          "avgCost": 0.014052740999999999,
+          "totalCost": 0.14052741
+        },
+        {
+          "size": "15x15",
+          "timestamp": "2026-01-06T16:08:29.990Z",
+          "accuracy": 0,
+          "correct": 0,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 135169.44134170003,
+          "totalDurationMs": 1351694.4134170003,
+          "avgTokens": 25584.5,
+          "totalTokens": 255845,
+          "avgCost": 0.008951607,
+          "totalCost": 0.08951607
         }
       ]
     },
@@ -2737,18 +2737,18 @@
     {
       "model": "gpt-oss-120b-high",
       "size": "10x10",
-      "timestamp": "2026-01-06T16:03:22.535Z",
-      "accuracy": 33.33333333333333,
+      "timestamp": "2026-01-07T07:49:47.745Z",
+      "accuracy": 30,
       "correct": 3,
-      "failed": 1,
+      "failed": 0,
       "total": 10,
-      "runs": 9,
-      "avgDurationMs": 263014.6977036667,
-      "totalDurationMs": 2367132.279333,
-      "avgTokens": 45342.333333333336,
-      "totalTokens": 408081,
-      "avgCost": 0.013048436666666666,
-      "totalCost": 0.11743593
+      "runs": 10,
+      "avgDurationMs": 255573.98167079999,
+      "totalDurationMs": 2555739.816708,
+      "avgTokens": 47208.1,
+      "totalTokens": 472081,
+      "avgCost": 0.014052740999999999,
+      "totalCost": 0.14052741
     },
     {
       "model": "gpt-oss-120b-high",
@@ -3583,16 +3583,5 @@
       "totalCost": 0.3190525
     }
   ],
-  "errorsByModel": [
-    {
-      "model": "gpt-oss-120b-high",
-      "totalErrors": 1,
-      "errors": [
-        {
-          "message": "Failed to process successful response",
-          "count": 1
-        }
-      ]
-    }
-  ]
+  "errorsByModel": []
 }
