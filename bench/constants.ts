@@ -101,6 +101,21 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
+    llm: openrouter("deepseek/deepseek-v3.2-speciale", defaultProviderOptions),
+    name: "deepseek-v3.2-speciale",
+    reasoning: false,
+  },
+  {
+    llm: openrouter("deepseek/deepseek-v3.2-speciale", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: { effort: "high", exclude: true },
+      },
+    }),
+    name: "deepseek-v3.2-speciale-high",
+    reasoning: true,
+  },
+  {
     llm: openrouter("google/gemini-3-flash-preview", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { effort: "minimal", exclude: true } },

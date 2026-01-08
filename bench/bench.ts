@@ -135,7 +135,6 @@ async function runBenchmark(
 
   try {
     const resp = await generateText({
-      maxOutputTokens: 64000,
       model: model.llm,
       prompt: puzzle.clues.canonical,
       system: systemPrompt,
