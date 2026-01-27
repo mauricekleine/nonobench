@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-08T17:22:34.109Z",
+  "timestamp": "2026-01-27T09:42:36.724Z",
   "summary": {
     "models": [
       "claude-4.5-opus-high",
@@ -13,6 +13,7 @@
       "deepseek-v3.2-high",
       "deepseek-v3.2-speciale",
       "gpt-oss-120b-high",
+      "kimi-k2.5-high",
       "grok-4",
       "gpt-oss-120b-low",
       "qwen3-next-80b-a3b-thinking",
@@ -35,6 +36,7 @@
       "gemini-3-pro-preview-low",
       "glm-4.7-non-reasoning",
       "grok-4.1-fast-non-reasoning",
+      "kimi-k2.5-non-reasoning",
       "mimo-v2-flash",
       "ministral-14b-2512",
       "mistral-large-2512"
@@ -659,6 +661,62 @@
           "totalTokens": 260453,
           "avgCost": 0.009117495,
           "totalCost": 0.09117495
+        }
+      ]
+    },
+    {
+      "model": "kimi-k2.5-high",
+      "reasoning": true,
+      "overallAccuracy": 36.666666666666664,
+      "overallCorrect": 11,
+      "overallFailed": 0,
+      "overallTotal": 30,
+      "overallRuns": 30,
+      "bySize": [
+        {
+          "size": "5x5",
+          "timestamp": "2026-01-27T07:20:57.729Z",
+          "accuracy": 100,
+          "correct": 10,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 231556.87575429998,
+          "totalDurationMs": 2315568.757543,
+          "avgTokens": 9908.7,
+          "totalTokens": 99087,
+          "avgCost": 0.029941060000000002,
+          "totalCost": 0.2994106
+        },
+        {
+          "size": "10x10",
+          "timestamp": "2026-01-27T07:44:35.737Z",
+          "accuracy": 10,
+          "correct": 1,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 1012850.8563582,
+          "totalDurationMs": 10128508.563582,
+          "avgTokens": 45156.8,
+          "totalTokens": 451568,
+          "avgCost": 0.13559948,
+          "totalCost": 1.3559948
+        },
+        {
+          "size": "15x15",
+          "timestamp": "2026-01-27T08:08:39.848Z",
+          "accuracy": 0,
+          "correct": 0,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 708307.5829248999,
+          "totalDurationMs": 7083075.829248999,
+          "avgTokens": 29948.3,
+          "totalTokens": 299483,
+          "avgCost": 0.0901944,
+          "totalCost": 0.901944
         }
       ]
     },
@@ -1891,6 +1949,62 @@
           "totalTokens": 15923,
           "avgCost": 0.00090794,
           "totalCost": 0.0090794
+        }
+      ]
+    },
+    {
+      "model": "kimi-k2.5-non-reasoning",
+      "reasoning": false,
+      "overallAccuracy": 0,
+      "overallCorrect": 0,
+      "overallFailed": 0,
+      "overallTotal": 30,
+      "overallRuns": 30,
+      "bySize": [
+        {
+          "size": "5x5",
+          "timestamp": "2026-01-27T07:12:17.929Z",
+          "accuracy": 0,
+          "correct": 0,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 1634.4630831,
+          "totalDurationMs": 16344.630830999999,
+          "avgTokens": 17,
+          "totalTokens": 170,
+          "avgCost": 0.00024036,
+          "totalCost": 0.0024036
+        },
+        {
+          "size": "10x10",
+          "timestamp": "2026-01-27T07:12:20.631Z",
+          "accuracy": 0,
+          "correct": 0,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 2420.474475,
+          "totalDurationMs": 24204.74475,
+          "avgTokens": 52,
+          "totalTokens": 520,
+          "avgCost": 0.00045804,
+          "totalCost": 0.0045804
+        },
+        {
+          "size": "15x15",
+          "timestamp": "2026-01-27T07:12:26.376Z",
+          "accuracy": 0,
+          "correct": 0,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 4058.9351794000004,
+          "totalDurationMs": 40589.351794,
+          "avgTokens": 92.7,
+          "totalTokens": 927,
+          "avgCost": 0.00064494,
+          "totalCost": 0.0064494
         }
       ]
     },
@@ -3311,6 +3425,102 @@
       "totalTokens": 490459,
       "avgCost": 0.141064095,
       "totalCost": 1.4106409500000001
+    },
+    {
+      "model": "kimi-k2.5-high",
+      "size": "5x5",
+      "timestamp": "2026-01-27T07:20:57.729Z",
+      "accuracy": 100,
+      "correct": 10,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 231556.87575429998,
+      "totalDurationMs": 2315568.757543,
+      "avgTokens": 9908.7,
+      "totalTokens": 99087,
+      "avgCost": 0.029941060000000002,
+      "totalCost": 0.2994106
+    },
+    {
+      "model": "kimi-k2.5-high",
+      "size": "10x10",
+      "timestamp": "2026-01-27T07:44:35.737Z",
+      "accuracy": 10,
+      "correct": 1,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 1012850.8563582,
+      "totalDurationMs": 10128508.563582,
+      "avgTokens": 45156.8,
+      "totalTokens": 451568,
+      "avgCost": 0.13559948,
+      "totalCost": 1.3559948
+    },
+    {
+      "model": "kimi-k2.5-high",
+      "size": "15x15",
+      "timestamp": "2026-01-27T08:08:39.848Z",
+      "accuracy": 0,
+      "correct": 0,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 708307.5829248999,
+      "totalDurationMs": 7083075.829248999,
+      "avgTokens": 29948.3,
+      "totalTokens": 299483,
+      "avgCost": 0.0901944,
+      "totalCost": 0.901944
+    },
+    {
+      "model": "kimi-k2.5-non-reasoning",
+      "size": "5x5",
+      "timestamp": "2026-01-27T07:12:17.929Z",
+      "accuracy": 0,
+      "correct": 0,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 1634.4630831,
+      "totalDurationMs": 16344.630830999999,
+      "avgTokens": 17,
+      "totalTokens": 170,
+      "avgCost": 0.00024036,
+      "totalCost": 0.0024036
+    },
+    {
+      "model": "kimi-k2.5-non-reasoning",
+      "size": "10x10",
+      "timestamp": "2026-01-27T07:12:20.631Z",
+      "accuracy": 0,
+      "correct": 0,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 2420.474475,
+      "totalDurationMs": 24204.74475,
+      "avgTokens": 52,
+      "totalTokens": 520,
+      "avgCost": 0.00045804,
+      "totalCost": 0.0045804
+    },
+    {
+      "model": "kimi-k2.5-non-reasoning",
+      "size": "15x15",
+      "timestamp": "2026-01-27T07:12:26.376Z",
+      "accuracy": 0,
+      "correct": 0,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 4058.9351794000004,
+      "totalDurationMs": 40589.351794,
+      "avgTokens": 92.7,
+      "totalTokens": 927,
+      "avgCost": 0.00064494,
+      "totalCost": 0.0064494
     },
     {
       "model": "mimo-v2-flash",

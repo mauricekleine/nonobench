@@ -197,6 +197,26 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
+    llm: openrouter("moonshotai/kimi-k2.5", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: { enabled: false, exclude: true },
+      },
+    }),
+    name: "kimi-k2.5-non-reasoning",
+    reasoning: false,
+  },
+  {
+    llm: openrouter("moonshotai/kimi-k2.5", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: { effort: "high", exclude: true },
+      },
+    }),
+    name: "kimi-k2.5-high",
+    reasoning: true,
+  },
+  {
     llm: openrouter("openai/gpt-5.2", {
       ...defaultProviderOptions,
       extraBody: {
