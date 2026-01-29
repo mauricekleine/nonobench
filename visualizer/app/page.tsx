@@ -6,11 +6,9 @@ import {
 	CaretUp,
 	CaretUpDown,
 	ChartBar,
-	Coffee,
 	DownloadSimple,
 	GithubLogo,
 	GridFour,
-	Heart,
 	Info,
 	Lightning,
 	Question,
@@ -373,34 +371,6 @@ export default function Page() {
 			<div className="fixed inset-0 grid-pattern pointer-events-none" />
 			{/* Subtle gradient background */}
 			<div className="fixed inset-0 bg-linear-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
-
-			{/* Support Banner - full width at top */}
-			<div className="relative w-full bg-linear-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border-b border-amber-500/20">
-				<div className="max-w-7xl mx-auto px-6 py-4">
-					<div className="flex flex-col sm:flex-row items-center gap-4">
-						<div className="p-2.5 rounded-lg bg-amber-500/20">
-							<Coffee className="size-5 text-amber-600 dark:text-amber-400" weight="duotone" />
-						</div>
-						<div className="flex-1 text-center sm:text-left">
-							<p className="text-sm text-foreground">
-								Running benchmarks isn&apos;t cheap. Please consider supporting the project.
-							</p>
-							<p className="text-muted-foreground text-xs">
-								All contributions go towards running benchmarks for larger puzzle sizes and new models as they are released.
-							</p>
-						</div>
-						<a
-							href="https://buymeacoffee.com/mauricekleine"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium transition-colors"
-						>
-							<Heart className="size-4" weight="fill" />
-							<span>Support</span>
-						</a>
-					</div>
-				</div>
-			</div>
 
 			<div className="relative max-w-7xl mx-auto px-6 py-12">
 				{/* Header */}
