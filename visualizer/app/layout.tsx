@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next"
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+// Resend uses Inter for body text
+const inter = Inter({
 	subsets: ["latin"],
 	variable: "--font-sans",
 });
 
+// Resend uses CommitMono for code - IBM Plex Mono as fallback since CommitMono isn't on Google Fonts
 const ibmPlexMono = IBM_Plex_Mono({
 	subsets: ["latin"],
 	weight: ["400", "500", "600"],
@@ -71,7 +73,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="dark">
 			<body
-				className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased font-sans`}
+				className={`${inter.variable} ${ibmPlexMono.variable} antialiased font-sans`}
 			>
 				<NuqsAdapter>{children}</NuqsAdapter>
 
