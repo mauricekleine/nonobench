@@ -125,14 +125,14 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 // Generate a color based on rank (0 = brightest/top, higher = dimmer)
-// Uses the primary color hue (160 in dark mode) with decreasing lightness
+// Uses Resend's Blue color (#70B8FF) as primary with decreasing opacity
 function getRankColor(rank: number, total: number): string {
-	// Primary color in dark mode: oklch(0.75 0.18 160)
+	// Resend Blue: #70B8FF - using oklch for smooth gradients
 	const maxLightness = 0.78;
-	const minLightness = 0.4;
-	const maxChroma = 0.20;
-	const minChroma = 0.10;
-	const hue = 160; // teal-green hue matching primary
+	const minLightness = 0.45;
+	const maxChroma = 0.14;
+	const minChroma = 0.06;
+	const hue = 230; // Blue hue matching Resend's #70B8FF
 
 	// Calculate lightness and chroma based on rank (0 = brightest)
 	const t = total > 1 ? rank / (total - 1) : 0;
@@ -367,50 +367,52 @@ export default function Page() {
 
 	return (
 		<div className="min-h-screen bg-background">
+			{/* Resend noise texture overlay for atmospheric depth */}
+			<div className="noise-overlay" />
 			{/* Grid pattern background for Nonogram theme */}
 			<div className="fixed inset-0 grid-pattern pointer-events-none" />
-			{/* Subtle gradient background */}
-			<div className="fixed inset-0 bg-linear-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
+			{/* Subtle gradient background - Resend style */}
+			<div className="fixed inset-0 bg-linear-to-br from-chart-1/3 via-transparent to-chart-2/3 pointer-events-none" />
 
 			<div className="relative max-w-7xl mx-auto px-6 py-12">
-				{/* Header */}
+				{/* Header - Resend style with clean typography */}
 				<header className="mb-4">
-					<div className="flex items-center gap-3 mb-2">
-						<div className="p-2 bg-primary/20 rounded-lg">
-							<GridFour className="size-6 text-primary" weight="duotone" />
+					<div className="flex items-center gap-3 mb-3">
+						<div className="p-2.5 bg-foreground/10 rounded-lg border border-border">
+							<GridFour className="size-6 text-foreground" weight="duotone" />
 						</div>
-						<h1 className="text-3xl font-bold tracking-tight">
+						<h1 className="text-3xl font-semibold tracking-tight">
 							NonoBench Results
 						</h1>
 					</div>
-					<p className="text-muted-foreground max-w-2xl">
+					<p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
 						Benchmark results for LLM performance on Nonogram puzzle solving.
 						Comparing accuracy, speed, and cost across different grid sizes.
 					</p>
 
-					{/* Benchmark stats */}
-					<div className="flex items-center gap-4 my-4">
-						<div className="flex items-center gap-1.5 text-xs">
-							<GridFour className="size-3.5 text-primary" weight="duotone" />
+					{/* Benchmark stats - Resend semantic colors */}
+					<div className="flex items-center gap-6 my-5">
+						<div className="flex items-center gap-2 text-sm">
+							<GridFour className="size-4 text-[#70B8FF]" weight="duotone" />
 							<span className="text-muted-foreground">Puzzles:</span>
 							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalPuzzles}</span>
 						</div>
-						<div className="flex items-center gap-1.5 text-xs">
-							<Robot className="size-3.5 text-primary" weight="duotone" />
+						<div className="flex items-center gap-2 text-sm">
+							<Robot className="size-4 text-[#46FEA5]" weight="duotone" />
 							<span className="text-muted-foreground">Models:</span>
 							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalModels}</span>
 						</div>
-						<div className="flex items-center gap-1.5 text-xs">
-							<Lightning className="size-3.5 text-primary" weight="duotone" />
+						<div className="flex items-center gap-2 text-sm">
+							<Lightning className="size-4 text-[#FFCA16]" weight="duotone" />
 							<span className="text-muted-foreground">Total runs:</span>
 							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalRuns}</span>
 						</div>
 					</div>
 
-					{/* Action buttons */}
+					{/* Action buttons - Resend pill style */}
 					<Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
 						<div className="flex flex-wrap items-center gap-2 mt-4">
-							<CollapsibleTrigger className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
+							<CollapsibleTrigger className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
 								<Question className="size-4" weight="bold" />
 								<span>What are Nonograms?</span>
 								<CaretDown
@@ -420,16 +422,16 @@ export default function Page() {
 
 							<Link
 								href="/puzzles"
-								className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted border border-border rounded-full transition-all whitespace-nowrap"
+								className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all whitespace-nowrap"
 							>
 								<Rows className="size-4" weight="bold" />
-								<span>Explore Puzzles</span>
+								<span>Explore puzzles</span>
 							</Link>
 
 							<DropdownMenu>
-								<DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
+								<DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
 									<DownloadSimple className="size-4" weight="bold" />
-									<span>Download Results</span>
+									<span>Download results</span>
 									<CaretDown className="size-3" />
 								</DropdownMenuTrigger>
 								<DropdownMenuContent className="w-fit" align="start">
@@ -446,7 +448,7 @@ export default function Page() {
 											URL.revokeObjectURL(url);
 										}}
 									>
-										Download Aggregated Results
+										Download aggregated results
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onClick={() => {
@@ -461,14 +463,14 @@ export default function Page() {
 											URL.revokeObjectURL(url);
 										}}
 									>
-										Download Raw Results
+										Download raw results
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
 
 						<CollapsibleContent>
-							<div className="mt-3 p-4 rounded-lg bg-muted/50 border border-border text-sm text-muted-foreground space-y-2">
+							<div className="mt-3 p-5 rounded-lg bg-foreground/5 border border-border text-sm text-muted-foreground space-y-3 leading-relaxed">
 								<p>
 									<strong className="text-foreground">Nonograms</strong> (also
 									known as Picross, Griddlers, or Paint by Numbers) are logic
@@ -490,7 +492,7 @@ export default function Page() {
 									href="https://en.wikipedia.org/wiki/Nonogram"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1 text-primary hover:underline"
+									className="inline-flex items-center gap-1.5 text-[#70B8FF] hover:underline"
 								>
 									Learn more on Wikipedia
 									<Info className="size-3" />
@@ -503,16 +505,16 @@ export default function Page() {
 					</p>
 				</header>
 
-				{/* Model type filters */}
-				<div className="flex items-center gap-4 my-4 p-3 rounded-lg bg-muted/30 border border-border">
-					<span className="text-xs text-muted-foreground font-medium">Filter by model type:</span>
+				{/* Model type filters - Resend style */}
+				<div className="flex items-center gap-5 my-5 p-4 rounded-lg bg-foreground/5 border border-border">
+					<span className="text-sm text-muted-foreground font-medium">Filter by model type:</span>
 					<div className="flex items-center gap-2">
 						<Checkbox
 							id="reasoning"
 							checked={showReasoning}
 							onCheckedChange={(checked) => setShowReasoning(checked === true)}
 						/>
-						<Label htmlFor="reasoning" className="text-xs cursor-pointer flex items-center gap-1.5">
+						<Label htmlFor="reasoning" className="text-sm cursor-pointer flex items-center gap-1.5">
 							Reasoning models
 						</Label>
 					</div>
@@ -522,7 +524,7 @@ export default function Page() {
 							checked={showNonReasoning}
 							onCheckedChange={(checked) => setShowNonReasoning(checked === true)}
 						/>
-						<Label htmlFor="non-reasoning" className="text-xs cursor-pointer">
+						<Label htmlFor="non-reasoning" className="text-sm cursor-pointer">
 							Non-reasoning models
 						</Label>
 					</div>
@@ -642,16 +644,16 @@ export default function Page() {
 							<table className="w-full text-sm">
 								<thead>
 									{/* Group header row */}
-									<tr className="border-b border-border bg-muted/30">
+									<tr className="border-b border-border bg-foreground/5">
 										<th
 											rowSpan={2}
-											className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-muted/30 backdrop-blur-sm text-left font-medium px-4 py-3 border-r border-border align-bottom"
+											className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-foreground/5 backdrop-blur-sm text-left font-medium px-4 py-3 border-r border-border align-bottom"
 										>
 											Model
 										</th>
 										<th
 											rowSpan={2}
-											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors select-none align-bottom border-r border-border/50"
+											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-foreground/10 transition-colors select-none align-bottom border-r border-border/50"
 											onClick={() => handleSort("accuracy")}
 										>
 											<div className="flex items-center gap-1">
@@ -661,43 +663,43 @@ export default function Page() {
 										</th>
 										<th
 											colSpan={5}
-											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-blue-500/10"
+											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-[#70B8FF]/10"
 										>
 											5×5
 										</th>
 										<th
 											colSpan={5}
-											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-emerald-500/10"
+											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-[#46FEA5]/10"
 										>
 											10×10
 										</th>
 										<th
 											colSpan={5}
-											className="text-center font-medium px-4 py-2 whitespace-nowrap bg-amber-500/10"
+											className="text-center font-medium px-4 py-2 whitespace-nowrap bg-[#FFCA16]/10"
 										>
 											15×15
 										</th>
 									</tr>
 									{/* Sub-header row */}
-									<tr className="border-b border-border bg-muted/20 text-xs">
+									<tr className="border-b border-border bg-foreground/[0.03] text-xs">
 										{/* 5×5 columns */}
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-blue-500/5">Accuracy</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-blue-500/5">Runs</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-blue-500/5">Correct</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-blue-500/5">Avg Cost</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-blue-500/5 border-r border-border/50">Avg Time</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Accuracy</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Runs</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Correct</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Avg cost</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5 border-r border-border/50">Avg time</th>
 										{/* 10×10 columns */}
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-emerald-500/5">Accuracy</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-emerald-500/5">Runs</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-emerald-500/5">Correct</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-emerald-500/5">Avg Cost</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-emerald-500/5 border-r border-border/50">Avg Time</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Accuracy</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Runs</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Correct</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Avg cost</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5 border-r border-border/50">Avg time</th>
 										{/* 15×15 columns */}
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-amber-500/5">Accuracy</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-amber-500/5">Runs</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-amber-500/5">Correct</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-amber-500/5">Avg Cost</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-amber-500/5">Avg Time</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Accuracy</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Runs</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Correct</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Avg cost</th>
+										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Avg time</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -711,7 +713,7 @@ export default function Page() {
 										const renderAccuracyCell = (sizeStats: ReturnType<typeof getSizeStats>, size: string, bgClass: string) => {
 											const isMax = sizeStats.accuracy > 0 && sizeStats.accuracy === maxAccuracyBySize[size];
 											return (
-												<td className={`text-left px-3 py-3 ${bgClass}`}>
+												<td className={`text-left px-3 py-3.5 ${bgClass}`}>
 													<span
 														className="font-mono text-muted-foreground"
 														style={isMax ? {
@@ -730,12 +732,12 @@ export default function Page() {
 										return (
 											<tr
 												key={modelData.model}
-												className="border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors"
+												className="border-b border-border last:border-b-0 hover:bg-foreground/[0.03] transition-colors"
 											>
-												<td className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-card/30 backdrop-blur-sm px-4 py-3 border-r border-border">
-													<div className="flex items-center gap-2">
+												<td className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-card/50 backdrop-blur-sm px-4 py-3.5 border-r border-border">
+													<div className="flex items-center gap-2.5">
 														<div
-															className="w-2.5 h-2.5 mt-0.5 rounded-full shrink-0"
+															className="w-2 h-2 rounded-full shrink-0"
 															style={{ background: rowColor }}
 														/>
 														<span className="font-medium truncate">
@@ -744,7 +746,7 @@ export default function Page() {
 														{modelData.reasoning && (
 															<Tooltip>
 																<TooltipTrigger>
-																	<Brain className="size-3.5 text-primary shrink-0" weight="duotone" />
+																	<Brain className="size-3.5 text-[#70B8FF] shrink-0" weight="duotone" />
 																</TooltipTrigger>
 																<TooltipContent>
 																	<p>Reasoning model</p>
@@ -753,51 +755,51 @@ export default function Page() {
 														)}
 													</div>
 												</td>
-												<td className="text-left px-4 py-3 border-r border-border/50">
-													<span className="font-mono font-bold" style={{ color: rowColor }}>
+												<td className="text-left px-4 py-3.5 border-r border-border/50">
+													<span className="font-mono font-semibold" style={{ color: rowColor }}>
 														{stats.accuracy.toFixed(1)}%
 													</span>
 												</td>
 												{/* 5×5 columns */}
-												{renderAccuracyCell(stats5x5, "5x5", "bg-blue-500/5")}
-												<td className="text-left px-3 py-3 bg-blue-500/5">
+												{renderAccuracyCell(stats5x5, "5x5", "bg-[#70B8FF]/5")}
+												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5">
 													<span className="font-mono text-muted-foreground text-xs">{stats5x5.runs}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-blue-500/5">
+												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5">
 													<span className="font-mono text-muted-foreground text-xs">{stats5x5.correct}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-blue-500/5">
+												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5">
 													<span className="font-mono text-muted-foreground text-xs">{formatCost(stats5x5.avgCost)}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-blue-500/5 border-r border-border/50">
+												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5 border-r border-border/50">
 													<span className="font-mono text-muted-foreground text-xs">{formatDuration(stats5x5.avgTime)}</span>
 												</td>
 												{/* 10×10 columns */}
-												{renderAccuracyCell(stats10x10, "10x10", "bg-emerald-500/5")}
-												<td className="text-left px-3 py-3 bg-emerald-500/5">
+												{renderAccuracyCell(stats10x10, "10x10", "bg-[#46FEA5]/5")}
+												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5">
 													<span className="font-mono text-muted-foreground text-xs">{stats10x10.runs}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-emerald-500/5">
+												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5">
 													<span className="font-mono text-muted-foreground text-xs">{stats10x10.correct}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-emerald-500/5">
+												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5">
 													<span className="font-mono text-muted-foreground text-xs">{formatCost(stats10x10.avgCost)}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-emerald-500/5 border-r border-border/50">
+												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5 border-r border-border/50">
 													<span className="font-mono text-muted-foreground text-xs">{formatDuration(stats10x10.avgTime)}</span>
 												</td>
 												{/* 15×15 columns */}
-												{renderAccuracyCell(stats15x15, "15x15", "bg-amber-500/5")}
-												<td className="text-left px-3 py-3 bg-amber-500/5">
+												{renderAccuracyCell(stats15x15, "15x15", "bg-[#FFCA16]/5")}
+												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
 													<span className="font-mono text-muted-foreground text-xs">{stats15x15.runs}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-amber-500/5">
+												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
 													<span className="font-mono text-muted-foreground text-xs">{stats15x15.correct}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-amber-500/5">
+												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
 													<span className="font-mono text-muted-foreground text-xs">{formatCost(stats15x15.avgCost)}</span>
 												</td>
-												<td className="text-left px-3 py-3 bg-amber-500/5">
+												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
 													<span className="font-mono text-muted-foreground text-xs">{formatDuration(stats15x15.avgTime)}</span>
 												</td>
 											</tr>
@@ -809,13 +811,13 @@ export default function Page() {
 					</div>
 				</section>
 
-				{/* Per-Size Stats */}
-				<section className="mt-10">
-					<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
-						Statistics by Grid Size
+				{/* Per-Size Stats - Resend card style */}
+				<section className="mt-12">
+					<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-5">
+						Statistics by grid size
 					</h2>
 					<div className="grid md:grid-cols-3 gap-6">
-						{results.summary.sizes.map((size) => {
+						{results.summary.sizes.map((size, index) => {
 							// Filter chartData to only include models that pass the reasoning filter
 							const filteredModelNames = new Set(filteredModels.map((m) => m.model));
 							const sizeStats = results.chartData.filter(
@@ -841,51 +843,57 @@ export default function Page() {
 							);
 							const avgCost = totalRuns > 0 ? totalCost / totalRuns : 0;
 
+							// Resend semantic colors for each size
+							const sizeColors = ["#70B8FF", "#46FEA5", "#FFCA16"];
+
 							return (
-								<Card key={size}>
-									<CardHeader className="pb-2">
-										<CardTitle className="flex items-center gap-2">
-											<div className="px-2 py-1 bg-muted rounded font-mono text-sm">
+								<Card key={size} className="overflow-hidden">
+									<CardHeader className="pb-3">
+										<CardTitle className="flex items-center gap-3">
+											<div
+												className="px-2.5 py-1 rounded font-mono text-sm font-semibold"
+												style={{ backgroundColor: `${sizeColors[index]}20`, color: sizeColors[index] }}
+											>
 												{size}
 											</div>
-											Grid
+											<span className="text-muted-foreground font-normal">Grid</span>
 										</CardTitle>
 									</CardHeader>
 									<CardContent>
-										<div className="grid grid-cols-2 gap-4 mb-4">
+										<div className="grid grid-cols-2 gap-4 mb-5">
 											<div>
-												<p className="text-muted-foreground text-xs">
-													Avg Accuracy
+												<p className="text-muted-foreground text-xs mb-1">
+													Avg accuracy
 												</p>
-												<p className="font-mono text-2xl font-bold">
+												<p className="font-mono text-3xl font-semibold tracking-tight">
 													{avgAccuracy.toFixed(1)}%
 												</p>
 											</div>
 											<div>
-												<p className="text-muted-foreground text-xs">Solved</p>
-												<p className="font-mono text-2xl font-bold">
+												<p className="text-muted-foreground text-xs mb-1">Solved</p>
+												<p className="font-mono text-3xl font-semibold tracking-tight">
 													{totalCorrect}
-													<span className="text-muted-foreground text-sm">
+													<span className="text-muted-foreground text-base font-normal">
 														/{totalRuns}
 													</span>
 												</p>
 											</div>
 										</div>
 
-										<div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
+										<div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
 											<div>
-												<p className="text-muted-foreground text-[10px] uppercase tracking-wide">
-													Avg Time
+												<p className="text-muted-foreground text-[11px] uppercase tracking-wider mb-1">
+													Avg time
 												</p>
-												<p className="font-mono text-sm">
+												<p className="font-mono text-sm font-medium">
 													{formatDuration(avgDuration)}
 												</p>
 											</div>
 											<div>
-												<p className="text-muted-foreground text-[10px] uppercase tracking-wide">
-													Avg Cost
+												<p className="text-muted-foreground text-[11px] uppercase tracking-wider mb-1">
+													Avg cost
 												</p>
-												<p className="font-mono text-sm">
+												<p className="font-mono text-sm font-medium">
 													{formatCost(avgCost)}
 												</p>
 											</div>
@@ -897,18 +905,18 @@ export default function Page() {
 					</div>
 				</section>
 
-				{/* Footer */}
-				<footer className="mt-8 pt-8 border-t border-border">
+				{/* Footer - Resend minimal style */}
+				<footer className="mt-12 pt-8 border-t border-border">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-						<p className="text-xs text-muted-foreground">
-							NonoBench - Nonogram Puzzle Benchmark for LLMs
+						<p className="text-sm text-muted-foreground">
+							NonoBench - Nonogram puzzle benchmark for LLMs
 						</p>
-						<div className="flex items-center gap-4">
+						<div className="flex items-center gap-5">
 							<a
 								href="https://github.com/mauricekleine/nono-bench"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+								className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
 							>
 								<GithubLogo className="size-4" weight="bold" />
 								<span>GitHub</span>
@@ -917,7 +925,7 @@ export default function Page() {
 								href="https://x.com/maurice_kleine"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+								className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
 							>
 								<XLogo className="size-4" weight="bold" />
 								<span>@maurice_kleine</span>

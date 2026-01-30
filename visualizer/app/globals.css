@@ -47,73 +47,77 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+/* Resend Brand Colors - Light Mode */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.015 286.067);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.705 0.015 286.067);
+  --background: #FDFDFD;
+  --foreground: #000000;
+  --card: #FDFDFD;
+  --card-foreground: #000000;
+  --popover: #FDFDFD;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #FDFDFD;
+  --secondary: #16171AEB;
+  --secondary-foreground: #FDFEFFA6;
+  --muted: #16171A1A;
+  --muted-foreground: #00000080;
+  --accent: #16171A0D;
+  --accent-foreground: #000000;
+  --destructive: #FF9592;
+  --border: #00000014;
+  --input: #00000014;
+  --ring: #000000;
+  /* Semantic chart colors */
+  --chart-1: #70B8FF; /* Blue - interactive */
+  --chart-2: #46FEA5D4; /* Green - success */
+  --chart-3: #FFCA16; /* Amber - caution */
+  --chart-4: #FF9592; /* Red - critical */
+  --chart-5: #FDFEFFA6; /* Gray */
+  --radius: 0.5rem;
+  --sidebar: #FDFDFD;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #000000;
+  --sidebar-primary-foreground: #FDFDFD;
+  --sidebar-accent: #16171A0D;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #00000014;
+  --sidebar-ring: #000000;
 }
 
+/* Resend Brand Colors - Dark Mode */
 .dark {
-  --background: oklch(0.12 0.02 270);
-  --foreground: oklch(0.95 0.01 270);
-  --card: oklch(0.16 0.02 270);
-  --card-foreground: oklch(0.95 0.01 270);
-  --popover: oklch(0.16 0.02 270);
-  --popover-foreground: oklch(0.95 0.01 270);
-  --primary: oklch(0.75 0.18 160);
-  --primary-foreground: oklch(0.12 0.02 270);
-  --secondary: oklch(0.22 0.02 270);
-  --secondary-foreground: oklch(0.95 0.01 270);
-  --muted: oklch(0.22 0.02 270);
-  --muted-foreground: oklch(0.65 0.02 270);
-  --accent: oklch(0.25 0.04 270);
-  --accent-foreground: oklch(0.95 0.01 270);
-  --destructive: oklch(0.65 0.22 25);
-  --border: oklch(0.28 0.02 270);
-  --input: oklch(0.25 0.02 270);
-  --ring: oklch(0.75 0.18 160);
-  --chart-1: oklch(0.75 0.18 160);
-  --chart-2: oklch(0.7 0.2 280);
-  --chart-3: oklch(0.8 0.15 60);
-  --chart-4: oklch(0.65 0.22 200);
-  --chart-5: oklch(0.7 0.18 340);
-  --sidebar: oklch(0.14 0.02 270);
-  --sidebar-foreground: oklch(0.95 0.01 270);
-  --sidebar-primary: oklch(0.75 0.18 160);
-  --sidebar-primary-foreground: oklch(0.95 0.01 270);
-  --sidebar-accent: oklch(0.22 0.02 270);
-  --sidebar-accent-foreground: oklch(0.95 0.01 270);
-  --sidebar-border: oklch(0.28 0.02 270);
-  --sidebar-ring: oklch(0.75 0.18 160);
+  --background: #000000;
+  --foreground: #FDFDFD;
+  --card: #16171AEB;
+  --card-foreground: #FDFDFD;
+  --popover: #16171AEB;
+  --popover-foreground: #FDFDFD;
+  --primary: #FDFDFD;
+  --primary-foreground: #000000;
+  --secondary: #16171AEB;
+  --secondary-foreground: #FDFEFFA6;
+  --muted: #16171AEB;
+  --muted-foreground: #FDFEFFA6;
+  --accent: #FDFDFD14;
+  --accent-foreground: #FDFDFD;
+  --destructive: #FF9592;
+  --border: #FDFDFD14;
+  --input: #FDFDFD14;
+  --ring: #FDFDFD;
+  /* Semantic chart colors for dark mode */
+  --chart-1: #70B8FF; /* Blue - interactive */
+  --chart-2: #46FEA5D4; /* Green - success */
+  --chart-3: #FFCA16; /* Amber - caution */
+  --chart-4: #FF9592; /* Red - critical */
+  --chart-5: #FDFEFFA6; /* Gray */
+  --sidebar: #0A0A0A;
+  --sidebar-foreground: #FDFDFD;
+  --sidebar-primary: #FDFDFD;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #FDFDFD0A;
+  --sidebar-accent-foreground: #FDFDFD;
+  --sidebar-border: #FDFDFD14;
+  --sidebar-ring: #FDFDFD;
 }
 
 @layer base {
@@ -125,29 +129,29 @@
   }
 }
 
-/* Custom scrollbar for dark mode */
+/* Custom scrollbar for dark mode - Resend style */
 .dark ::-webkit-scrollbar {
   width: 8px;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: oklch(0.16 0.02 270);
+  background: #0A0A0A;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0.02 270);
+  background: #FDFDFD1A;
   border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.45 0.02 270);
+  background: #FDFDFD33;
 }
 
-/* Grid pattern background for Nonogram theme */
+/* Grid pattern background for Nonogram theme - Resend style */
 .grid-pattern {
   background-image: radial-gradient(
     circle,
-    oklch(0.5 0 0 / 0.06) 1px,
+    rgba(0, 0, 0, 0.04) 1px,
     transparent 1px
   );
   background-size: 20px 20px;
@@ -156,7 +160,36 @@
 .dark .grid-pattern {
   background-image: radial-gradient(
     circle,
-    oklch(0.7 0 0 / 0.08) 1px,
+    rgba(253, 253, 253, 0.04) 1px,
     transparent 1px
   );
+}
+
+/* Resend noise texture overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url('https://resend.com/static/product-pages/noise.png');
+  background-repeat: repeat;
+}
+
+/* Resend glass blur effect */
+.glass {
+  backdrop-filter: blur(25px);
+  background: linear-gradient(96deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.10) 100%);
+}
+
+/* Resend gradient text */
+.gradient-text {
+  background: linear-gradient(97deg, #ffffff 30%, rgba(255,255,255,0.50) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Resend border gradient */
+.border-gradient {
+  border-image: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 100%) 1;
 }

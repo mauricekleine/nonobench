@@ -52,32 +52,34 @@ function PuzzlesContent() {
   // Get size label
   const getSizeLabel = () => `${puzzle.width}×${puzzle.height}`;
 
-  // Get size category for coloring
+  // Get size color - using Resend semantic colors
   const getSizeColor = () => {
-    if (puzzle.width === 5) return "text-emerald-400";
-    if (puzzle.width === 10) return "text-amber-400";
-    return "text-rose-400";
+    if (puzzle.width === 5) return "text-[#70B8FF]"; // Blue
+    if (puzzle.width === 10) return "text-[#46FEA5]"; // Green
+    return "text-[#FFCA16]"; // Amber
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Resend noise texture overlay */}
+      <div className="noise-overlay" />
       {/* Grid pattern background */}
       <div className="fixed inset-0 grid-pattern pointer-events-none" />
-      <div className="fixed inset-0 bg-linear-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
+      <div className="fixed inset-0 bg-linear-to-br from-chart-1/3 via-transparent to-chart-2/3 pointer-events-none" />
 
-      {/* Header */}
+      {/* Header - Resend style */}
       <header className="relative border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/20 rounded-lg">
-                <GridFour className="size-5 text-primary" weight="duotone" />
+              <div className="p-2.5 bg-foreground/10 rounded-lg border border-border">
+                <GridFour className="size-5 text-foreground" weight="duotone" />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tight">
-                  Puzzle Explorer
+                <h1 className="text-lg font-semibold tracking-tight">
+                  Puzzle explorer
                 </h1>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Browse all {PUZZLES.length} puzzles in the benchmark
                 </p>
               </div>
@@ -86,7 +88,7 @@ function PuzzlesContent() {
             <Link href="/">
               <Button variant="ghost" size="sm">
                 <House className="size-4" weight="bold" />
-                <span className="hidden sm:inline">Back to Results</span>
+                <span className="hidden sm:inline">Back to results</span>
               </Button>
             </Link>
           </div>
@@ -98,11 +100,11 @@ function PuzzlesContent() {
         {/* Navigation arrow - Left */}
         <button
           onClick={goToPrevious}
-          className="absolute left-4 sm:left-8 lg:left-16 p-3 sm:p-4 rounded-full bg-card/80 backdrop-blur-sm border border-border hover:bg-accent hover:border-primary/50 transition-all group cursor-pointer"
+          className="absolute left-4 sm:left-8 lg:left-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
           aria-label="Previous puzzle"
         >
           <CaretLeft
-            className="size-6 sm:size-8 text-muted-foreground group-hover:text-primary transition-colors"
+            className="size-6 sm:size-8 text-muted-foreground group-hover:text-foreground transition-colors"
             weight="bold"
           />
         </button>
@@ -113,7 +115,7 @@ function PuzzlesContent() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Puzzle</span>
-              <span className="font-mono text-lg font-bold text-foreground">
+              <span className="font-mono text-lg font-semibold text-foreground">
                 {safeIndex + 1}
               </span>
               <span className="text-sm text-muted-foreground">
@@ -123,14 +125,14 @@ function PuzzlesContent() {
             <div className="h-4 w-px bg-border" />
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Size</span>
-              <span className={`font-mono text-lg font-bold ${getSizeColor()}`}>
+              <span className={`font-mono text-lg font-semibold ${getSizeColor()}`}>
                 {getSizeLabel()}
               </span>
             </div>
           </div>
 
-          {/* Nonogram */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/20">
+          {/* Nonogram - Resend card style */}
+          <div className="p-6 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/30">
             <Nonogram
               key={safeIndex}
               height={puzzle.height}
@@ -142,10 +144,10 @@ function PuzzlesContent() {
           {/* Keyboard hint */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
             <span className="hidden sm:flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-foreground/5 border border-border font-mono text-[10px]">
                 ←
               </kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[10px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-foreground/5 border border-border font-mono text-[10px]">
                 →
               </kbd>
               <span className="ml-1">to navigate</span>
@@ -156,28 +158,29 @@ function PuzzlesContent() {
         {/* Navigation arrow - Right */}
         <button
           onClick={goToNext}
-          className="absolute right-4 sm:right-8 lg:right-16 p-3 sm:p-4 rounded-full bg-card/80 backdrop-blur-sm border border-border hover:bg-accent hover:border-primary/50 transition-all group cursor-pointer"
+          className="absolute right-4 sm:right-8 lg:right-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
           aria-label="Next puzzle"
         >
           <CaretRight
-            className="size-6 sm:size-8 text-muted-foreground group-hover:text-primary transition-colors"
+            className="size-6 sm:size-8 text-muted-foreground group-hover:text-foreground transition-colors"
             weight="bold"
           />
         </button>
       </main>
 
-      {/* Bottom navigation dots */}
+      {/* Bottom navigation dots - Resend semantic colors */}
       <footer className="relative border-t border-border bg-card/50 backdrop-blur-sm py-4">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-center gap-1.5 flex-wrap">
             {PUZZLES.map((p, idx) => {
               const isActive = idx === safeIndex;
+              // Resend semantic colors
               const dotColor =
                 p.width === 5
-                  ? "bg-emerald-500"
+                  ? "bg-[#70B8FF]"  // Blue
                   : p.width === 10
-                    ? "bg-amber-500"
-                    : "bg-rose-500";
+                    ? "bg-[#46FEA5]"  // Green
+                    : "bg-[#FFCA16]"; // Amber
 
               return (
                 <button
@@ -194,15 +197,15 @@ function PuzzlesContent() {
           </div>
           <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="w-2 h-2 rounded-full bg-[#70B8FF]" />
               5×5
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="w-2 h-2 rounded-full bg-[#46FEA5]" />
               10×10
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <span className="w-2 h-2 rounded-full bg-[#FFCA16]" />
               15×15
             </span>
           </div>
@@ -215,11 +218,12 @@ function PuzzlesContent() {
 function PuzzlesLoading() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="noise-overlay" />
       <div className="fixed inset-0 grid-pattern pointer-events-none" />
-      <div className="fixed inset-0 bg-linear-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
+      <div className="fixed inset-0 bg-linear-to-br from-chart-1/3 via-transparent to-chart-2/3 pointer-events-none" />
       <div className="relative flex flex-col items-center gap-4">
-        <div className="p-3 bg-primary/20 rounded-xl animate-pulse">
-          <GridFour className="size-8 text-primary" weight="duotone" />
+        <div className="p-3 bg-foreground/10 rounded-xl border border-border animate-pulse">
+          <GridFour className="size-8 text-foreground" weight="duotone" />
         </div>
         <p className="text-sm text-muted-foreground">Loading puzzles...</p>
       </div>
