@@ -177,6 +177,21 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
+    llm: openrouter("minimax/minimax-m2.5", defaultProviderOptions),
+    name: "minimax-m2.5",
+    reasoning: true,
+  },
+  {
+    llm: openrouter("minimax/minimax-m2.5", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: { effort: "high", exclude: true },
+      },
+    }),
+    name: "minimax-m2.5-high",
+    reasoning: true,
+  },
+  {
     llm: openrouter("mistralai/ministral-14b-2512", defaultProviderOptions),
     name: "ministral-14b-2512",
     reasoning: false,
@@ -313,6 +328,29 @@ export const MODELS: Model[] = [
       },
     }),
     name: "glm-4.7-reasoning-high",
+    reasoning: true,
+  },
+  {
+    llm: openrouter("z-ai/glm-5", {
+      ...defaultProviderOptions,
+      extraBody: { reasoning: { enabled: false, exclude: true } },
+    }),
+    name: "glm-5-non-reasoning",
+    reasoning: false,
+  },
+  {
+    llm: openrouter("z-ai/glm-5", defaultProviderOptions),
+    name: "glm-5-reasoning",
+    reasoning: true,
+  },
+  {
+    llm: openrouter("z-ai/glm-5", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: { effort: "high", exclude: true },
+      },
+    }),
+    name: "glm-5-reasoning-high",
     reasoning: true,
   },
   {
