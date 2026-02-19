@@ -162,6 +162,30 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
+    llm: openrouter("google/gemini-3.1-pro-preview", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: { effort: "low", exclude: true },
+      },
+    }),
+    name: "gemini-3.1-pro-preview-low",
+    reasoning: true,
+  },
+  {
+    llm: openrouter("google/gemini-3.1-pro-preview", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: { effort: "high" },
+      },
+      provider: {
+        allow_fallbacks: false,
+        only: ["google-vertex"],
+      },
+    }),
+    name: "gemini-3.1-pro-preview-high",
+    reasoning: true,
+  },
+  {
     llm: openrouter("minimax/minimax-m2.1", defaultProviderOptions),
     name: "minimax-m2.1",
     reasoning: true,

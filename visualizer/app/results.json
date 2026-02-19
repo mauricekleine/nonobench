@@ -1,7 +1,8 @@
 {
-  "timestamp": "2026-02-13T08:04:39.658Z",
+  "timestamp": "2026-02-19T17:19:30.283Z",
   "summary": {
     "models": [
+      "gemini-3.1-pro-preview-high",
       "claude-4.5-opus-high",
       "gemini-3-pro-preview-high",
       "gpt-5.2-high",
@@ -10,6 +11,7 @@
       "deepseek-v3.2-speciale-high",
       "gemini-3-flash-preview-high",
       "gpt-5.2-low",
+      "gemini-3.1-pro-preview-low",
       "deepseek-v3.2-high",
       "deepseek-v3.2-speciale",
       "gpt-oss-120b-high",
@@ -53,6 +55,62 @@
     ]
   },
   "byModel": [
+    {
+      "model": "gemini-3.1-pro-preview-high",
+      "reasoning": true,
+      "overallAccuracy": 63.33333333333333,
+      "overallCorrect": 19,
+      "overallFailed": 0,
+      "overallTotal": 30,
+      "overallRuns": 30,
+      "bySize": [
+        {
+          "size": "5x5",
+          "timestamp": "2026-02-19T17:08:41.706Z",
+          "accuracy": 90,
+          "correct": 9,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 31875.595158400003,
+          "totalDurationMs": 318755.951584,
+          "avgTokens": 3008.1,
+          "totalTokens": 30081,
+          "avgCost": 0.036890400000000004,
+          "totalCost": 0.368904
+        },
+        {
+          "size": "10x10",
+          "timestamp": "2026-02-19T17:13:16.692Z",
+          "accuracy": 60,
+          "correct": 6,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 163720.4674,
+          "totalDurationMs": 1637204.6739999999,
+          "avgTokens": 21530.2,
+          "totalTokens": 215302,
+          "avgCost": 0.25941200000000003,
+          "totalCost": 2.59412
+        },
+        {
+          "size": "15x15",
+          "timestamp": "2026-02-19T17:19:17.876Z",
+          "accuracy": 40,
+          "correct": 4,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 174985.883775,
+          "totalDurationMs": 1749858.83775,
+          "avgTokens": 20448,
+          "totalTokens": 204480,
+          "avgCost": 0.24667,
+          "totalCost": 2.4667
+        }
+      ]
+    },
     {
       "model": "claude-4.5-opus-high",
       "reasoning": true,
@@ -498,6 +556,62 @@
           "totalTokens": 114535,
           "avgCost": 0.1613192,
           "totalCost": 1.613192
+        }
+      ]
+    },
+    {
+      "model": "gemini-3.1-pro-preview-low",
+      "reasoning": true,
+      "overallAccuracy": 42.30769230769231,
+      "overallCorrect": 11,
+      "overallFailed": 4,
+      "overallTotal": 30,
+      "overallRuns": 26,
+      "bySize": [
+        {
+          "size": "5x5",
+          "timestamp": "2026-02-19T17:09:17.191Z",
+          "accuracy": 80,
+          "correct": 8,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 39449.0702501,
+          "totalDurationMs": 394490.70250099996,
+          "avgTokens": 1366.3,
+          "totalTokens": 13663,
+          "avgCost": 0.0171908,
+          "totalCost": 0.171908
+        },
+        {
+          "size": "10x10",
+          "timestamp": "2026-02-19T17:11:43.692Z",
+          "accuracy": 16.666666666666664,
+          "correct": 1,
+          "failed": 4,
+          "total": 10,
+          "runs": 6,
+          "avgDurationMs": 61832.38452066667,
+          "totalDurationMs": 370994.307124,
+          "avgTokens": 3576.6666666666665,
+          "totalTokens": 21460,
+          "avgCost": 0.04397533333333333,
+          "totalCost": 0.263852
+        },
+        {
+          "size": "15x15",
+          "timestamp": "2026-02-19T17:13:47.443Z",
+          "accuracy": 20,
+          "correct": 2,
+          "failed": 0,
+          "total": 10,
+          "runs": 10,
+          "avgDurationMs": 45477.88464149999,
+          "totalDurationMs": 454778.8464149999,
+          "avgTokens": 1993.1,
+          "totalTokens": 19931,
+          "avgCost": 0.0252128,
+          "totalCost": 0.252128
         }
       ]
     },
@@ -3040,6 +3154,102 @@
       "totalCost": 0.054807999999999996
     },
     {
+      "model": "gemini-3.1-pro-preview-high",
+      "size": "5x5",
+      "timestamp": "2026-02-19T17:08:41.706Z",
+      "accuracy": 90,
+      "correct": 9,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 31875.595158400003,
+      "totalDurationMs": 318755.951584,
+      "avgTokens": 3008.1,
+      "totalTokens": 30081,
+      "avgCost": 0.036890400000000004,
+      "totalCost": 0.368904
+    },
+    {
+      "model": "gemini-3.1-pro-preview-high",
+      "size": "10x10",
+      "timestamp": "2026-02-19T17:13:16.692Z",
+      "accuracy": 60,
+      "correct": 6,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 163720.4674,
+      "totalDurationMs": 1637204.6739999999,
+      "avgTokens": 21530.2,
+      "totalTokens": 215302,
+      "avgCost": 0.25941200000000003,
+      "totalCost": 2.59412
+    },
+    {
+      "model": "gemini-3.1-pro-preview-high",
+      "size": "15x15",
+      "timestamp": "2026-02-19T17:19:17.876Z",
+      "accuracy": 40,
+      "correct": 4,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 174985.883775,
+      "totalDurationMs": 1749858.83775,
+      "avgTokens": 20448,
+      "totalTokens": 204480,
+      "avgCost": 0.24667,
+      "totalCost": 2.4667
+    },
+    {
+      "model": "gemini-3.1-pro-preview-low",
+      "size": "5x5",
+      "timestamp": "2026-02-19T17:09:17.191Z",
+      "accuracy": 80,
+      "correct": 8,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 39449.0702501,
+      "totalDurationMs": 394490.70250099996,
+      "avgTokens": 1366.3,
+      "totalTokens": 13663,
+      "avgCost": 0.0171908,
+      "totalCost": 0.171908
+    },
+    {
+      "model": "gemini-3.1-pro-preview-low",
+      "size": "10x10",
+      "timestamp": "2026-02-19T17:11:43.692Z",
+      "accuracy": 16.666666666666664,
+      "correct": 1,
+      "failed": 4,
+      "total": 10,
+      "runs": 6,
+      "avgDurationMs": 61832.38452066667,
+      "totalDurationMs": 370994.307124,
+      "avgTokens": 3576.6666666666665,
+      "totalTokens": 21460,
+      "avgCost": 0.04397533333333333,
+      "totalCost": 0.263852
+    },
+    {
+      "model": "gemini-3.1-pro-preview-low",
+      "size": "15x15",
+      "timestamp": "2026-02-19T17:13:47.443Z",
+      "accuracy": 20,
+      "correct": 2,
+      "failed": 0,
+      "total": 10,
+      "runs": 10,
+      "avgDurationMs": 45477.88464149999,
+      "totalDurationMs": 454778.8464149999,
+      "avgTokens": 1993.1,
+      "totalTokens": 19931,
+      "avgCost": 0.0252128,
+      "totalCost": 0.252128
+    },
+    {
       "model": "glm-4.7-non-reasoning",
       "size": "5x5",
       "timestamp": "2026-01-06T09:35:46.667Z",
@@ -4528,5 +4738,20 @@
       "totalCost": 0.3190525
     }
   ],
-  "errorsByModel": []
+  "errorsByModel": [
+    {
+      "model": "gemini-3.1-pro-preview-low",
+      "totalErrors": 4,
+      "errors": [
+        {
+          "message": "Internal Server Error",
+          "count": 3
+        },
+        {
+          "message": "Provider returned error",
+          "count": 1
+        }
+      ]
+    }
+  ]
 }
