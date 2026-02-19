@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-19T17:19:30.283Z",
+  "timestamp": "2026-02-19T17:23:00.556Z",
   "summary": {
     "models": [
       "gemini-3.1-pro-preview-high",
@@ -562,11 +562,11 @@
     {
       "model": "gemini-3.1-pro-preview-low",
       "reasoning": true,
-      "overallAccuracy": 42.30769230769231,
-      "overallCorrect": 11,
-      "overallFailed": 4,
+      "overallAccuracy": 41.37931034482759,
+      "overallCorrect": 12,
+      "overallFailed": 1,
       "overallTotal": 30,
-      "overallRuns": 26,
+      "overallRuns": 29,
       "bySize": [
         {
           "size": "5x5",
@@ -585,18 +585,18 @@
         },
         {
           "size": "10x10",
-          "timestamp": "2026-02-19T17:11:43.692Z",
-          "accuracy": 16.666666666666664,
-          "correct": 1,
-          "failed": 4,
+          "timestamp": "2026-02-19T17:22:33.911Z",
+          "accuracy": 22.22222222222222,
+          "correct": 2,
+          "failed": 1,
           "total": 10,
-          "runs": 6,
-          "avgDurationMs": 61832.38452066667,
-          "totalDurationMs": 370994.307124,
-          "avgTokens": 3576.6666666666665,
-          "totalTokens": 21460,
-          "avgCost": 0.04397533333333333,
-          "totalCost": 0.263852
+          "runs": 9,
+          "avgDurationMs": 65493.32334244444,
+          "totalDurationMs": 589439.910082,
+          "avgTokens": 3523,
+          "totalTokens": 31707,
+          "avgCost": 0.043324,
+          "totalCost": 0.389916
         },
         {
           "size": "15x15",
@@ -3220,18 +3220,18 @@
     {
       "model": "gemini-3.1-pro-preview-low",
       "size": "10x10",
-      "timestamp": "2026-02-19T17:11:43.692Z",
-      "accuracy": 16.666666666666664,
-      "correct": 1,
-      "failed": 4,
+      "timestamp": "2026-02-19T17:22:33.911Z",
+      "accuracy": 22.22222222222222,
+      "correct": 2,
+      "failed": 1,
       "total": 10,
-      "runs": 6,
-      "avgDurationMs": 61832.38452066667,
-      "totalDurationMs": 370994.307124,
-      "avgTokens": 3576.6666666666665,
-      "totalTokens": 21460,
-      "avgCost": 0.04397533333333333,
-      "totalCost": 0.263852
+      "runs": 9,
+      "avgDurationMs": 65493.32334244444,
+      "totalDurationMs": 589439.910082,
+      "avgTokens": 3523,
+      "totalTokens": 31707,
+      "avgCost": 0.043324,
+      "totalCost": 0.389916
     },
     {
       "model": "gemini-3.1-pro-preview-low",
@@ -4741,12 +4741,8 @@
   "errorsByModel": [
     {
       "model": "gemini-3.1-pro-preview-low",
-      "totalErrors": 4,
+      "totalErrors": 1,
       "errors": [
-        {
-          "message": "Internal Server Error",
-          "count": 3
-        },
         {
           "message": "Provider returned error",
           "count": 1
