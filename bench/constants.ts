@@ -309,6 +309,45 @@ export const MODELS: Model[] = [
   // 	}),
   // },
   {
+    llm: openrouter("openai/gpt-5.4", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: {
+          effort: "low",
+          exclude: true,
+        },
+      },
+    }),
+    name: "gpt-5.4-low",
+    reasoning: true,
+  },
+  {
+    llm: openrouter("openai/gpt-5.4", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: {
+          effort: "high",
+          exclude: true,
+        },
+      },
+    }),
+    name: "gpt-5.4-high",
+    reasoning: true,
+  },
+  {
+    llm: openrouter("openai/gpt-5.4", {
+      ...defaultProviderOptions,
+      extraBody: {
+        reasoning: {
+          effort: "xhigh",
+          exclude: true,
+        },
+      },
+    }),
+    name: "gpt-5.4-xhigh",
+    reasoning: true,
+  },
+  {
     llm: openrouter("openai/gpt-oss-120b", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { effort: "low", exclude: true } },
