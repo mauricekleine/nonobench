@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/proxy.js",
+      "destination": "https://simpleanalyticsexternal.com/proxy.js?hostname=nonobench.com&path=/track"
+    },
+    {
+      "source": "/auto-events.js",
+      "destination": "https://scripts.simpleanalyticscdn.com/auto-events.js"
+    },
+    {
+      "source": "/track/:match*",
+      "destination": "https://queue.simpleanalyticscdn.com/:match*"
+    }
+  ]
+}

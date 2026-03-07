@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import "./globals.css";
+import Script from "next/script";
 
 // Resend uses Inter for body text
 const inter = Inter({
@@ -77,7 +78,7 @@ export default function RootLayout({
 			>
 				<NuqsAdapter>{children}</NuqsAdapter>
 
-				<Analytics />
+				{process.env.NODE_ENV === "production" && <Script src="https://nonobench.com/proxy.js" />}
 			</body>
 		</html>
 	);
