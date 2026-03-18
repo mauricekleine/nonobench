@@ -922,13 +922,13 @@ export default function Page() {
 								<span>GitHub</span>
 							</a>
 							<a
-								href="https://x.com/maurice_kleine"
+								href="https://x.com/mauricekleine"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
 							>
 								<XLogo className="size-4" weight="bold" />
-								<span>@maurice_kleine</span>
+								<span>@mauricekleine</span>
 							</a>
 						</div>
 					</div>
