@@ -77,7 +77,7 @@ export default function RootLayout({
 			>
 				<NuqsAdapter>{children}</NuqsAdapter>
 
-				{process.env.NODE_ENV === "production" && <Script src="https://nonobench.com/proxy.js" />}
+				{process.env.NODE_ENV === "production" && <Script async src="https://api.nonobench.com/latest.js" />}
 			</body>
 		</html>
 	);
