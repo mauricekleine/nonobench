@@ -7,10 +7,10 @@
  * - Multi-line formatted output
  *
  * @param rawOutput - The raw text output from the LLM
- * @param expectedSize - Optional expected grid size (25, 100, or 225)
+ * @param expectedLength - Optional expected number of cells (25, 100, or 225)
  * @returns The extracted binary string, or null if no valid solution found
  */
-export function parseSolution(rawOutput: string): string | null {
+export function parseSolution(rawOutput: string, expectedLength?: number): string | null {
   if (!rawOutput) return null;
 
   // Strategy 1: Find sequences of 0s and 1s with optional whitespace between them
@@ -22,6 +22,8 @@ export function parseSolution(rawOutput: string): string | null {
     // Clean whitespace from each match and find the best one
     const cleanedMatches = matches.map((m) => m.replace(/\s/g, ""));
 
+    const exactMatch = cleanedMatches.find((match) => match.length === expectedLength);
+    if (exactMatch) return exactMatch;
     const longestMatch = cleanedMatches.reduce(
       (a, b) => (a.length >= b.length ? a : b),
       ""
@@ -34,6 +36,8 @@ export function parseSolution(rawOutput: string): string | null {
   const continuousMatches = cleaned.match(/[01]{25,}/g);
 
   if (continuousMatches) {
+    const exactMatch = continuousMatches.find((match) => match.length === expectedLength);
+    if (exactMatch) return exactMatch;
     return continuousMatches.reduce(
       (a, b) => (a.length >= b.length ? a : b),
       ""

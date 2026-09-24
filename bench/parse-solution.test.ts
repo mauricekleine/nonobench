@@ -2,6 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { parseSolution } from "./parse-solution";
 
 describe("parseSolution", () => {
+  test("prefers a matching length over a longer binary sequence", () => {
+    expect(parseSolution(`${"1".repeat(100)} answer: ${"0".repeat(25)}`, 25)).toBe("0".repeat(25));
+  });
+
   describe("basic extraction", () => {
     test("extracts clean 5x5 solution (25 chars)", () => {
       const raw = "1100010000011001001101010";

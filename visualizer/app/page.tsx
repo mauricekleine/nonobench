@@ -61,7 +61,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 import resultsData from "./results.json";
-import resultsRawData from "./results-raw.json";
 import { PUZZLES } from "@/components/puzzles";
 
 type SizeData = {
@@ -70,9 +69,9 @@ type SizeData = {
 	correct: number;
 	failed: number;
 	total: number;
-	runs?: number; // Added: successful runs (excluding failed)
+	runs: number;
 	avgDurationMs: number;
-	totalDurationMs?: number; // Added: total duration for successful runs
+	totalDurationMs: number;
 	avgTokens: number;
 	totalTokens: number;
 	avgCost: number;
@@ -81,12 +80,12 @@ type SizeData = {
 
 type ModelData = {
 	model: string;
-	reasoning?: boolean; // Whether this is a reasoning model (optional for backward compatibility)
+	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
 	overallFailed: number;
 	overallTotal: number;
-	overallRuns?: number; // Added: total successful runs (excluding failed)
+	overallRuns: number;
 	bySize: SizeData[];
 };
 
@@ -156,21 +155,16 @@ function formatCost(cost: number): string {
 	return `$${cost.toFixed(2)}`;
 }
 
-// Helper to get runs for a size (uses new field or calculates from total - failed)
 function getSizeRuns(sizeData: SizeData): number {
-	return sizeData.runs ?? (sizeData.total - sizeData.failed);
+	return sizeData.runs;
 }
 
-// Helper to get total duration for a size (uses new field or estimates from avg * runs)
 function getSizeTotalDuration(sizeData: SizeData): number {
-	if (sizeData.totalDurationMs !== undefined) return sizeData.totalDurationMs;
-	const runs = getSizeRuns(sizeData);
-	return sizeData.avgDurationMs * runs;
+	return sizeData.totalDurationMs;
 }
 
-// Helper to get overall runs (uses new field or calculates from total - failed)
 function getModelRuns(modelData: ModelData): number {
-	return modelData.overallRuns ?? (modelData.overallTotal - modelData.overallFailed);
+	return modelData.overallRuns;
 }
 
 // Helper to get accuracy for a specific size
@@ -246,7 +240,7 @@ export default function Page() {
 	// Filter models based on reasoning checkboxes
 	const filteredModels = useMemo(() => {
 		return results.byModel.filter((model) => {
-			const isReasoning = model.reasoning ?? false;
+			const isReasoning = model.reasoning;
 			if (isReasoning && !showReasoning) return false;
 			if (!isReasoning && !showNonReasoning) return false;
 			return true;
@@ -412,7 +406,7 @@ export default function Page() {
 					{/* Action buttons - Resend pill style */}
 					<Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
 						<div className="flex flex-wrap items-center gap-2 mt-4">
-							<CollapsibleTrigger className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
+							<CollapsibleTrigger type="button" className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
 								<Question className="size-4" weight="bold" />
 								<span>What are Nonograms?</span>
 								<CaretDown
@@ -429,7 +423,7 @@ export default function Page() {
 							</Link>
 
 							<DropdownMenu>
-								<DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
+								<DropdownMenuTrigger type="button" className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
 									<DownloadSimple className="size-4" weight="bold" />
 									<span>Download results</span>
 									<CaretDown className="size-3" />
@@ -452,15 +446,10 @@ export default function Page() {
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onClick={() => {
-											const blob = new Blob([JSON.stringify(resultsRawData, null, 2)], {
-												type: "application/json",
-											});
-											const url = URL.createObjectURL(blob);
 											const a = document.createElement("a");
-											a.href = url;
-											a.download = "nonobench-results-raw.json";
-											a.click();
-											URL.revokeObjectURL(url);
+										a.href = "/results-raw.json";
+										a.download = "nonobench-results-raw.json";
+										a.click();
 										}}
 									>
 										Download raw results
@@ -487,6 +476,12 @@ export default function Page() {
 									This benchmark tests how well LLMs can solve these puzzles
 									across different grid sizes (5×5, 10×10, 15×15), measuring
 									accuracy, response time, and cost.
+								</p>
+								<p>
+									An answer counts as correct when it satisfies every row and
+									column clue. Some puzzles have more than one valid solution,
+									so answers are checked against the clues rather than a single
+									stored solution.
 								</p>
 								<a
 									href="https://en.wikipedia.org/wiki/Nonogram"
@@ -550,7 +545,7 @@ export default function Page() {
 										onValueChange={(value) => setSelectedSize(value ?? "all")}
 										modal={false}
 									>
-										<SelectTrigger className="w-28">
+										<SelectTrigger className="w-28" aria-label="Chart grid size">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
@@ -623,7 +618,7 @@ export default function Page() {
 											<LabelList
 												dataKey="accuracy"
 												position="top"
-												formatter={(v: number) => `${v.toFixed(0)}%`}
+												formatter={(v) => `${Number(v).toFixed(0)}%`}
 												className="fill-foreground font-mono text-xs font-semibold"
 											/>
 										</Bar>
@@ -653,13 +648,13 @@ export default function Page() {
 										</th>
 										<th
 											rowSpan={2}
-											className="text-left font-medium px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-foreground/10 transition-colors select-none align-bottom border-r border-border/50"
-											onClick={() => handleSort("accuracy")}
+											aria-sort={sortColumn === "accuracy" ? sortDirection === "asc" ? "ascending" : "descending" : "none"}
+											className="text-left font-medium px-4 py-3 whitespace-nowrap align-bottom border-r border-border/50"
 										>
-											<div className="flex items-center gap-1">
+											<button type="button" onClick={() => handleSort("accuracy")} className="flex items-center gap-1 cursor-pointer hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
 												Overall
 												{getSortIcon("accuracy")}
-											</div>
+											</button>
 										</th>
 										<th
 											colSpan={5}
