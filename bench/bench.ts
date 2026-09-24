@@ -173,7 +173,8 @@ async function runBenchmark(
     const openrouterMeta = resp.providerMetadata?.openrouter as
       | { usage?: { costDetails?: { upstreamInferenceCost?: number }; cost?: number } }
       | undefined;
-    cost = openrouterMeta?.usage?.costDetails?.upstreamInferenceCost ?? openrouterMeta?.usage?.cost ?? 0;
+    const upstreamCost = openrouterMeta?.usage?.costDetails?.upstreamInferenceCost;
+    cost = upstreamCost && upstreamCost > 0 ? upstreamCost : (openrouterMeta?.usage?.cost ?? 0);
     tokens = resp.usage.outputTokens ?? 0;
 
     status = "success";

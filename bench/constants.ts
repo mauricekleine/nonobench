@@ -4,7 +4,9 @@ import {
 } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
 
-export const REQUEST_TIMEOUT_MS = 30 * 60 * 1000;
+// Safety net for hung requests only: historical successful runs took up to ~60
+// minutes, and a timeout records a failed run that gets retried (and paid) again.
+export const REQUEST_TIMEOUT_MS = 3 * 60 * 60 * 1000;
 export const MAX_PARALLEL_RUNS_PER_MODEL = 10;
 
 const defaultProviderOptions: OpenRouterCompletionSettings = {

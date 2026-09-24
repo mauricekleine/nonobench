@@ -1,6 +1,9 @@
 import { strict as assert } from "node:assert";
 import { openReadDb, saveRunToDb, type BenchmarkResult } from "./db";
 
+// Writes test rows, so it must only ever run against a scratch copy.
+if (!process.env.NONOBENCH_DB) throw new Error("Set NONOBENCH_DB to a scratch copy of the database");
+
 const read = () => {
   const db = openReadDb();
   assert(db);
