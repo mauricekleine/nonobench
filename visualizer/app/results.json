@@ -60,6 +60,7 @@
   "byModel": [
     {
       "model": "gemini-3.1-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -119,6 +120,7 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "xhigh",
       "legacy": true,
@@ -178,6 +180,7 @@
     },
     {
       "model": "gpt-5.2-high",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "high",
       "legacy": true,
@@ -237,6 +240,7 @@
     },
     {
       "model": "gpt-5.4-high",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "high",
       "legacy": true,
@@ -296,6 +300,7 @@
     },
     {
       "model": "claude-4.5-opus-high",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "high",
       "legacy": true,
@@ -355,6 +360,7 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -414,6 +420,7 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "xhigh",
       "legacy": true,
@@ -473,6 +480,7 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "low",
       "legacy": true,
@@ -532,6 +540,7 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "high",
       "legacy": true,
@@ -591,6 +600,7 @@
     },
     {
       "model": "gpt-5.2-low",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "low",
       "legacy": true,
@@ -650,6 +660,7 @@
     },
     {
       "model": "gpt-5.4-low",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "low",
       "legacy": true,
@@ -709,6 +720,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "high",
       "legacy": true,
@@ -768,6 +780,7 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "high",
       "legacy": true,
@@ -827,6 +840,7 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -886,6 +900,7 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "high",
       "legacy": true,
@@ -945,6 +960,7 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "high",
       "legacy": true,
@@ -1004,6 +1020,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "none",
       "legacy": true,
@@ -1063,6 +1080,7 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "low",
       "legacy": true,
@@ -1122,6 +1140,7 @@
     },
     {
       "model": "grok-4",
+      "provider": "x-ai",
       "family": "grok-4",
       "effort": "default",
       "legacy": true,
@@ -1181,6 +1200,7 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "high",
       "legacy": true,
@@ -1240,6 +1260,7 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "provider": "qwen",
       "family": "qwen3-next-80b-a3b-thinking",
       "effort": "default",
       "legacy": true,
@@ -1299,6 +1320,7 @@
     },
     {
       "model": "seed-1.6-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6",
       "effort": "high",
       "legacy": true,
@@ -1358,6 +1380,7 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "high",
       "legacy": true,
@@ -1417,6 +1440,7 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "high",
       "legacy": true,
@@ -1476,6 +1500,7 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "provider": "moonshotai",
       "family": "kimi-k2-thinking",
       "effort": "default",
       "legacy": true,
@@ -1535,6 +1560,7 @@
     },
     {
       "model": "minimax-m2.5",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "default",
       "legacy": true,
@@ -1594,6 +1620,7 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "default",
       "legacy": true,
@@ -1653,6 +1680,7 @@
     },
     {
       "model": "glm-5-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "default",
       "legacy": true,
@@ -1712,6 +1740,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "default",
       "legacy": true,
@@ -1771,6 +1800,7 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "default",
       "legacy": true,
@@ -1830,6 +1860,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "high",
       "legacy": true,
@@ -1889,6 +1920,7 @@
     },
     {
       "model": "minimax-m2.1",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "default",
       "legacy": true,
@@ -1948,6 +1980,7 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "high",
       "legacy": true,
@@ -2007,6 +2040,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "high",
       "legacy": true,
@@ -2066,6 +2100,7 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "provider": "allenai",
       "family": "olmo-3.1-32b-think",
       "effort": "default",
       "legacy": true,
@@ -2125,6 +2160,7 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6-flash",
       "effort": "high",
       "legacy": true,
@@ -2184,6 +2220,7 @@
     },
     {
       "model": "kimi-k2",
+      "provider": "moonshotai",
       "family": "kimi-k2",
       "effort": "none",
       "legacy": true,
@@ -2243,6 +2280,7 @@
     },
     {
       "model": "deepseek-v3.2",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "none",
       "legacy": true,
@@ -2302,6 +2340,7 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "none",
       "legacy": true,
@@ -2361,6 +2400,7 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "minimal",
       "legacy": true,
@@ -2420,6 +2460,7 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -2479,6 +2520,7 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "none",
       "legacy": true,
@@ -2538,6 +2580,7 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "none",
       "legacy": true,
@@ -2597,6 +2640,7 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "none",
       "legacy": true,
@@ -2656,6 +2700,7 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "none",
       "legacy": true,
@@ -2715,6 +2760,7 @@
     },
     {
       "model": "mimo-v2-flash",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "none",
       "legacy": true,
@@ -2774,6 +2820,7 @@
     },
     {
       "model": "ministral-14b-2512",
+      "provider": "mistralai",
       "family": "ministral-14b-2512",
       "effort": "none",
       "legacy": true,
@@ -2833,6 +2880,7 @@
     },
     {
       "model": "mistral-large-2512",
+      "provider": "mistralai",
       "family": "mistral-large-2512",
       "effort": "none",
       "legacy": true,
@@ -2894,6 +2942,7 @@
   "chartData": [
     {
       "model": "claude-4.5-opus-high",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "high",
       "legacy": true,
@@ -2913,6 +2962,7 @@
     },
     {
       "model": "claude-4.5-opus-high",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "high",
       "legacy": true,
@@ -2932,6 +2982,7 @@
     },
     {
       "model": "claude-4.5-opus-high",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "high",
       "legacy": true,
@@ -2951,6 +3002,7 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "low",
       "legacy": true,
@@ -2970,6 +3022,7 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "low",
       "legacy": true,
@@ -2989,6 +3042,7 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "provider": "anthropic",
       "family": "claude-4.5-opus",
       "effort": "low",
       "legacy": true,
@@ -3008,6 +3062,7 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "none",
       "legacy": true,
@@ -3027,6 +3082,7 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "none",
       "legacy": true,
@@ -3046,6 +3102,7 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "none",
       "legacy": true,
@@ -3065,6 +3122,7 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "default",
       "legacy": true,
@@ -3084,6 +3142,7 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "default",
       "legacy": true,
@@ -3103,6 +3162,7 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "provider": "anthropic",
       "family": "claude-4.5-sonnet",
       "effort": "default",
       "legacy": true,
@@ -3122,6 +3182,7 @@
     },
     {
       "model": "deepseek-v3.2",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "none",
       "legacy": true,
@@ -3141,6 +3202,7 @@
     },
     {
       "model": "deepseek-v3.2",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "none",
       "legacy": true,
@@ -3160,6 +3222,7 @@
     },
     {
       "model": "deepseek-v3.2",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "none",
       "legacy": true,
@@ -3179,6 +3242,7 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "high",
       "legacy": true,
@@ -3198,6 +3262,7 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "high",
       "legacy": true,
@@ -3217,6 +3282,7 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2",
       "effort": "high",
       "legacy": true,
@@ -3236,6 +3302,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "none",
       "legacy": true,
@@ -3255,6 +3322,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "none",
       "legacy": true,
@@ -3274,6 +3342,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "none",
       "legacy": true,
@@ -3293,6 +3362,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "high",
       "legacy": true,
@@ -3312,6 +3382,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "high",
       "legacy": true,
@@ -3331,6 +3402,7 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
       "effort": "high",
       "legacy": true,
@@ -3350,6 +3422,7 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "high",
       "legacy": true,
@@ -3369,6 +3442,7 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "high",
       "legacy": true,
@@ -3388,6 +3462,7 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "high",
       "legacy": true,
@@ -3407,6 +3482,7 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "minimal",
       "legacy": true,
@@ -3426,6 +3502,7 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "minimal",
       "legacy": true,
@@ -3445,6 +3522,7 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "provider": "google",
       "family": "gemini-3-flash-preview",
       "effort": "minimal",
       "legacy": true,
@@ -3464,6 +3542,7 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -3483,6 +3562,7 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -3502,6 +3582,7 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -3521,6 +3602,7 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -3540,6 +3622,7 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -3559,6 +3642,7 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -3578,6 +3662,7 @@
     },
     {
       "model": "gemini-3.1-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -3597,6 +3682,7 @@
     },
     {
       "model": "gemini-3.1-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -3616,6 +3702,7 @@
     },
     {
       "model": "gemini-3.1-pro-preview-high",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "high",
       "legacy": true,
@@ -3635,6 +3722,7 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -3654,6 +3742,7 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -3673,6 +3762,7 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "provider": "google",
       "family": "gemini-3.1-pro-preview",
       "effort": "low",
       "legacy": true,
@@ -3692,6 +3782,7 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "none",
       "legacy": true,
@@ -3711,6 +3802,7 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "none",
       "legacy": true,
@@ -3730,6 +3822,7 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "none",
       "legacy": true,
@@ -3749,6 +3842,7 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "default",
       "legacy": true,
@@ -3768,6 +3862,7 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "default",
       "legacy": true,
@@ -3787,6 +3882,7 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "default",
       "legacy": true,
@@ -3806,6 +3902,7 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "high",
       "legacy": true,
@@ -3825,6 +3922,7 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "high",
       "legacy": true,
@@ -3844,6 +3942,7 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-4.7",
       "effort": "high",
       "legacy": true,
@@ -3863,6 +3962,7 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "none",
       "legacy": true,
@@ -3882,6 +3982,7 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "none",
       "legacy": true,
@@ -3901,6 +4002,7 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "none",
       "legacy": true,
@@ -3920,6 +4022,7 @@
     },
     {
       "model": "glm-5-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "default",
       "legacy": true,
@@ -3939,6 +4042,7 @@
     },
     {
       "model": "glm-5-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "default",
       "legacy": true,
@@ -3958,6 +4062,7 @@
     },
     {
       "model": "glm-5-reasoning",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "default",
       "legacy": true,
@@ -3977,6 +4082,7 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "high",
       "legacy": true,
@@ -3996,6 +4102,7 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "high",
       "legacy": true,
@@ -4015,6 +4122,7 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "provider": "z-ai",
       "family": "glm-5",
       "effort": "high",
       "legacy": true,
@@ -4034,6 +4142,7 @@
     },
     {
       "model": "gpt-5.2-high",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "high",
       "legacy": true,
@@ -4053,6 +4162,7 @@
     },
     {
       "model": "gpt-5.2-high",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "high",
       "legacy": true,
@@ -4072,6 +4182,7 @@
     },
     {
       "model": "gpt-5.2-high",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "high",
       "legacy": true,
@@ -4091,6 +4202,7 @@
     },
     {
       "model": "gpt-5.2-low",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "low",
       "legacy": true,
@@ -4110,6 +4222,7 @@
     },
     {
       "model": "gpt-5.2-low",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "low",
       "legacy": true,
@@ -4129,6 +4242,7 @@
     },
     {
       "model": "gpt-5.2-low",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "low",
       "legacy": true,
@@ -4148,6 +4262,7 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "xhigh",
       "legacy": true,
@@ -4167,6 +4282,7 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "xhigh",
       "legacy": true,
@@ -4186,6 +4302,7 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "provider": "openai",
       "family": "gpt-5.2",
       "effort": "xhigh",
       "legacy": true,
@@ -4205,6 +4322,7 @@
     },
     {
       "model": "gpt-5.4-high",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "high",
       "legacy": true,
@@ -4224,6 +4342,7 @@
     },
     {
       "model": "gpt-5.4-high",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "high",
       "legacy": true,
@@ -4243,6 +4362,7 @@
     },
     {
       "model": "gpt-5.4-high",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "high",
       "legacy": true,
@@ -4262,6 +4382,7 @@
     },
     {
       "model": "gpt-5.4-low",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "low",
       "legacy": true,
@@ -4281,6 +4402,7 @@
     },
     {
       "model": "gpt-5.4-low",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "low",
       "legacy": true,
@@ -4300,6 +4422,7 @@
     },
     {
       "model": "gpt-5.4-low",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "low",
       "legacy": true,
@@ -4319,6 +4442,7 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "xhigh",
       "legacy": true,
@@ -4338,6 +4462,7 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "xhigh",
       "legacy": true,
@@ -4357,6 +4482,7 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "provider": "openai",
       "family": "gpt-5.4",
       "effort": "xhigh",
       "legacy": true,
@@ -4376,6 +4502,7 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "high",
       "legacy": true,
@@ -4395,6 +4522,7 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "high",
       "legacy": true,
@@ -4414,6 +4542,7 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "high",
       "legacy": true,
@@ -4433,6 +4562,7 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "low",
       "legacy": true,
@@ -4452,6 +4582,7 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "low",
       "legacy": true,
@@ -4471,6 +4602,7 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "provider": "openai",
       "family": "gpt-oss-120b",
       "effort": "low",
       "legacy": true,
@@ -4490,6 +4622,7 @@
     },
     {
       "model": "grok-4",
+      "provider": "x-ai",
       "family": "grok-4",
       "effort": "default",
       "legacy": true,
@@ -4509,6 +4642,7 @@
     },
     {
       "model": "grok-4",
+      "provider": "x-ai",
       "family": "grok-4",
       "effort": "default",
       "legacy": true,
@@ -4528,6 +4662,7 @@
     },
     {
       "model": "grok-4",
+      "provider": "x-ai",
       "family": "grok-4",
       "effort": "default",
       "legacy": true,
@@ -4547,6 +4682,7 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "none",
       "legacy": true,
@@ -4566,6 +4702,7 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "none",
       "legacy": true,
@@ -4585,6 +4722,7 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "none",
       "legacy": true,
@@ -4604,6 +4742,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "default",
       "legacy": true,
@@ -4623,6 +4762,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "default",
       "legacy": true,
@@ -4642,6 +4782,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "default",
       "legacy": true,
@@ -4661,6 +4802,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "high",
       "legacy": true,
@@ -4680,6 +4822,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "high",
       "legacy": true,
@@ -4699,6 +4842,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "provider": "x-ai",
       "family": "grok-4.1-fast",
       "effort": "high",
       "legacy": true,
@@ -4718,6 +4862,7 @@
     },
     {
       "model": "kimi-k2",
+      "provider": "moonshotai",
       "family": "kimi-k2",
       "effort": "none",
       "legacy": true,
@@ -4737,6 +4882,7 @@
     },
     {
       "model": "kimi-k2",
+      "provider": "moonshotai",
       "family": "kimi-k2",
       "effort": "none",
       "legacy": true,
@@ -4756,6 +4902,7 @@
     },
     {
       "model": "kimi-k2",
+      "provider": "moonshotai",
       "family": "kimi-k2",
       "effort": "none",
       "legacy": true,
@@ -4775,6 +4922,7 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "provider": "moonshotai",
       "family": "kimi-k2-thinking",
       "effort": "default",
       "legacy": true,
@@ -4794,6 +4942,7 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "provider": "moonshotai",
       "family": "kimi-k2-thinking",
       "effort": "default",
       "legacy": true,
@@ -4813,6 +4962,7 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "provider": "moonshotai",
       "family": "kimi-k2-thinking",
       "effort": "default",
       "legacy": true,
@@ -4832,6 +4982,7 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "high",
       "legacy": true,
@@ -4851,6 +5002,7 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "high",
       "legacy": true,
@@ -4870,6 +5022,7 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "high",
       "legacy": true,
@@ -4889,6 +5042,7 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "none",
       "legacy": true,
@@ -4908,6 +5062,7 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "none",
       "legacy": true,
@@ -4927,6 +5082,7 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "provider": "moonshotai",
       "family": "kimi-k2.5",
       "effort": "none",
       "legacy": true,
@@ -4946,6 +5102,7 @@
     },
     {
       "model": "mimo-v2-flash",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "none",
       "legacy": true,
@@ -4965,6 +5122,7 @@
     },
     {
       "model": "mimo-v2-flash",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "none",
       "legacy": true,
@@ -4984,6 +5142,7 @@
     },
     {
       "model": "mimo-v2-flash",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "none",
       "legacy": true,
@@ -5003,6 +5162,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "high",
       "legacy": true,
@@ -5022,6 +5182,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "high",
       "legacy": true,
@@ -5041,6 +5202,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "provider": "xiaomi",
       "family": "mimo-v2-flash",
       "effort": "high",
       "legacy": true,
@@ -5060,6 +5222,7 @@
     },
     {
       "model": "minimax-m2.1",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "default",
       "legacy": true,
@@ -5079,6 +5242,7 @@
     },
     {
       "model": "minimax-m2.1",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "default",
       "legacy": true,
@@ -5098,6 +5262,7 @@
     },
     {
       "model": "minimax-m2.1",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "default",
       "legacy": true,
@@ -5117,6 +5282,7 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "high",
       "legacy": true,
@@ -5136,6 +5302,7 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "high",
       "legacy": true,
@@ -5155,6 +5322,7 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "provider": "minimax",
       "family": "minimax-m2.1",
       "effort": "high",
       "legacy": true,
@@ -5174,6 +5342,7 @@
     },
     {
       "model": "minimax-m2.5",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "default",
       "legacy": true,
@@ -5193,6 +5362,7 @@
     },
     {
       "model": "minimax-m2.5",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "default",
       "legacy": true,
@@ -5212,6 +5382,7 @@
     },
     {
       "model": "minimax-m2.5",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "default",
       "legacy": true,
@@ -5231,6 +5402,7 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "high",
       "legacy": true,
@@ -5250,6 +5422,7 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "high",
       "legacy": true,
@@ -5269,6 +5442,7 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "provider": "minimax",
       "family": "minimax-m2.5",
       "effort": "high",
       "legacy": true,
@@ -5288,6 +5462,7 @@
     },
     {
       "model": "ministral-14b-2512",
+      "provider": "mistralai",
       "family": "ministral-14b-2512",
       "effort": "none",
       "legacy": true,
@@ -5307,6 +5482,7 @@
     },
     {
       "model": "ministral-14b-2512",
+      "provider": "mistralai",
       "family": "ministral-14b-2512",
       "effort": "none",
       "legacy": true,
@@ -5326,6 +5502,7 @@
     },
     {
       "model": "ministral-14b-2512",
+      "provider": "mistralai",
       "family": "ministral-14b-2512",
       "effort": "none",
       "legacy": true,
@@ -5345,6 +5522,7 @@
     },
     {
       "model": "mistral-large-2512",
+      "provider": "mistralai",
       "family": "mistral-large-2512",
       "effort": "none",
       "legacy": true,
@@ -5364,6 +5542,7 @@
     },
     {
       "model": "mistral-large-2512",
+      "provider": "mistralai",
       "family": "mistral-large-2512",
       "effort": "none",
       "legacy": true,
@@ -5383,6 +5562,7 @@
     },
     {
       "model": "mistral-large-2512",
+      "provider": "mistralai",
       "family": "mistral-large-2512",
       "effort": "none",
       "legacy": true,
@@ -5402,6 +5582,7 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "provider": "allenai",
       "family": "olmo-3.1-32b-think",
       "effort": "default",
       "legacy": true,
@@ -5421,6 +5602,7 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "provider": "allenai",
       "family": "olmo-3.1-32b-think",
       "effort": "default",
       "legacy": true,
@@ -5440,6 +5622,7 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "provider": "allenai",
       "family": "olmo-3.1-32b-think",
       "effort": "default",
       "legacy": true,
@@ -5459,6 +5642,7 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "provider": "qwen",
       "family": "qwen3-next-80b-a3b-thinking",
       "effort": "default",
       "legacy": true,
@@ -5478,6 +5662,7 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "provider": "qwen",
       "family": "qwen3-next-80b-a3b-thinking",
       "effort": "default",
       "legacy": true,
@@ -5497,6 +5682,7 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "provider": "qwen",
       "family": "qwen3-next-80b-a3b-thinking",
       "effort": "default",
       "legacy": true,
@@ -5516,6 +5702,7 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6-flash",
       "effort": "high",
       "legacy": true,
@@ -5535,6 +5722,7 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6-flash",
       "effort": "high",
       "legacy": true,
@@ -5554,6 +5742,7 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6-flash",
       "effort": "high",
       "legacy": true,
@@ -5573,6 +5762,7 @@
     },
     {
       "model": "seed-1.6-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6",
       "effort": "high",
       "legacy": true,
@@ -5592,6 +5782,7 @@
     },
     {
       "model": "seed-1.6-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6",
       "effort": "high",
       "legacy": true,
@@ -5611,6 +5802,7 @@
     },
     {
       "model": "seed-1.6-high",
+      "provider": "bytedance-seed",
       "family": "seed-1.6",
       "effort": "high",
       "legacy": true,

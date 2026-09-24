@@ -61,6 +61,7 @@ type SizeData = {
 
 type ModelData = {
 	model: string;
+	provider: string;
 	family: string;
 	effort: string;
 	legacy: boolean;
@@ -91,7 +92,7 @@ type BenchmarkResults = {
 		sizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: Array<{ model: string; family: string; effort: string; legacy: boolean } & SizeData>;
+	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
 
@@ -269,11 +270,20 @@ for (const row of aggregatedResults) {
 // Build byModel array
 const byModel: ModelData[] = [];
 const chartData: BenchmarkResults["chartData"] = [];
-const modelsByName = new Map(MODELS.map((model) => [model.name, model]));
+const knownProviders = new Set([
+	"openai", "anthropic", "google", "x-ai", "deepseek", "qwen", "z-ai",
+	"moonshotai", "xiaomi", "bytedance-seed", "minimax", "mistralai", "meta", "allenai",
+]);
+const modelsByName = new Map(MODELS.map((model) => {
+	const provider = model.llm.modelId.split("/")[0];
+	if (!provider || !knownProviders.has(provider)) throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
+	return [model.name, { ...model, provider }] as const;
+}));
 
 for (const [model, sizeDatas] of modelMap) {
 	const metadata = modelsByName.get(model);
 	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
+	const { provider } = metadata;
 	// Sort size data by size
 	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
 		(size) => sizeDatas.find((s) => s.size === size)!,
@@ -294,6 +304,7 @@ for (const [model, sizeDatas] of modelMap) {
 		// Add to chartData
 		chartData.push({
 			model,
+			provider,
 			family: metadata.family,
 			effort: metadata.effort,
 			legacy: !structuredModels.has(model),
@@ -304,6 +315,7 @@ for (const [model, sizeDatas] of modelMap) {
 	// Overall accuracy uses runs (excluding failed), not total
 	byModel.push({
 		model,
+		provider,
 		family: metadata.family,
 		effort: metadata.effort,
 		legacy: !structuredModels.has(model),

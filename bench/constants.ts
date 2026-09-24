@@ -16,7 +16,7 @@ const defaultProviderOptions: OpenRouterCompletionSettings = {
 };
 
 export type Model = {
-  llm: LanguageModel;
+  llm: LanguageModel & { readonly modelId: string };
   name: string;
   family: string;
   effort: string;
