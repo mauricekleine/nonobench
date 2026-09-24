@@ -1,4 +1,4 @@
-import { generateText } from "ai";
+import { generateText, jsonSchema, NoObjectGeneratedError, Output } from "ai";
 import { codeBlock } from "common-tags";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
@@ -123,6 +123,7 @@ async function runBenchmark(
   let status: "success" | "failed" = "success";
   let errorMessage: string | undefined;
   let rawOutput = "";
+  const cells = puzzle.width * puzzle.height;
 
   const systemPrompt = codeBlock`
 		You are solving a nonogram (also known as picross or griddlers).
@@ -160,11 +161,29 @@ async function runBenchmark(
   const rawInput = `${systemPrompt}\n\n${puzzle.clues.canonical}`;
 
   try {
+    // Strict structured output: the provider constrains the final answer to the
+    // schema, so models cannot wrap the grid in prose. require_parameters makes
+    // OpenRouter refuse endpoints that would silently ignore the schema.
     const resp = await generateText({
       model: model.llm,
       prompt: puzzle.clues.canonical,
       system: systemPrompt,
       timeout: REQUEST_TIMEOUT_MS,
+      output: Output.object({
+        name: "nonogram_solution",
+        schema: jsonSchema<{ solution: string }>({
+          type: "object",
+          properties: {
+            solution: {
+              type: "string",
+              description: `The solved grid as exactly ${cells} characters of "1" (filled) and "0" (empty), row by row.`,
+            },
+          },
+          required: ["solution"],
+          additionalProperties: false,
+        }),
+      }),
+      providerOptions: { openrouter: { provider: { require_parameters: true } } },
     });
 
     rawOutput = resp.text;
@@ -179,6 +198,16 @@ async function runBenchmark(
 
     status = "success";
   } catch (err: any) {
+    if (NoObjectGeneratedError.isInstance(err) && err.text) {
+      // The model answered but the SDK could not validate the JSON (e.g. a
+      // truncated response). Grade what it said; cost is not reported here.
+      rawOutput = err.text;
+      correct = gradeOutput(puzzle, err.text);
+      tokens = err.usage?.outputTokens ?? 0;
+      cost = 0;
+      status = "success";
+      errorMessage = `Schema validation failed (cost unavailable): ${err.message}`;
+    } else {
     console.error(
       `[${model.name}] Error:`,
       err?.message ? JSON.stringify(err, null, 2) : String(err)
@@ -189,6 +218,7 @@ async function runBenchmark(
     correct = false;
     cost = 0;
     tokens = 0;
+    }
   }
 
   const end = performance.now();
@@ -206,6 +236,7 @@ async function runBenchmark(
     rawInput,
     rawOutput,
     reasoning: model.reasoning,
+    outputMode: "json_schema",
     ...(errorMessage ? { errorMessage } : {}),
   };
 }

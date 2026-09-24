@@ -30,6 +30,7 @@ function openWriteDb(): Database {
       raw_input TEXT,
       raw_output TEXT,
       reasoning INTEGER,
+      output_mode TEXT,
       UNIQUE(model, puzzle_id)
     );
   `);
@@ -39,7 +40,8 @@ function openWriteDb(): Database {
     CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON runs(timestamp);
   `);
   const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((row) => row.name));
-  for (const column of ["raw_input", "raw_output", "reasoning"] as const) {
+  // output_mode: NULL for legacy free-text runs, "json_schema" for strict structured output.
+  for (const column of ["raw_input", "raw_output", "reasoning", "output_mode"] as const) {
     if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${column === "reasoning" ? "INTEGER" : "TEXT"}`);
   }
   writeDb = db;
@@ -59,6 +61,7 @@ export type BenchmarkResult = {
   rawInput: string;
   rawOutput: string;
   reasoning: boolean;
+  outputMode: "json_schema";
 };
 
 export function getPuzzleId(puzzle: Puzzle): string {
@@ -83,8 +86,8 @@ export function getSuccessfulPuzzlesByModel(): Map<string, Set<string>> {
 
 export function saveRunToDb(result: BenchmarkResult): void {
   openWriteDb().query(`
-    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning)
-    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning)
+    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning, output_mode)
+    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning, $output_mode)
     ON CONFLICT(model, puzzle_id) DO UPDATE SET
       size = excluded.size,
       timestamp = excluded.timestamp,
@@ -96,7 +99,8 @@ export function saveRunToDb(result: BenchmarkResult): void {
       error_message = excluded.error_message,
       raw_input = excluded.raw_input,
       raw_output = excluded.raw_output,
-      reasoning = excluded.reasoning
+      reasoning = excluded.reasoning,
+      output_mode = excluded.output_mode
     WHERE runs.status = 'failed'
   `).run({
     $model: result.model,
@@ -112,5 +116,6 @@ export function saveRunToDb(result: BenchmarkResult): void {
     $raw_input: result.rawInput,
     $raw_output: result.rawOutput,
     $reasoning: result.reasoning ? 1 : 0,
+    $output_mode: result.outputMode,
   });
 }

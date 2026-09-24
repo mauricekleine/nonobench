@@ -22,6 +22,22 @@ for (const row of db
 }
 const correctRunsJson = JSON.stringify([...correctRuns]);
 
+// Runs from before strict structured output have no output_mode (older
+// databases lack the column entirely). A variant is "legacy" when none of its
+// runs used structured output; the site fades those so new runs stand out.
+const hasOutputMode = db
+	.query<{ name: string }, []>("PRAGMA table_info(runs)")
+	.all()
+	.some((column) => column.name === "output_mode");
+const structuredModels = new Set(
+	hasOutputMode
+		? db
+				.query<{ model: string }, []>("SELECT DISTINCT model FROM runs WHERE output_mode IS NOT NULL")
+				.all()
+				.map((row) => row.model)
+		: [],
+);
+
 // Output paths
 const resultsPath = process.env.NONOBENCH_RESULTS_JSON ?? new URL("../visualizer/app/results.json", import.meta.url).pathname;
 const resultsRawPath = process.env.NONOBENCH_RESULTS_RAW_JSON ?? new URL("../visualizer/public/results-raw.json", import.meta.url).pathname;
@@ -47,6 +63,7 @@ type ModelData = {
 	model: string;
 	family: string;
 	effort: string;
+	legacy: boolean;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -74,7 +91,7 @@ type BenchmarkResults = {
 		sizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: Array<{ model: string; family: string; effort: string } & SizeData>;
+	chartData: Array<{ model: string; family: string; effort: string; legacy: boolean } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
 
@@ -111,6 +128,7 @@ type RawRow = {
 	error_message: string | null;
 	raw_input: string | null;
 	raw_output: string | null;
+	output_mode: string | null;
 };
 
 // Output type for raw results JSON
@@ -128,6 +146,7 @@ type RawResult = {
 	errorMessage: string | null;
 	rawInput: string | null;
 	rawOutput: string | null;
+	outputMode: string;
 };
 
 type RawResults = {
@@ -277,6 +296,7 @@ for (const [model, sizeDatas] of modelMap) {
 			model,
 			family: metadata.family,
 			effort: metadata.effort,
+			legacy: !structuredModels.has(model),
 			...sizeData,
 		});
 	}
@@ -286,6 +306,7 @@ for (const [model, sizeDatas] of modelMap) {
 		model,
 		family: metadata.family,
 		effort: metadata.effort,
+		legacy: !structuredModels.has(model),
 		reasoning: modelReasoningMap.get(model) ?? false,
 		overallAccuracy: overallRuns > 0 ? (overallCorrect / overallRuns) * 100 : 0,
 		overallCorrect,
@@ -351,7 +372,8 @@ const rawResults = db
       cost,
       error_message,
       raw_input,
-      raw_output
+      raw_output,
+      ${hasOutputMode ? "output_mode" : "NULL AS output_mode"}
     FROM runs
     ORDER BY model, size, timestamp
   `,
@@ -375,6 +397,7 @@ const rawResultsOutput: RawResults = {
 		errorMessage: row.error_message,
 		rawInput: row.raw_input,
 		rawOutput: row.raw_output,
+		outputMode: row.output_mode ?? "text",
 	})),
 };
 

@@ -26,6 +26,7 @@ const fake: BenchmarkResult = {
   rawInput: "test",
   rawOutput: "overwrite attempt",
   reasoning: false,
+  outputMode: "json_schema",
 };
 saveRunToDb(fake);
 let check = read();

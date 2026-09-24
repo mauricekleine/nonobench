@@ -60,6 +60,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { selectBestVariants } from "@/lib/select-best-variants";
 
 import resultsData from "./results.json";
@@ -84,6 +85,8 @@ type ModelData = {
 	model: string;
 	family: string;
 	effort: string;
+	// True when none of the variant's runs used strict structured output.
+	legacy: boolean;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -114,7 +117,7 @@ type Results = {
 		sizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: (SizeData & { model: string; family: string; effort: string })[];
+	chartData: (SizeData & { model: string; family: string; effort: string; legacy: boolean })[];
 	errorsByModel?: ModelErrorData[];
 };
 
@@ -150,12 +153,17 @@ function EffortBadge({ effort }: { effort: string }) {
 }
 
 function ModelAxisTick({ x, y, label, effort }: { x?: string | number; y?: string | number; label: string; effort: string }) {
-	const badgeWidth = effort.length * 6 + 12;
+	// Effort rides on the same rotated line so it can't collide with neighbouring labels.
 	return (
 		<g transform={`translate(${x ?? 0},${y ?? 0}) rotate(-35)`}>
-			<text x={0} y={0} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>{label}</text>
-			<rect x={-badgeWidth} y={5} width={badgeWidth} height={17} rx={4} fill="var(--background)" stroke="var(--chart-1)" strokeOpacity={0.45} />
-			<text x={-badgeWidth / 2} y={17} textAnchor="middle" fill="var(--chart-1)" fontSize={10} fontFamily="monospace">{effort}</text>
+			<text x={0} y={4} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>
+				{label}
+				{effort && (
+					<tspan fill="var(--chart-1)" fillOpacity={0.8} fontFamily="monospace" fontSize={10}>
+						{` · ${effort}`}
+					</tspan>
+				)}
+			</text>
 		</g>
 	);
 }
@@ -221,6 +229,9 @@ function getModelStats(modelData: ModelData) {
 		accuracy: modelData.overallAccuracy,
 	};
 }
+
+// Earlier (free-text) runs are faded once newer runs exist, so new models stand out.
+const hasNewRuns = results.byModel.some((model) => !model.legacy);
 
 export default function ResultsPage() {
 	const [selectedSize, setSelectedSize] = useState<string>("all");
@@ -312,7 +323,7 @@ export default function ResultsPage() {
 			};
 		};
 
-		const data = filteredModels.map((model) => getChartModelStats(model));
+		const data = filteredModels.map((model) => ({ ...getChartModelStats(model), legacy: model.legacy }));
 
 		// Sort by accuracy (highest first), then alphabetically for ties
 		const sorted = data.sort((a, b) => {
@@ -380,7 +391,7 @@ export default function ResultsPage() {
 	const benchmarkStats = useMemo(() => {
 		const totalModels = filteredModels.length;
 		const puzzlesPerModel = PUZZLES.length;
-		const totalRuns = filteredModels.reduce((sum, model) => sum + getModelRuns(model), 0);
+		const totalRuns = filteredVariants.reduce((sum, model) => sum + getModelRuns(model), 0);
 		return { totalModels, totalVariants: filteredVariants.length, totalPuzzles: puzzlesPerModel, totalRuns };
 	}, [filteredModels, filteredVariants]);
 
@@ -559,6 +570,11 @@ export default function ResultsPage() {
 						/>
 						<Label htmlFor="all-levels" className="text-sm cursor-pointer">Show all reasoning levels</Label>
 					</div>
+					{hasNewRuns && (
+						<span className="text-xs text-muted-foreground sm:ml-auto">
+							Faded: earlier runs (free-text answers)
+						</span>
+					)}
 				</div>
 
 				{/* Main Chart */}
@@ -600,11 +616,11 @@ export default function ResultsPage() {
 								<ChartContainer
 									config={chartConfig}
 									className="h-[400px]"
-									style={{ minWidth: `${Math.max(500, chartData.length * 52)}px` }}
+									style={{ minWidth: `${Math.max(500, chartData.length * 46)}px` }}
 								>
 									<BarChart
 										data={chartData}
-										margin={{ top: 30, right: 20, bottom: 60, left: 20 }}
+										margin={{ top: 30, right: 20, bottom: 60, left: showAllLevels ? 20 : 110 }}
 									>
 										<CartesianGrid
 											vertical={false}
@@ -622,7 +638,7 @@ export default function ResultsPage() {
 											interval={0}
 											angle={showAllLevels ? -35 : 0}
 											textAnchor="end"
-											height={showAllLevels ? 60 : 85}
+											height={showAllLevels ? 60 : 100}
 										/>
 										<YAxis
 											domain={[0, 100]}
@@ -642,6 +658,9 @@ export default function ResultsPage() {
 																	{props.payload.displayName}
 																</span>
 															{!showAllLevels && <EffortBadge effort={props.payload.effort} />}
+															{hasNewRuns && props.payload.legacy && (
+																<span className="text-muted-foreground">Earlier run</span>
+															)}
 															<span className="text-muted-foreground">
 																{props.payload.correct}/{props.payload.total}{" "}
 																solved ({Number(value).toFixed(1)}%)
@@ -653,7 +672,7 @@ export default function ResultsPage() {
 										/>
 										<Bar dataKey="accuracy" radius={[4, 4, 0, 0]}>
 											{chartData.map((entry, index) => (
-												<Cell key={`cell-${index}`} fill={entry.fill} />
+												<Cell key={`cell-${index}`} fill={entry.fill} fillOpacity={hasNewRuns && entry.legacy ? 0.3 : 1} />
 											))}
 											<LabelList
 												dataKey="accuracy"
@@ -767,7 +786,10 @@ export default function ResultsPage() {
 										return (
 											<tr
 												key={modelData.model}
-												className="border-b border-border last:border-b-0 hover:bg-foreground/[0.03] transition-colors"
+												className={cn(
+													"border-b border-border last:border-b-0 hover:bg-foreground/[0.03] transition-colors",
+													hasNewRuns && modelData.legacy && "opacity-45 hover:opacity-100",
+												)}
 											>
 												<td className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-card/50 backdrop-blur-sm px-4 py-3.5 border-r border-border">
 													<div className="flex items-center gap-2.5">
