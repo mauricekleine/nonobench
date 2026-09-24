@@ -156,11 +156,12 @@ function EffortBadge({ effort }: { effort: string }) {
 
 function ModelAxisTick({ x, y, label, effort, provider, legacy }: { x?: string | number; y?: string | number; label: string; effort: string; provider: string; legacy: boolean }) {
 	// Effort rides on the same rotated line so it can't collide with neighbouring labels.
-	const textWidth = label.length * 6 + (effort ? effort.length * 6 + 14 : 0);
+	// The logo sits at the tick, right under its bar; the label ends just before it,
+	// so no text-width estimate is needed.
 	return (
 		<g transform={`translate(${x ?? 0},${y ?? 0}) rotate(-35)`} opacity={hasNewRuns && legacy ? 0.3 : 1}>
-			<ProviderLogo provider={provider} size={14} x={-textWidth - 19} y={-10} fill="var(--muted-foreground)" />
-			<text x={0} y={4} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>
+			<ProviderLogo provider={provider} size={13} x={-13} y={-6} fill="var(--muted-foreground)" />
+			<text x={-18} y={4} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>
 				{label}
 				{effort && (
 					<tspan fill="var(--chart-1)" fillOpacity={0.8} fontFamily="monospace" fontSize={10}>
