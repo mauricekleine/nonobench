@@ -31,6 +31,7 @@ function openWriteDb(): Database {
       raw_output TEXT,
       reasoning INTEGER,
       output_mode TEXT,
+      reasoning_tokens INTEGER,
       UNIQUE(model, puzzle_id)
     );
   `);
@@ -41,8 +42,9 @@ function openWriteDb(): Database {
   `);
   const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((row) => row.name));
   // output_mode: NULL for legacy free-text runs, "json_schema" for strict structured output.
-  for (const column of ["raw_input", "raw_output", "reasoning", "output_mode"] as const) {
-    if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${column === "reasoning" ? "INTEGER" : "TEXT"}`);
+  for (const column of ["raw_input", "raw_output", "reasoning", "output_mode", "reasoning_tokens"] as const) {
+    const type = column === "reasoning" || column === "reasoning_tokens" ? "INTEGER" : "TEXT";
+    if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${type}`);
   }
   writeDb = db;
   return db;
@@ -62,6 +64,8 @@ export type BenchmarkResult = {
   rawOutput: string;
   reasoning: boolean;
   outputMode: "json_schema";
+  // Null when the provider does not report reasoning tokens.
+  reasoningTokens: number | null;
 };
 
 export function getPuzzleId(puzzle: Puzzle): string {
@@ -86,8 +90,8 @@ export function getSuccessfulPuzzlesByModel(): Map<string, Set<string>> {
 
 export function saveRunToDb(result: BenchmarkResult): void {
   openWriteDb().query(`
-    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning, output_mode)
-    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning, $output_mode)
+    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning, output_mode, reasoning_tokens)
+    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning, $output_mode, $reasoning_tokens)
     ON CONFLICT(model, puzzle_id) DO UPDATE SET
       size = excluded.size,
       timestamp = excluded.timestamp,
@@ -100,7 +104,8 @@ export function saveRunToDb(result: BenchmarkResult): void {
       raw_input = excluded.raw_input,
       raw_output = excluded.raw_output,
       reasoning = excluded.reasoning,
-      output_mode = excluded.output_mode
+      output_mode = excluded.output_mode,
+      reasoning_tokens = excluded.reasoning_tokens
     WHERE runs.status = 'failed'
   `).run({
     $model: result.model,
@@ -117,5 +122,6 @@ export function saveRunToDb(result: BenchmarkResult): void {
     $raw_output: result.rawOutput,
     $reasoning: result.reasoning ? 1 : 0,
     $output_mode: result.outputMode,
+    $reasoning_tokens: result.reasoningTokens,
   });
 }

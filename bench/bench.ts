@@ -137,6 +137,7 @@ async function runBenchmark(
   let status: "success" | "failed" = "success";
   let errorMessage: string | undefined;
   let rawOutput = "";
+  let reasoningTokens: number | null = null;
   const cells = puzzle.width * puzzle.height;
 
   const systemPrompt = codeBlock`
@@ -209,8 +210,18 @@ async function runBenchmark(
     const upstreamCost = openrouterMeta?.usage?.costDetails?.upstreamInferenceCost;
     cost = upstreamCost && upstreamCost > 0 ? upstreamCost : (openrouterMeta?.usage?.cost ?? 0);
     tokens = resp.usage.outputTokens ?? 0;
+    reasoningTokens = resp.usage.outputTokenDetails?.reasoningTokens ?? null;
 
     status = "success";
+    // Some endpoints that enforce the schema silently switch reasoning off
+    // (e.g. MiniMax M3 on its only schema-capable provider). Such a run does
+    // not measure the configured variant, so keep it retryable instead of
+    // locking in a success row.
+    if (model.reasoning && reasoningTokens === 0) {
+      status = "failed";
+      correct = false;
+      errorMessage = "Reasoning variant produced no reasoning tokens under structured output";
+    }
   } catch (err: any) {
     if (NoObjectGeneratedError.isInstance(err) && err.text) {
       // The model answered but the SDK could not validate the JSON (e.g. a
@@ -218,6 +229,7 @@ async function runBenchmark(
       rawOutput = err.text;
       correct = gradeOutput(puzzle, err.text);
       tokens = err.usage?.outputTokens ?? 0;
+      reasoningTokens = err.usage?.outputTokenDetails?.reasoningTokens ?? null;
       cost = 0;
       status = "success";
       errorMessage = `Schema validation failed (cost unavailable): ${err.message}`;
@@ -251,6 +263,7 @@ async function runBenchmark(
     rawOutput,
     reasoning: model.reasoning,
     outputMode: "json_schema",
+    reasoningTokens,
     ...(errorMessage ? { errorMessage } : {}),
   };
 }

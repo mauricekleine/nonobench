@@ -32,4 +32,11 @@ describe("gradeOutput", () => {
     expect(gradeOutput(puzzle, "0")).toBe(false);
     expect(gradeOutput(puzzle, null)).toBe(false);
   });
+
+  test("decodes structured-output JSON, including escaped newlines between rows", () => {
+    const puzzle = PUZZLES[8]!;
+    expect(gradeOutput(puzzle, JSON.stringify({ solution: "01001\n00010\n10000\n11100\n00010" }))).toBe(true);
+    expect(gradeOutput(puzzle, '{ "solution": "0101000001100001110000010" }')).toBe(true);
+    expect(gradeOutput(puzzle, JSON.stringify({ solution: "0" }))).toBe(false);
+  });
 });

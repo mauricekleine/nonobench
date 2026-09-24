@@ -619,5 +619,6 @@ export const MODELS: Model[] = [
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
   defaultReasoningModel("xiaomi/mimo-v2.6-flash", "mimo-v2.6-flash"),
   defaultReasoningModel("bytedance-seed/seed-2-1-turbo", "seed-2.1-turbo"),
-  defaultReasoningModel("minimax/minimax-m3", "minimax-m3"),
+  // minimax/minimax-m3 is left out: every endpoint that enforces the schema
+  // (Together, CoreWeave) drops reasoning, so it cannot be measured fairly.
 ];
