@@ -4,30 +4,56 @@ import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
   MAX_PARALLEL_RUNS_PER_MODEL,
   MODELS,
-  RERUN_THRESHOLD_DAYS,
+  REQUEST_TIMEOUT_MS,
   type Model,
 } from "./constants";
 import {
   dbPath,
   getPuzzleId,
-  getRecentPuzzlesByModel,
+  getSuccessfulPuzzlesByModel,
   saveRunToDb,
   type BenchmarkResult,
 } from "./db";
 import { parseSolution } from "./parse-solution";
+import { sortSizes } from "./sizes";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
 
-const recentPuzzlesByModel = getRecentPuzzlesByModel();
+const successfulPuzzlesByModel = getSuccessfulPuzzlesByModel();
 
-// Log summary of what will be skipped
-if (recentPuzzlesByModel.size > 0) {
-  console.log(
-    `\nRecent benchmark runs found (within ${RERUN_THRESHOLD_DAYS} days):`
-  );
-  for (const [model, puzzleIds] of recentPuzzlesByModel) {
-    console.log(`  ${model}: ${puzzleIds.size} puzzle(s)`);
+const args = process.argv.slice(2);
+const selectedNames = new Set<string>();
+let allMissing = false;
+for (let i = 0; i < args.length; i++) {
+  const arg = args[i];
+  if (arg === "--all-missing") {
+    allMissing = true;
+  } else if (arg === "--model") {
+    const name = args[++i];
+    if (!name || name.startsWith("--") || !MODELS.some((model) => model.name === name)) {
+      console.error(`Unknown or missing model: ${name ?? "(missing)"}`);
+      process.exit(1);
+    }
+    selectedNames.add(name);
+  } else {
+    console.error(`Unknown argument: ${arg}`);
+    process.exit(1);
   }
+}
+if (allMissing && selectedNames.size > 0) {
+  console.error("Use either --all-missing or --model, not both.");
+  process.exit(1);
+}
+const selectedModels = allMissing ? MODELS : MODELS.filter((model) => selectedNames.has(model.name));
+console.log(`Benchmark plan (${dbPath}):`);
+for (const model of MODELS) {
+  const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
+  const missing = PUZZLES.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
+  console.log(`  ${model.name}: ${missing} missing/retryable of ${PUZZLES.length}`);
+}
+if (args.length === 0) {
+  console.log("Select --model <name> (repeatable) or --all-missing to run.");
+  process.exit(0);
 }
 
 type ModelSizeStats = {
@@ -138,36 +164,19 @@ async function runBenchmark(
       model: model.llm,
       prompt: puzzle.clues.canonical,
       system: systemPrompt,
+      timeout: REQUEST_TIMEOUT_MS,
     });
 
     rawOutput = resp.text;
-    const llmSolution = parseSolution(resp.text);
+    const llmSolution = parseSolution(resp.text, puzzle.width * puzzle.height);
     const expectedSolution = puzzle.solution.replace(/\s+/g, "");
     correct = !!llmSolution && llmSolution === expectedSolution;
 
-    if (resp.providerMetadata) {
-      const openrouterMeta = resp.providerMetadata.openrouter as any;
-      if (openrouterMeta?.usage) {
-        if (openrouterMeta.usage.costDetails?.upstreamInferenceCost) {
-          cost = openrouterMeta.usage.costDetails.upstreamInferenceCost;
-        } else if (openrouterMeta.usage.cost) {
-          cost = openrouterMeta.usage.cost;
-        }
-      }
-    }
-
-    tokens = resp.usage?.outputTokens ?? 0;
-    if (resp.providerMetadata?.google) {
-      const googleMeta = resp.providerMetadata.google as any;
-      if (
-        googleMeta?.usageMetadata?.candidatesTokenCount &&
-        googleMeta?.usageMetadata?.thoughtsTokenCount
-      ) {
-        tokens =
-          googleMeta.usageMetadata.candidatesTokenCount +
-          googleMeta.usageMetadata.thoughtsTokenCount;
-      }
-    }
+    const openrouterMeta = resp.providerMetadata?.openrouter as
+      | { usage?: { costDetails?: { upstreamInferenceCost?: number }; cost?: number } }
+      | undefined;
+    cost = openrouterMeta?.usage?.costDetails?.upstreamInferenceCost ?? openrouterMeta?.usage?.cost ?? 0;
+    tokens = resp.usage.outputTokens ?? 0;
 
     status = "success";
   } catch (err: any) {
@@ -215,30 +224,21 @@ function groupPuzzlesBySize(puzzles: Puzzle[]): Map<string, Puzzle[]> {
   return groups;
 }
 
-// Sort sizes in order (5x5, 10x10, 15x15)
-function sortSizes(sizes: string[]): string[] {
-  return [...sizes].sort((a, b) => {
-    const aNum = Number.parseInt(a.split("x")[0] ?? "0", 10);
-    const bNum = Number.parseInt(b.split("x")[0] ?? "0", 10);
-    return aNum - bNum;
-  });
-}
-
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
   const puzzlesBySize = groupPuzzlesBySize(PUZZLES);
-  const recentPuzzles = recentPuzzlesByModel.get(model.name) ?? new Set();
+  const successfulPuzzles = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const allResults: BenchmarkResult[] = [];
 
   for (const [size, puzzles] of puzzlesBySize) {
-    // Filter out recently benchmarked puzzles
+    // Filter out successfully benchmarked puzzles
     const puzzlesToRun = puzzles.filter(
-      (puzzle) => !recentPuzzles.has(getPuzzleId(puzzle))
+      (puzzle) => !successfulPuzzles.has(getPuzzleId(puzzle))
     );
 
     if (puzzlesToRun.length === 0) {
       console.log(
-        `[${model.name}] Skipping ${size} (all ${puzzles.length} puzzles recently benchmarked)`
+        `[${model.name}] Skipping ${size} (all ${puzzles.length} puzzles successfully benchmarked)`
       );
       continue;
     }
@@ -305,31 +305,11 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
   return allResults;
 }
 
-// Check if any model has work to do
-function hasWorkToDo(): boolean {
-  for (const model of MODELS) {
-    const recentPuzzles = recentPuzzlesByModel.get(model.name) ?? new Set();
-    for (const puzzle of PUZZLES) {
-      if (!recentPuzzles.has(getPuzzleId(puzzle))) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-if (!hasWorkToDo()) {
-  console.log(
-    "\nAll models and sizes have been benchmarked recently. Nothing to do."
-  );
-  process.exit(0);
-}
-
 // Main execution - run all models in parallel, each processing puzzles in parallel (with concurrency limit)
 console.log("\n" + "=".repeat(60));
 console.log("STARTING BENCHMARK");
 console.log("=".repeat(60));
-console.log(`Models: ${MODELS.map((m) => m.name).join(", ")}`);
+console.log(`Models: ${selectedModels.map((m) => m.name).join(", ")}`);
 console.log(
   `Sizes: ${sortSizes([...groupPuzzlesBySize(PUZZLES).keys()]).join(", ")}`
 );
@@ -338,7 +318,7 @@ console.log(`Database: ${dbPath}`);
 console.log("=".repeat(60) + "\n");
 
 const allResults = await Promise.all(
-  MODELS.map((model) => runModelBenchmark(model))
+  selectedModels.map((model) => runModelBenchmark(model))
 );
 const flatResults = allResults.flat();
 

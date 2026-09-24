@@ -4,7 +4,7 @@ import {
 } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
 
-export const RERUN_THRESHOLD_DAYS = 90;
+export const REQUEST_TIMEOUT_MS = 30 * 60 * 1000;
 export const MAX_PARALLEL_RUNS_PER_MODEL = 10;
 
 const defaultProviderOptions: OpenRouterCompletionSettings = {

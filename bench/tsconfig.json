@@ -1,7 +1,9 @@
 {
 	"compilerOptions": {
 		// Environment setup & latest features
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "DOM"],
+		"types": ["bun", "node"],
+		"paths": { "common-tags": ["./node_modules/@types/common-tags"] },
 		"target": "ESNext",
 		"module": "Preserve",
 		"moduleDetection": "force",

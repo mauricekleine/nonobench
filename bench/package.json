@@ -6,17 +6,18 @@
   "scripts": {
     "bench": "bun run bench.ts",
     "export": "bun run export.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "regrade": "bun run regrade.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5"
+    "@types/bun": "1.4.2",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "^1.5.4",
+    "@openrouter/ai-sdk-provider": "^3.1.0",
     "@types/common-tags": "^1.8.4",
-    "ai": "^5",
-    "common-tags": "^1.8.2",
-    "zod": "^4.2.1"
+    "ai": "^7.0.113",
+    "common-tags": "^1.8.2"
   }
 }

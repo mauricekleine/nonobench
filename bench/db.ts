@@ -1,72 +1,51 @@
 import { Database } from "bun:sqlite";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { Puzzle } from "../visualizer/components/puzzles";
-import { MODELS, RERUN_THRESHOLD_DAYS } from "./constants";
 
-// Database path
-export const dbPath = new URL("./results.db", import.meta.url).pathname;
+export const dbPath = process.env.NONOBENCH_DB ?? fileURLToPath(new URL("./results.db", import.meta.url));
 
-// Initialize SQLite database
-export const db = new Database(dbPath);
-db.run(`
-  CREATE TABLE IF NOT EXISTS runs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    model TEXT NOT NULL,
-    puzzle_id TEXT NOT NULL,
-    size TEXT NOT NULL,
-    timestamp TEXT NOT NULL,
-    correct INTEGER NOT NULL,
-    status TEXT NOT NULL,
-    duration_ms REAL NOT NULL,
-    tokens INTEGER NOT NULL,
-    cost REAL NOT NULL,
-    error_message TEXT,
-    raw_input TEXT,
-    raw_output TEXT,
-    reasoning INTEGER,
-    UNIQUE(model, puzzle_id)
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_runs_model_puzzle_id ON runs(model, puzzle_id);
-  CREATE INDEX IF NOT EXISTS idx_runs_model_size ON runs(model, size);
-  CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON runs(timestamp);
-`);
-
-// Migration: Add raw_input and raw_output columns to existing databases
-try {
-  db.run(`ALTER TABLE runs ADD COLUMN raw_input TEXT`);
-} catch {
-  // Column already exists
-}
-try {
-  db.run(`ALTER TABLE runs ADD COLUMN raw_output TEXT`);
-} catch {
-  // Column already exists
-}
-try {
-  db.run(`ALTER TABLE runs ADD COLUMN reasoning INTEGER`);
-} catch {
-  // Column already exists
+// Reading never initializes or migrates the database.
+export function openReadDb(): Database | null {
+  return existsSync(dbPath) ? new Database(dbPath, { readonly: true, create: false }) : null;
 }
 
-// Migration: Populate reasoning column for existing records based on MODELS constant
-const modelsWithReasoning = new Map(MODELS.map((m) => [m.name, m.reasoning]));
-const rowsToUpdate = db
-  .query<{ model: string }, []>(
-    `SELECT DISTINCT model FROM runs WHERE reasoning IS NULL`
-  )
-  .all();
-
-for (const row of rowsToUpdate) {
-  const reasoning = modelsWithReasoning.get(row.model);
-  if (reasoning !== undefined) {
-    db.run(`UPDATE runs SET reasoning = ? WHERE model = ?`, [
-      reasoning ? 1 : 0,
-      row.model,
-    ]);
+let writeDb: Database | undefined;
+function openWriteDb(): Database {
+  if (writeDb) return writeDb;
+  const db = new Database(dbPath, { create: true });
+  db.run(`
+    CREATE TABLE IF NOT EXISTS runs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      model TEXT NOT NULL,
+      puzzle_id TEXT NOT NULL,
+      size TEXT NOT NULL,
+      timestamp TEXT NOT NULL,
+      correct INTEGER NOT NULL,
+      status TEXT NOT NULL,
+      duration_ms REAL NOT NULL,
+      tokens INTEGER NOT NULL,
+      cost REAL NOT NULL,
+      error_message TEXT,
+      raw_input TEXT,
+      raw_output TEXT,
+      reasoning INTEGER,
+      UNIQUE(model, puzzle_id)
+    );
+  `);
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_runs_model_puzzle_id ON runs(model, puzzle_id);
+    CREATE INDEX IF NOT EXISTS idx_runs_model_size ON runs(model, size);
+    CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON runs(timestamp);
+  `);
+  const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((row) => row.name));
+  for (const column of ["raw_input", "raw_output", "reasoning"] as const) {
+    if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${column === "reasoning" ? "INTEGER" : "TEXT"}`);
   }
+  writeDb = db;
+  return db;
 }
 
-// Result type for saving to DB
 export type BenchmarkResult = {
   model: string;
   puzzleId: string;
@@ -82,46 +61,44 @@ export type BenchmarkResult = {
   reasoning: boolean;
 };
 
-// Generate a stable puzzle ID from the solution (hash)
 export function getPuzzleId(puzzle: Puzzle): string {
   const hasher = new Bun.CryptoHasher("md5");
   hasher.update(puzzle.solution);
-  return hasher.digest("hex").slice(0, 16); // Use first 16 chars of MD5
+  return hasher.digest("hex").slice(0, 16);
 }
 
-// Returns a map of model -> set of puzzle_ids that were recently benchmarked (within threshold)
-// Only include successful runs ("status = 'success'"), so failed runs can be retried
-export function getRecentPuzzlesByModel(): Map<string, Set<string>> {
-  const thresholdDate = new Date();
-  thresholdDate.setDate(thresholdDate.getDate() - RERUN_THRESHOLD_DAYS);
-  const thresholdIso = thresholdDate.toISOString();
-
-  const results = db
-    .query<{ model: string; puzzle_id: string }, [string]>(
-      `SELECT model, puzzle_id FROM runs WHERE timestamp > ? AND status = 'success'`
-    )
-    .all(thresholdIso);
-
-  const recentPuzzles = new Map<string, Set<string>>();
+export function getSuccessfulPuzzlesByModel(): Map<string, Set<string>> {
+  const db = openReadDb();
+  const results = db?.query<{ model: string; puzzle_id: string }, []>(
+    "SELECT model, puzzle_id FROM runs WHERE status = 'success'"
+  ).all() ?? [];
+  db?.close();
+  const successful = new Map<string, Set<string>>();
   for (const row of results) {
-    if (!recentPuzzles.has(row.model)) {
-      recentPuzzles.set(row.model, new Set());
-    }
-    recentPuzzles.get(row.model)!.add(row.puzzle_id);
+    if (!successful.has(row.model)) successful.set(row.model, new Set());
+    successful.get(row.model)!.add(row.puzzle_id);
   }
-
-  return recentPuzzles;
+  return successful;
 }
 
-// Prepared statement for inserting/replacing runs
-const insertRunStmt = db.prepare(`
-  INSERT OR REPLACE INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning)
-  VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning)
-`);
-
-// Save a single run to the database
 export function saveRunToDb(result: BenchmarkResult): void {
-  insertRunStmt.run({
+  openWriteDb().query(`
+    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning)
+    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning)
+    ON CONFLICT(model, puzzle_id) DO UPDATE SET
+      size = excluded.size,
+      timestamp = excluded.timestamp,
+      correct = excluded.correct,
+      status = excluded.status,
+      duration_ms = excluded.duration_ms,
+      tokens = excluded.tokens,
+      cost = excluded.cost,
+      error_message = excluded.error_message,
+      raw_input = excluded.raw_input,
+      raw_output = excluded.raw_output,
+      reasoning = excluded.reasoning
+    WHERE runs.status = 'failed'
+  `).run({
     $model: result.model,
     $puzzle_id: result.puzzleId,
     $size: result.size,

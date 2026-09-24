@@ -1,8 +1,12 @@
-import { db } from "./db";
+import { openReadDb } from "./db";
+import { sortSizes } from "./sizes";
+
+const db = openReadDb();
+if (!db) throw new Error("Database does not exist");
 
 // Output paths
-const resultsPath = new URL("../visualizer/app/results.json", import.meta.url).pathname;
-const resultsRawPath = new URL("../visualizer/app/results-raw.json", import.meta.url).pathname;
+const resultsPath = process.env.NONOBENCH_RESULTS_JSON ?? new URL("../visualizer/app/results.json", import.meta.url).pathname;
+const resultsRawPath = process.env.NONOBENCH_RESULTS_RAW_JSON ?? new URL("../visualizer/app/results-raw.json", import.meta.url).pathname;
 
 // Types for the JSON output (matching existing format)
 type SizeData = {
@@ -188,15 +192,6 @@ for (const [model, errors] of errorMap) {
 // Sort by total errors descending
 errorsByModel.sort((a, b) => b.totalErrors - a.totalErrors);
 
-// Sort sizes in order (5x5, 10x10, 15x15)
-function sortSizes(sizes: string[]): string[] {
-	return [...sizes].sort((a, b) => {
-		const aNum = Number.parseInt(a.split("x")[0] ?? "0", 10);
-		const bNum = Number.parseInt(b.split("x")[0] ?? "0", 10);
-		return aNum - bNum;
-	});
-}
-
 // Build the results structure
 const modelMap = new Map<string, SizeData[]>();
 const modelReasoningMap = new Map<string, boolean>();
@@ -361,3 +356,5 @@ await Bun.write(resultsRawPath, JSON.stringify(rawResultsOutput, null, 2));
 
 console.log(`\nExported ${rawResults.length} raw runs to:`);
 console.log(`  ${resultsRawPath}`);
+
+db.close();
