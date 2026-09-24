@@ -89,6 +89,7 @@ type ModelData = {
 	effort: string;
 	// True when none of the variant's runs used strict structured output.
 	legacy: boolean;
+	complete?: boolean;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -816,6 +817,11 @@ export default function ResultsPage() {
 															{showAllLevels ? modelData.model : modelData.family}
 														</span>
 														{!showAllLevels && <EffortBadge effort={modelData.effort} />}
+														{modelData.complete === false && (
+															<span className="shrink-0 text-[10px] font-mono text-[#FFCA16]" title="Not every puzzle has a finished run yet">
+																incomplete
+															</span>
+														)}
 														{modelData.reasoning && (
 															<Tooltip>
 																<TooltipTrigger>

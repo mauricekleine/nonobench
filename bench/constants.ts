@@ -21,7 +21,20 @@ export type Model = {
   family: string;
   effort: string;
   reasoning: boolean;
+  // How the answer is requested. "json_schema" (default for new runs) uses
+  // strict structured output; "text" is the legacy free-text format, used for
+  // models whose schema-enforcing endpoints measurably degrade answers.
+  outputMode?: OutputMode;
 };
+
+export type OutputMode = "json_schema" | "text";
+
+// Experiments may force a mode (e.g. the 5x5 A/B check against a scratch DB).
+export function outputModeFor(model: Model): OutputMode {
+  const override = process.env.NONOBENCH_OUTPUT_MODE;
+  if (override === "text" || override === "json_schema") return override;
+  return model.outputMode ?? "json_schema";
+}
 
 // A reasoning variant at an explicit effort, named "<family>-<effort>".
 function reasoningModel(id: string, family: string, effort: string): Model {

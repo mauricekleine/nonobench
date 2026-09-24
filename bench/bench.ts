@@ -5,6 +5,7 @@ import {
   MAX_PARALLEL_RUNS_PER_MODEL,
   MODELS,
   REQUEST_TIMEOUT_MS,
+  outputModeFor,
   type Model,
 } from "./constants";
 import {
@@ -26,6 +27,7 @@ const selectedNames = new Set<string>();
 let allMissing = false;
 let limit = Infinity;
 let maxCost = Infinity;
+let maxParallel = MAX_PARALLEL_RUNS_PER_MODEL;
 let selectedSizes: string[] = [...CORE_SIZES];
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
@@ -35,6 +37,12 @@ for (let i = 0; i < args.length; i++) {
     limit = Number(args[++i]);
     if (!Number.isInteger(limit) || limit < 1) {
       console.error("--limit needs a positive integer (puzzles per size)");
+      process.exit(1);
+    }
+  } else if (arg === "--parallel") {
+    maxParallel = Number(args[++i]);
+    if (!Number.isInteger(maxParallel) || maxParallel < 1) {
+      console.error("--parallel needs a positive integer");
       process.exit(1);
     }
   } else if (arg === "--max-cost") {
@@ -152,6 +160,7 @@ async function runBenchmark(
   let rawOutput = "";
   let reasoningTokens: number | null = null;
   const cells = puzzle.width * puzzle.height;
+  const outputMode = outputModeFor(model);
 
   const systemPrompt = codeBlock`
 		You are solving a nonogram (also known as picross or griddlers).
@@ -197,7 +206,7 @@ async function runBenchmark(
       prompt: puzzle.clues.canonical,
       system: systemPrompt,
       timeout: REQUEST_TIMEOUT_MS,
-      output: Output.object({
+      ...(outputMode === "json_schema" ? { output: Output.object({
         name: "nonogram_solution",
         schema: jsonSchema<{ solution: string }>({
           type: "object",
@@ -211,7 +220,7 @@ async function runBenchmark(
           additionalProperties: false,
         }),
       }),
-      providerOptions: { openrouter: { provider: { require_parameters: true } } },
+      providerOptions: { openrouter: { provider: { require_parameters: true } } } } : {}),
     });
 
     rawOutput = resp.text;
@@ -269,7 +278,7 @@ async function runBenchmark(
     rawInput,
     rawOutput,
     reasoning: model.reasoning,
-    outputMode: "json_schema",
+    outputMode,
     reasoningTokens,
     ...(errorMessage ? { errorMessage } : {}),
   };
@@ -327,11 +336,11 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
     const skippedCount = puzzles.length - puzzlesToRun.length;
     if (skippedCount > 0) {
       console.log(
-        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, ${skippedCount} skipped, max ${MAX_PARALLEL_RUNS_PER_MODEL} parallel)`
+        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, ${skippedCount} skipped, max ${maxParallel} parallel)`
       );
     } else {
       console.log(
-        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, max ${MAX_PARALLEL_RUNS_PER_MODEL} parallel)`
+        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, max ${maxParallel} parallel)`
       );
     }
 
@@ -342,7 +351,7 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
 
     for (const puzzle of puzzlesToRun) {
       // Wait if we've hit the concurrency limit
-      if (pending.size >= MAX_PARALLEL_RUNS_PER_MODEL) {
+      if (pending.size >= maxParallel) {
         await Promise.race(pending);
       }
       if (reasoningLooksBroken(model, allResults)) {
@@ -393,6 +402,15 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
     console.log(
       `[${model.name}] Completed ${size}: ${correctCount}/${sizeResults.length} correct, ${failedCount} failed`
     );
+
+    // A model that answers every 5x5 but solves none with structured output
+    // almost certainly has an output-format problem, not a reasoning one:
+    // stop before spending on larger grids and flag it for a text-mode check.
+    const answered = sizeResults.filter((r) => r.status === "success").length;
+    if (size === "5x5" && outputModeFor(model) === "json_schema" && answered === puzzles.length && correctCount === 0) {
+      console.log(`[${model.name}] Stopped: 0/${answered} on 5x5 with structured output; likely a format issue. Check it in text mode.`);
+      return allResults;
+    }
   }
 
   return allResults;
@@ -406,7 +424,7 @@ console.log(`Models: ${selectedModels.map((m) => m.name).join(", ")}`);
 console.log(
   `Sizes: ${selectedSizes.join(", ")}`
 );
-console.log(`Parallel runs per model: ${MAX_PARALLEL_RUNS_PER_MODEL}`);
+console.log(`Parallel runs per model: ${maxParallel}`);
 console.log(`Database: ${dbPath}`);
 console.log("=".repeat(60) + "\n");
 

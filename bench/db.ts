@@ -63,7 +63,7 @@ export type BenchmarkResult = {
   rawInput: string;
   rawOutput: string;
   reasoning: boolean;
-  outputMode: "json_schema";
+  outputMode: "json_schema" | "text";
   // Null when the provider does not report reasoning tokens.
   reasoningTokens: number | null;
 };

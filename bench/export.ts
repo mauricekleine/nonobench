@@ -22,6 +22,14 @@ for (const row of db
 }
 const correctRunsJson = JSON.stringify([...correctRuns]);
 
+const corePuzzleIds = PUZZLES.filter((puzzle) => CORE_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`)).map(getPuzzleId);
+const successfulRuns = new Set(
+	db
+		.query<{ model: string; puzzle_id: string }, []>("SELECT model, puzzle_id FROM runs WHERE status = 'success'")
+		.all()
+		.map((row) => `${row.model}\u0000${row.puzzle_id}`),
+);
+
 // Runs from before strict structured output have no output_mode (older
 // databases lack the column entirely). A variant is "legacy" when none of its
 // runs used structured output; the site fades those so new runs stand out.
@@ -65,6 +73,9 @@ type ModelData = {
 	family: string;
 	effort: string;
 	legacy: boolean;
+	// True when every core puzzle has a successful run; partial results must
+	// not be read as finished ones.
+	complete: boolean;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -322,6 +333,7 @@ for (const [model, sizeDatas] of modelMap) {
 		family: metadata.family,
 		effort: metadata.effort,
 		legacy: !structuredModels.has(model),
+		complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
 		reasoning: modelReasoningMap.get(model) ?? false,
 		overallAccuracy: overallRuns > 0 ? (overallCorrect / overallRuns) * 100 : 0,
 		overallCorrect,
