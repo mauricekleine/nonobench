@@ -28,12 +28,12 @@ function PuzzlesContent() {
   const cleanSolution = puzzle.solution.replace(/\s/g, "");
 
   const goToPrevious = useCallback(() => {
-    setCurrentIndex((prev) => (prev === 0 ? PUZZLES.length - 1 : prev - 1));
-  }, [setCurrentIndex]);
+    setCurrentIndex(safeIndex === 0 ? PUZZLES.length - 1 : safeIndex - 1);
+  }, [safeIndex, setCurrentIndex]);
 
   const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev === PUZZLES.length - 1 ? 0 : prev + 1));
-  }, [setCurrentIndex]);
+    setCurrentIndex(safeIndex === PUZZLES.length - 1 ? 0 : safeIndex + 1);
+  }, [safeIndex, setCurrentIndex]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -85,12 +85,10 @@ function PuzzlesContent() {
               </div>
             </div>
 
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <House className="size-4" weight="bold" />
-                <span className="hidden sm:inline">Back to results</span>
-              </Button>
-            </Link>
+            <Button render={<Link href="/" />} variant="ghost" size="sm">
+              <House className="size-4" weight="bold" />
+              <span className="hidden sm:inline">Back to results</span>
+            </Button>
           </div>
         </div>
       </header>
@@ -99,6 +97,7 @@ function PuzzlesContent() {
       <main className="relative flex-1 flex items-center justify-center px-6 py-8">
         {/* Navigation arrow - Left */}
         <button
+          type="button"
           onClick={goToPrevious}
           className="absolute left-4 sm:left-8 lg:left-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
           aria-label="Previous puzzle"
@@ -157,6 +156,7 @@ function PuzzlesContent() {
 
         {/* Navigation arrow - Right */}
         <button
+          type="button"
           onClick={goToNext}
           className="absolute right-4 sm:right-8 lg:right-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
           aria-label="Next puzzle"
@@ -184,6 +184,7 @@ function PuzzlesContent() {
 
               return (
                 <button
+                  type="button"
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
                   className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${isActive

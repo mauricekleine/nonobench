@@ -48,6 +48,13 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
     stopDragging();
   }
 
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    startDragging(cell);
+    stopDragging();
+  }
+
   return (
     <div
       className={cn(
@@ -75,6 +82,8 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
         initial={false}
         role="button"
         tabIndex={0}
+        aria-label={`Row ${cell.row + 1}, column ${cell.column + 1}, ${value.toLowerCase()}`}
+        onKeyDown={handleKeyDown}
         transition={{ duration: 0.1 }}
         variants={{
           [NonogramCellValue.FILLED]: { backgroundColor: "var(--foreground)" },
