@@ -24,10 +24,24 @@ const successfulPuzzlesByModel = getSuccessfulPuzzlesByModel();
 const args = process.argv.slice(2);
 const selectedNames = new Set<string>();
 let allMissing = false;
+let limit = Infinity;
+let maxCost = Infinity;
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
   if (arg === "--all-missing") {
     allMissing = true;
+  } else if (arg === "--limit") {
+    limit = Number(args[++i]);
+    if (!Number.isInteger(limit) || limit < 1) {
+      console.error("--limit needs a positive integer (puzzles per size)");
+      process.exit(1);
+    }
+  } else if (arg === "--max-cost") {
+    maxCost = Number(args[++i]);
+    if (!(maxCost > 0)) {
+      console.error("--max-cost needs a positive USD amount");
+      process.exit(1);
+    }
   } else if (arg === "--model") {
     const name = args[++i];
     if (!name || name.startsWith("--") || !MODELS.some((model) => model.name === name)) {
@@ -254,6 +268,9 @@ function groupPuzzlesBySize(puzzles: Puzzle[]): Map<string, Puzzle[]> {
   return groups;
 }
 
+let sessionCost = 0;
+let budgetExhausted = false;
+
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
   const puzzlesBySize = groupPuzzlesBySize(PUZZLES);
@@ -262,9 +279,9 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
 
   for (const [size, puzzles] of puzzlesBySize) {
     // Filter out successfully benchmarked puzzles
-    const puzzlesToRun = puzzles.filter(
-      (puzzle) => !successfulPuzzles.has(getPuzzleId(puzzle))
-    );
+    const puzzlesToRun = puzzles
+      .slice(0, limit)
+      .filter((puzzle) => !successfulPuzzles.has(getPuzzleId(puzzle)));
 
     if (puzzlesToRun.length === 0) {
       console.log(
@@ -294,9 +311,17 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
       if (pending.size >= MAX_PARALLEL_RUNS_PER_MODEL) {
         await Promise.race(pending);
       }
+      // Budget guard: stop launching once this session's spend reaches the cap.
+      // In-flight requests still finish, so overshoot is bounded by them.
+      if (sessionCost >= maxCost) {
+        if (!budgetExhausted) console.log(`Budget of $${maxCost} reached; not starting further puzzles.`);
+        budgetExhausted = true;
+        break;
+      }
 
       const task = (async () => {
         const result = await runBenchmark(puzzle, model);
+        sessionCost += result.cost;
         allResults.push(result);
         sizeResults.push(result);
 

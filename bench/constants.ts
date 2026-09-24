@@ -23,6 +23,34 @@ export type Model = {
   reasoning: boolean;
 };
 
+// A reasoning variant at an explicit effort, named "<family>-<effort>".
+function reasoningModel(id: string, family: string, effort: string): Model {
+  return {
+    llm: openrouter(id, {
+      ...defaultProviderOptions,
+      extraBody: { reasoning: { effort, exclude: true } },
+    }),
+    name: `${family}-${effort}`,
+    family,
+    effort,
+    reasoning: true,
+  };
+}
+
+// Reasoning on at the provider's default, for models without effort control.
+function defaultReasoningModel(id: string, family: string): Model {
+  return {
+    llm: openrouter(id, {
+      ...defaultProviderOptions,
+      extraBody: { reasoning: { enabled: true, exclude: true } },
+    }),
+    name: family,
+    family,
+    effort: "default",
+    reasoning: true,
+  };
+}
+
 export const MODELS: Model[] = [
   {
     llm: openrouter("allenai/olmo-3.1-32b-think", defaultProviderOptions),
@@ -568,4 +596,28 @@ export const MODELS: Model[] = [
     effort: "high",
     reasoning: true,
   },
+
+  // --- September 2026 batch: strict structured output, effort ladder ---
+  // Each family starts at its lowest effort and steps up while it pays off.
+  reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "low"),
+  reasoningModel("anthropic/claude-fable-5.1", "claude-fable-5.1", "low"),
+  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "low"),
+  reasoningModel("openai/gpt-6-luna", "gpt-6-luna", "low"),
+  reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "low"),
+  reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "low"),
+  reasoningModel("x-ai/grok-4.7", "grok-4.7", "low"),
+  reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "low"),
+  reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "low"),
+  reasoningModel("qwen/qwen3.8-max-0902", "qwen3.8-max", "low"),
+  reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"),
+  reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"),
+  reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"),
+  reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"),
+  reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"),
+  // No effort control on OpenRouter: reasoning on at the provider default.
+  defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"),
+  defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
+  defaultReasoningModel("xiaomi/mimo-v2.6-flash", "mimo-v2.6-flash"),
+  defaultReasoningModel("bytedance-seed/seed-2-1-turbo", "seed-2.1-turbo"),
+  defaultReasoningModel("minimax/minimax-m3", "minimax-m3"),
 ];
