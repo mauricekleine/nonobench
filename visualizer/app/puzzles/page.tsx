@@ -56,7 +56,8 @@ function PuzzlesContent() {
   const getSizeColor = () => {
     if (puzzle.width === 5) return "text-[#70B8FF]"; // Blue
     if (puzzle.width === 10) return "text-[#46FEA5]"; // Green
-    return "text-[#FFCA16]"; // Amber
+    if (puzzle.width === 15) return "text-[#FFCA16]"; // Amber
+    return "text-[#C69CFF]"; // Violet
   };
 
   return (
@@ -94,12 +95,12 @@ function PuzzlesContent() {
       </header>
 
       {/* Main content */}
-      <main className="relative flex-1 flex items-center justify-center px-6 py-8">
+      <main className="relative flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
         {/* Navigation arrow - Left */}
         <button
           type="button"
           onClick={goToPrevious}
-          className="absolute left-4 sm:left-8 lg:left-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
+          className="absolute top-[17%] sm:top-auto left-2 sm:left-8 lg:left-16 p-2 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer z-10"
           aria-label="Previous puzzle"
         >
           <CaretLeft
@@ -109,7 +110,7 @@ function PuzzlesContent() {
         </button>
 
         {/* Nonogram container */}
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6 max-w-full">
           {/* Puzzle info */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -131,13 +132,15 @@ function PuzzlesContent() {
           </div>
 
           {/* Nonogram - Resend card style */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/30">
-            <Nonogram
-              key={safeIndex}
-              height={puzzle.height}
-              width={puzzle.width}
-              solution={cleanSolution}
-            />
+          <div className="p-3 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/30 max-w-full overflow-hidden">
+            <div className={puzzle.width === 20 ? "[zoom:0.54] sm:[zoom:1]" : ""}>
+              <Nonogram
+                key={safeIndex}
+                height={puzzle.height}
+                width={puzzle.width}
+                solution={cleanSolution}
+              />
+            </div>
           </div>
 
           {/* Keyboard hint */}
@@ -158,7 +161,7 @@ function PuzzlesContent() {
         <button
           type="button"
           onClick={goToNext}
-          className="absolute right-4 sm:right-8 lg:right-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
+          className="absolute top-[17%] sm:top-auto right-2 sm:right-8 lg:right-16 p-2 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer z-10"
           aria-label="Next puzzle"
         >
           <CaretRight
@@ -180,7 +183,7 @@ function PuzzlesContent() {
                   ? "bg-[#70B8FF]"  // Blue
                   : p.width === 10
                     ? "bg-[#46FEA5]"  // Green
-                    : "bg-[#FFCA16]"; // Amber
+                    : p.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]";
 
               return (
                 <button
@@ -208,6 +211,10 @@ function PuzzlesContent() {
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#FFCA16]" />
               15×15
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#C69CFF]" />
+              20×20
             </span>
           </div>
         </div>

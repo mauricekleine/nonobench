@@ -2,7 +2,7 @@ import { PUZZLES } from "../visualizer/components/puzzles";
 import { MODELS } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
 import { gradeOutput } from "./grade";
-import { sortSizes } from "./sizes";
+import { CORE_SIZES, sortSizes } from "./sizes";
 
 const db = openReadDb();
 if (!db) throw new Error("Database does not exist");
@@ -90,6 +90,7 @@ type BenchmarkResults = {
 	summary: {
 		models: string[];
 		sizes: string[];
+		coreSizes: string[];
 	};
 	byModel: ModelData[];
 	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean } & SizeData>;
@@ -235,7 +236,7 @@ errorsByModel.sort((a, b) => b.totalErrors - a.totalErrors);
 // Build the results structure
 const modelMap = new Map<string, SizeData[]>();
 const modelReasoningMap = new Map<string, boolean>();
-const allSizes = new Set<string>();
+const allSizes = new Set(PUZZLES.map((puzzle) => `${puzzle.width}x${puzzle.height}`));
 
 for (const row of aggregatedResults) {
 	if (!modelMap.has(row.model)) {
@@ -296,10 +297,12 @@ for (const [model, sizeDatas] of modelMap) {
 	let overallRuns = 0;
 
 	for (const sizeData of sortedSizeDatas) {
-		overallCorrect += sizeData.correct;
-		overallFailed += sizeData.failed;
-		overallTotal += sizeData.total;
-		overallRuns += sizeData.runs;
+		if (CORE_SIZES.some((size) => size === sizeData.size)) {
+			overallCorrect += sizeData.correct;
+			overallFailed += sizeData.failed;
+			overallTotal += sizeData.total;
+			overallRuns += sizeData.runs;
+		}
 
 		// Add to chartData
 		chartData.push({
@@ -338,6 +341,7 @@ const results: BenchmarkResults = {
 	summary: {
 		models: byModel.map((m) => m.model),
 		sizes: sortSizes([...allSizes]),
+		coreSizes: [...CORE_SIZES],
 	},
 	byModel,
 	chartData,

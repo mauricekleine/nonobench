@@ -15,7 +15,7 @@ import {
   type BenchmarkResult,
 } from "./db";
 import { gradeOutput } from "./grade";
-import { sortSizes } from "./sizes";
+import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
 
@@ -26,6 +26,7 @@ const selectedNames = new Set<string>();
 let allMissing = false;
 let limit = Infinity;
 let maxCost = Infinity;
+let selectedSizes: string[] = [...CORE_SIZES];
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
   if (arg === "--all-missing") {
@@ -49,6 +50,15 @@ for (let i = 0; i < args.length; i++) {
       process.exit(1);
     }
     selectedNames.add(name);
+  } else if (arg === "--sizes") {
+    const value = args[++i];
+    const validSizes: readonly string[] = [...CORE_SIZES, ...EXTENDED_SIZES];
+    const parsed = value?.split(",") ?? [];
+    if (!parsed.length || parsed.some((size) => !validSizes.includes(size)) || new Set(parsed).size !== parsed.length) {
+      console.error(`--sizes needs comma-separated sizes from: ${validSizes.join(", ")}`);
+      process.exit(1);
+    }
+    selectedSizes = sortSizes(parsed);
   } else {
     console.error(`Unknown argument: ${arg}`);
     process.exit(1);
@@ -59,13 +69,16 @@ if (allMissing && selectedNames.size > 0) {
   process.exit(1);
 }
 const selectedModels = allMissing ? MODELS : MODELS.filter((model) => selectedNames.has(model.name));
+const plannedPuzzles = PUZZLES.filter((puzzle) => selectedSizes.includes(`${puzzle.width}x${puzzle.height}`));
+const extendedPuzzles = PUZZLES.filter((puzzle) => EXTENDED_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`));
 console.log(`Benchmark plan (${dbPath}):`);
 for (const model of MODELS) {
   const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
-  const missing = PUZZLES.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  console.log(`  ${model.name}: ${missing} missing/retryable of ${PUZZLES.length}`);
+  const missing = plannedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
+  const extendedMissing = extendedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
+  console.log(`  ${model.name}: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
 }
-if (args.length === 0) {
+if (selectedModels.length === 0) {
   console.log("Select --model <name> (repeatable) or --all-missing to run.");
   process.exit(0);
 }
@@ -294,7 +307,7 @@ function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean
 
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
-  const puzzlesBySize = groupPuzzlesBySize(PUZZLES);
+  const puzzlesBySize = groupPuzzlesBySize(plannedPuzzles);
   const successfulPuzzles = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const allResults: BenchmarkResult[] = [];
 
@@ -391,7 +404,7 @@ console.log("STARTING BENCHMARK");
 console.log("=".repeat(60));
 console.log(`Models: ${selectedModels.map((m) => m.name).join(", ")}`);
 console.log(
-  `Sizes: ${sortSizes([...groupPuzzlesBySize(PUZZLES).keys()]).join(", ")}`
+  `Sizes: ${selectedSizes.join(", ")}`
 );
 console.log(`Parallel runs per model: ${MAX_PARALLEL_RUNS_PER_MODEL}`);
 console.log(`Database: ${dbPath}`);

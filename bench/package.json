@@ -8,7 +8,8 @@
     "export": "bun run export.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "regrade": "bun run regrade.ts"
+    "regrade": "bun run regrade.ts",
+    "generate-puzzles": "bun run generate-puzzles.ts"
   },
   "devDependencies": {
     "@types/bun": "1.4.2",
