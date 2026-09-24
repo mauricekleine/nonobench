@@ -115,6 +115,7 @@ type Results = {
 	summary: {
 		models: string[];
 		sizes: string[];
+		coreSizes?: string[];
 	};
 	byModel: ModelData[];
 	chartData: (SizeData & { model: string; family: string; effort: string; legacy: boolean })[];
@@ -122,6 +123,7 @@ type Results = {
 };
 
 const results = resultsData as Results;
+const coreSizes = new Set(results.summary.coreSizes ?? ["5x5", "10x10", "15x15"]);
 
 const chartConfig = {
 	accuracy: {
@@ -199,8 +201,9 @@ function getAccuracyForSize(modelData: ModelData, size: string): number {
 // Helper to get stats for a specific size
 function getSizeStats(modelData: ModelData, size: string) {
 	const sizeData = modelData.bySize.find((s) => s.size === size);
-	if (!sizeData) return { accuracy: 0, correct: 0, runs: 0, failed: 0, avgCost: 0, avgTime: 0 };
+	if (!sizeData || sizeData.runs === 0) return { present: false, accuracy: 0, correct: 0, runs: 0, failed: 0, avgCost: 0, avgTime: 0 };
 	return {
+		present: true,
 		accuracy: sizeData.accuracy,
 		correct: sizeData.correct,
 		runs: getSizeRuns(sizeData),
@@ -212,8 +215,8 @@ function getSizeStats(modelData: ModelData, size: string) {
 
 // Helper to get model stats
 function getModelStats(modelData: ModelData) {
-	const totalDuration = modelData.bySize.reduce((sum, s) => sum + getSizeTotalDuration(s), 0);
-	const totalCost = modelData.bySize.reduce((sum, s) => sum + s.totalCost, 0);
+	const totalDuration = modelData.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + getSizeTotalDuration(s), 0);
+	const totalCost = modelData.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + s.totalCost, 0);
 	const runs = getModelRuns(modelData);
 	const avgDuration = runs > 0 ? totalDuration / runs : 0;
 	const avgCost = runs > 0 ? totalCost / runs : 0;
@@ -263,7 +266,7 @@ export default function ResultsPage() {
 		);
 	};
 
-	const sizes = useMemo(() => ["all", ...results.summary.sizes], []);
+	const sizes = useMemo(() => ["all", ...new Set(PUZZLES.map((puzzle) => `${puzzle.width}x${puzzle.height}`))], []);
 
 	// Apply type filters before selecting each family's best variant.
 	const filteredVariants = useMemo(() => {
@@ -283,8 +286,8 @@ export default function ResultsPage() {
 		const getChartModelStats = (model: ModelData) => {
 			const displayName = showAllLevels ? model.model : model.family;
 			if (selectedSize === "all") {
-				const totalDuration = model.bySize.reduce((sum, s) => sum + getSizeTotalDuration(s), 0);
-				const totalCost = model.bySize.reduce((sum, s) => sum + s.totalCost, 0);
+				const totalDuration = model.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + getSizeTotalDuration(s), 0);
+				const totalCost = model.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + s.totalCost, 0);
 				const runs = getModelRuns(model);
 				return {
 					model: model.model,
@@ -323,7 +326,9 @@ export default function ResultsPage() {
 			};
 		};
 
-		const data = filteredModels.map((model) => ({ ...getChartModelStats(model), legacy: model.legacy }));
+		const data = filteredModels
+			.filter((model) => selectedSize === "all" || model.bySize.some((size) => size.size === selectedSize && size.runs > 0))
+			.map((model) => ({ ...getChartModelStats(model), legacy: model.legacy }));
 
 		// Sort by accuracy (highest first), then alphabetically for ties
 		const sorted = data.sort((a, b) => {
@@ -374,7 +379,7 @@ export default function ResultsPage() {
 
 	// Calculate max accuracy for each size column (for highlighting)
 	const maxAccuracyBySize = useMemo(() => {
-		const sizes = ["5x5", "10x10", "15x15"] as const;
+		const sizes = ["5x5", "10x10", "15x15", "20x20"] as const;
 		const maxValues: Record<string, number> = {};
 
 		for (const size of sizes) {
@@ -390,9 +395,12 @@ export default function ResultsPage() {
 	// Calculate benchmark stats
 	const benchmarkStats = useMemo(() => {
 		const totalModels = filteredModels.length;
-		const puzzlesPerModel = PUZZLES.length;
-		const totalRuns = filteredVariants.reduce((sum, model) => sum + getModelRuns(model), 0);
-		return { totalModels, totalVariants: filteredVariants.length, totalPuzzles: puzzlesPerModel, totalRuns };
+		const puzzlesPerModel = (results.summary.coreSizes ?? ["5x5", "10x10", "15x15"]).reduce(
+			(sum, size) => sum + PUZZLES.filter((puzzle) => `${puzzle.width}x${puzzle.height}` === size).length, 0);
+		const extendedPuzzles = PUZZLES.length - puzzlesPerModel;
+		const totalRuns = filteredVariants.reduce((sum, model) =>
+			sum + model.bySize.reduce((sizeSum, size) => sizeSum + size.runs, 0), 0);
+		return { totalModels, totalVariants: filteredVariants.length, totalPuzzles: puzzlesPerModel, extendedPuzzles, totalRuns };
 	}, [filteredModels, filteredVariants]);
 
 	return (
@@ -425,7 +433,7 @@ export default function ResultsPage() {
 						<div className="flex items-center gap-2 text-sm">
 							<GridFour className="size-4 text-[#70B8FF]" weight="duotone" />
 							<span className="text-muted-foreground">Puzzles:</span>
-							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalPuzzles}</span>
+							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalPuzzles} core + {benchmarkStats.extendedPuzzles} extended</span>
 						</div>
 						<div className="flex items-center gap-2 text-sm">
 							<Robot className="size-4 text-[#46FEA5]" weight="duotone" />
@@ -597,13 +605,13 @@ export default function ResultsPage() {
 										onValueChange={(value) => setSelectedSize(value ?? "all")}
 										modal={false}
 									>
-										<SelectTrigger className="w-28" aria-label="Chart grid size">
+										<SelectTrigger className="w-36" aria-label="Chart grid size">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
 											{sizes.map((size) => (
-												<SelectItem key={size} value={size}>
-													{size === "all" ? "All Sizes" : size}
+											<SelectItem key={size} value={size}>
+												{size === "all" ? "Core overall" : size}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -612,7 +620,8 @@ export default function ResultsPage() {
 							</div>
 						</CardHeader>
 						<CardContent>
-							<div className="overflow-x-auto -mx-6 px-6 pb-6">
+							{chartData.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">No {selectedSize} runs yet.</p>}
+							<div className={cn("overflow-x-auto -mx-6 px-6 pb-6", chartData.length === 0 && "hidden")}>
 								<ChartContainer
 									config={chartConfig}
 									className="h-[400px]"
@@ -711,7 +720,7 @@ export default function ResultsPage() {
 											className="text-left font-medium px-4 py-3 whitespace-nowrap align-bottom border-r border-border/50"
 										>
 											<button type="button" onClick={() => handleSort("accuracy")} className="flex items-center gap-1 cursor-pointer hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
-												Overall
+												Overall (core)
 												{getSortIcon("accuracy")}
 											</button>
 										</th>
@@ -733,6 +742,7 @@ export default function ResultsPage() {
 										>
 											15×15
 										</th>
+										<th colSpan={5} className="text-center font-medium px-4 py-2 whitespace-nowrap bg-[#C69CFF]/10">20×20</th>
 									</tr>
 									{/* Sub-header row */}
 									<tr className="border-b border-border bg-foreground/[0.03] text-xs">
@@ -754,6 +764,9 @@ export default function ResultsPage() {
 										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Correct</th>
 										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Avg cost</th>
 										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Avg time</th>
+										{["Accuracy", "Runs", "Correct", "Avg cost", "Avg time"].map((label) => (
+											<th key={`20x20-${label}`} className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#C69CFF]/5">{label}</th>
+										))}
 									</tr>
 								</thead>
 								<tbody>
@@ -762,6 +775,7 @@ export default function ResultsPage() {
 										const stats5x5 = getSizeStats(modelData, "5x5");
 										const stats10x10 = getSizeStats(modelData, "10x10");
 										const stats15x15 = getSizeStats(modelData, "15x15");
+										const stats20x20 = getSizeStats(modelData, "20x20");
 										const rowColor = getRankColor(index, sortedModels.length);
 
 										const renderAccuracyCell = (sizeStats: ReturnType<typeof getSizeStats>, size: string, bgClass: string) => {
@@ -777,7 +791,7 @@ export default function ResultsPage() {
 															textDecorationThickness: "2px",
 														} : undefined}
 													>
-														{sizeStats.accuracy.toFixed(0)}%
+														{sizeStats.present ? `${sizeStats.accuracy.toFixed(0)}%` : "—"}
 													</span>
 												</td>
 											);
@@ -860,6 +874,17 @@ export default function ResultsPage() {
 												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
 													<span className="font-mono text-muted-foreground text-xs">{formatDuration(stats15x15.avgTime)}</span>
 												</td>
+											{renderAccuracyCell(stats20x20, "20x20", "bg-[#C69CFF]/5")}
+											{[
+												stats20x20.present ? stats20x20.runs : "—",
+												stats20x20.present ? stats20x20.correct : "—",
+												stats20x20.present ? formatCost(stats20x20.avgCost) : "—",
+												stats20x20.present ? formatDuration(stats20x20.avgTime) : "—",
+											].map((value, index) => (
+												<td key={`20x20-${index}`} className="text-left px-3 py-3.5 bg-[#C69CFF]/5">
+													<span className="font-mono text-muted-foreground text-xs">{value}</span>
+												</td>
+											))}
 											</tr>
 										);
 									})}
@@ -874,12 +899,12 @@ export default function ResultsPage() {
 					<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-5">
 						Statistics by grid size
 					</h2>
-					<div className="grid md:grid-cols-3 gap-6">
-						{results.summary.sizes.map((size, index) => {
+					<div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+						{sizes.slice(1).map((size, index) => {
 							// Use the same variants shown in the chart and table.
 							const filteredModelNames = new Set(filteredModels.map((m) => m.model));
 							const sizeStats = results.chartData.filter(
-								(d) => d.size === size && filteredModelNames.has(d.model),
+								(d) => d.size === size && d.runs > 0 && filteredModelNames.has(d.model),
 							);
 							const totalCorrect = sizeStats.reduce(
 								(sum, s) => sum + s.correct,
@@ -902,7 +927,7 @@ export default function ResultsPage() {
 							const avgCost = totalRuns > 0 ? totalCost / totalRuns : 0;
 
 							// Resend semantic colors for each size
-							const sizeColors = ["#70B8FF", "#46FEA5", "#FFCA16"];
+							const sizeColors = ["#70B8FF", "#46FEA5", "#FFCA16", "#C69CFF"];
 
 							return (
 								<Card key={size} className="overflow-hidden">
@@ -914,7 +939,7 @@ export default function ResultsPage() {
 											>
 												{size}
 											</div>
-											<span className="text-muted-foreground font-normal">Grid</span>
+											<span className="text-muted-foreground font-normal">Grid · {sizeStats.length} models</span>
 										</CardTitle>
 									</CardHeader>
 									<CardContent>
@@ -924,7 +949,7 @@ export default function ResultsPage() {
 													Avg accuracy
 												</p>
 												<p className="font-mono text-3xl font-semibold tracking-tight">
-													{avgAccuracy.toFixed(1)}%
+													{totalRuns > 0 ? `${avgAccuracy.toFixed(1)}%` : "—"}
 												</p>
 											</div>
 											<div>
