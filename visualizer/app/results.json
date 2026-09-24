@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-24T19:11:33.393Z",
+  "timestamp": "2026-09-24T19:13:29.697Z",
   "summary": {
     "models": [
       "gemini-3.1-pro-preview-high",
@@ -1800,7 +1800,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "high",
       "reasoning": true,
       "overallAccuracy": 20,
@@ -2670,7 +2670,7 @@
     },
     {
       "model": "mimo-v2-flash",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
@@ -4790,7 +4790,7 @@
     },
     {
       "model": "mimo-v2-flash",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T10:06:07.614Z",
@@ -4808,7 +4808,7 @@
     },
     {
       "model": "mimo-v2-flash",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T10:07:32.851Z",
@@ -4826,7 +4826,7 @@
     },
     {
       "model": "mimo-v2-flash",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T06:22:51.320Z",
@@ -4844,7 +4844,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:18:30.274Z",
@@ -4862,7 +4862,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-08T14:26:58.557Z",
@@ -4880,7 +4880,7 @@
     },
     {
       "model": "mimo-v2-flash-high",
-      "family": "mimo-v2-flash:free",
+      "family": "mimo-v2-flash",
       "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-08T14:32:15.173Z",

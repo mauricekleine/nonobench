@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { selectBestVariants } from "./select-best-variants";
 
-function variant(model, family, effort, accuracy, cost) {
+function variant(model: string, family: string, effort: string, accuracy: number, cost: number) {
 	return { model, family, effort, overallAccuracy: accuracy, overallRuns: 10, bySize: [{ totalCost: cost }] };
 }
 
