@@ -212,16 +212,10 @@ async function runBenchmark(
     tokens = resp.usage.outputTokens ?? 0;
     reasoningTokens = resp.usage.outputTokenDetails?.reasoningTokens ?? null;
 
+    // Every returned answer counts, including runs where the model chose not
+    // to reason: retrying those until it does would cherry-pick. Endpoints
+    // that systematically drop reasoning are caught per model below.
     status = "success";
-    // Some endpoints that enforce the schema silently switch reasoning off
-    // (e.g. MiniMax M3 on its only schema-capable provider). Such a run does
-    // not measure the configured variant, so keep it retryable instead of
-    // locking in a success row.
-    if (model.reasoning && reasoningTokens === 0) {
-      status = "failed";
-      correct = false;
-      errorMessage = "Reasoning variant produced no reasoning tokens under structured output";
-    }
   } catch (err: any) {
     if (NoObjectGeneratedError.isInstance(err) && err.text) {
       // The model answered but the SDK could not validate the JSON (e.g. a
@@ -284,6 +278,20 @@ function groupPuzzlesBySize(puzzles: Puzzle[]): Map<string, Puzzle[]> {
 let sessionCost = 0;
 let budgetExhausted = false;
 
+// Circuit breaker: some schema-enforcing endpoints silently disable reasoning
+// (MiniMax M3 did on every one). If most of a reasoning variant's first runs
+// report zero reasoning tokens, stop that model and flag it instead of
+// recording a misleading score.
+const BREAKER_SAMPLE = 8;
+const BREAKER_MAX_ZERO_SHARE = 0.5;
+function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean {
+  if (!model.reasoning) return false;
+  const answered = results.filter((result) => result.status === "success").slice(0, BREAKER_SAMPLE);
+  if (answered.length < BREAKER_SAMPLE) return false;
+  const zero = answered.filter((result) => result.reasoningTokens === 0).length;
+  return zero / answered.length > BREAKER_MAX_ZERO_SHARE;
+}
+
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
   const puzzlesBySize = groupPuzzlesBySize(PUZZLES);
@@ -323,6 +331,10 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
       // Wait if we've hit the concurrency limit
       if (pending.size >= MAX_PARALLEL_RUNS_PER_MODEL) {
         await Promise.race(pending);
+      }
+      if (reasoningLooksBroken(model, allResults)) {
+        console.log(`[${model.name}] Stopped: most runs report zero reasoning tokens; check the endpoint.`);
+        return allResults;
       }
       // Budget guard: stop launching once this session's spend reaches the cap.
       // In-flight requests still finish, so overshoot is bounded by them.
