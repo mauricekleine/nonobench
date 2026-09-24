@@ -2,11 +2,14 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
+import type { TooltipValueType } from "recharts";
 
 import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
+const INITIAL_DIMENSION = { width: 320, height: 200 } as const;
+type TooltipNameType = number | string;
 
 export type ChartConfig = {
 	[k in string]: {
@@ -39,9 +42,11 @@ function ChartContainer({
 	className,
 	children,
 	config,
+	initialDimension = INITIAL_DIMENSION,
 	...props
 }: React.ComponentProps<"div"> & {
 	config: ChartConfig;
+	initialDimension?: { width: number; height: number };
 	children: React.ComponentProps<
 		typeof RechartsPrimitive.ResponsiveContainer
 	>["children"];
@@ -61,7 +66,7 @@ function ChartContainer({
 				{...props}
 			>
 				<ChartStyle id={chartId} config={config} />
-				<RechartsPrimitive.ResponsiveContainer>
+				<RechartsPrimitive.ResponsiveContainer initialDimension={initialDimension}>
 					{children}
 				</RechartsPrimitive.ResponsiveContainer>
 			</div>
@@ -125,7 +130,10 @@ function ChartTooltipContent({
 		indicator?: "line" | "dot" | "dashed";
 		nameKey?: string;
 		labelKey?: string;
-	}) {
+	} & Omit<
+		RechartsPrimitive.DefaultTooltipContentProps<TooltipValueType, TooltipNameType>,
+		"accessibilityLayer"
+	>) {
 	const { config } = useChart();
 
 	const tooltipLabel = React.useMemo(() => {
@@ -184,11 +192,11 @@ function ChartTooltipContent({
 					.map((item, index) => {
 						const key = `${nameKey || item.name || item.dataKey || "value"}`;
 						const itemConfig = getPayloadConfigFromPayload(config, item, key);
-						const indicatorColor = color || item.payload.fill || item.color;
+						const indicatorColor = color || item.payload?.fill || item.color;
 
 						return (
 							<div
-								key={item.dataKey}
+								key={index}
 								className={cn(
 									"[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
 									indicator === "dot" && "items-center",
@@ -259,7 +267,7 @@ function ChartLegendContent({
 	verticalAlign = "bottom",
 	nameKey,
 }: React.ComponentProps<"div"> &
-	Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+	RechartsPrimitive.DefaultLegendContentProps & {
 		hideIcon?: boolean;
 		nameKey?: string;
 	}) {
