@@ -62,6 +62,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { selectBestVariants } from "@/lib/select-best-variants";
+import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 
 import resultsData from "./results.json";
 import { PUZZLES } from "@/components/puzzles";
@@ -83,6 +84,7 @@ type SizeData = {
 
 type ModelData = {
 	model: string;
+	provider: string;
 	family: string;
 	effort: string;
 	// True when none of the variant's runs used strict structured output.
@@ -117,7 +119,7 @@ type Results = {
 		sizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: (SizeData & { model: string; family: string; effort: string; legacy: boolean })[];
+	chartData: (SizeData & { model: string; provider: string; family: string; effort: string; legacy: boolean })[];
 	errorsByModel?: ModelErrorData[];
 };
 
@@ -152,11 +154,14 @@ function EffortBadge({ effort }: { effort: string }) {
 	return <span className="inline-flex shrink-0 rounded border border-[#70B8FF]/25 bg-[#70B8FF]/10 px-1.5 py-0.5 font-mono text-[10px] leading-none text-[#70B8FF]">{effort}</span>;
 }
 
-function ModelAxisTick({ x, y, label, effort }: { x?: string | number; y?: string | number; label: string; effort: string }) {
+function ModelAxisTick({ x, y, label, effort, provider, legacy }: { x?: string | number; y?: string | number; label: string; effort: string; provider: string; legacy: boolean }) {
 	// Effort rides on the same rotated line so it can't collide with neighbouring labels.
+	// The logo sits at the tick, right under its bar; the label ends just before it,
+	// so no text-width estimate is needed.
 	return (
-		<g transform={`translate(${x ?? 0},${y ?? 0}) rotate(-35)`}>
-			<text x={0} y={4} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>
+		<g transform={`translate(${x ?? 0},${y ?? 0}) rotate(-35)`} opacity={hasNewRuns && legacy ? 0.3 : 1}>
+			<ProviderLogo provider={provider} size={13} x={-13} y={-6} fill="var(--muted-foreground)" />
+			<text x={-18} y={4} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>
 				{label}
 				{effort && (
 					<tspan fill="var(--chart-1)" fillOpacity={0.8} fontFamily="monospace" fontSize={10}>
@@ -323,7 +328,7 @@ export default function ResultsPage() {
 			};
 		};
 
-		const data = filteredModels.map((model) => ({ ...getChartModelStats(model), legacy: model.legacy }));
+		const data = filteredModels.map((model) => ({ ...getChartModelStats(model), provider: model.provider, legacy: model.legacy }));
 
 		// Sort by accuracy (highest first), then alphabetically for ties
 		const sorted = data.sort((a, b) => {
@@ -631,14 +636,12 @@ export default function ResultsPage() {
 											dataKey="model"
 											axisLine={false}
 											tickLine={false}
-											tick={showAllLevels ? { fontSize: 11 } : (props) => {
+								tick={(props) => {
 												const item = chartData.find((entry) => entry.model === props.payload.value);
-												return <ModelAxisTick {...props} label={item?.displayName ?? props.payload.value} effort={item?.effort ?? ""} />;
+												return <ModelAxisTick {...props} label={item?.displayName ?? props.payload.value} effort={showAllLevels ? "" : item?.effort ?? ""} provider={item?.provider ?? ""} legacy={item?.legacy ?? false} />;
 											}}
 											interval={0}
-											angle={showAllLevels ? -35 : 0}
-											textAnchor="end"
-											height={showAllLevels ? 60 : 100}
+											height={showAllLevels ? 80 : 100}
 										/>
 										<YAxis
 											domain={[0, 100]}
@@ -654,7 +657,8 @@ export default function ResultsPage() {
 													hideIndicator
 													formatter={(value, name, props) => (
 														<div className="flex flex-col gap-0.5">
-															<span className="font-medium">
+															<span className="flex items-center gap-1.5 font-medium">
+																<ProviderLogo provider={props.payload.provider} size={14} className="shrink-0" />
 																	{props.payload.displayName}
 																</span>
 															{!showAllLevels && <EffortBadge effort={props.payload.effort} />}
@@ -793,10 +797,7 @@ export default function ResultsPage() {
 											>
 												<td className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-card/50 backdrop-blur-sm px-4 py-3.5 border-r border-border">
 													<div className="flex items-center gap-2.5">
-														<div
-															className="w-2 h-2 rounded-full shrink-0"
-															style={{ background: rowColor }}
-														/>
+														<ProviderLogo provider={modelData.provider} size={16} className="shrink-0 text-foreground" />
 														<span className="font-medium truncate">
 															{showAllLevels ? modelData.model : modelData.family}
 														</span>
