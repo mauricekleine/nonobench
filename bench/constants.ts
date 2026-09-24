@@ -18,6 +18,8 @@ const defaultProviderOptions: OpenRouterCompletionSettings = {
 export type Model = {
   llm: LanguageModel;
   name: string;
+  family: string;
+  effort: string;
   reasoning: boolean;
 };
 
@@ -25,6 +27,8 @@ export const MODELS: Model[] = [
   {
     llm: openrouter("allenai/olmo-3.1-32b-think", defaultProviderOptions),
     name: "olmo-3.1-32b-think",
+    family: "olmo-3.1-32b-think",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -35,6 +39,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "claude-4.5-opus-low",
+    family: "claude-4.5-opus",
+    effort: "low",
     reasoning: true,
   },
   {
@@ -45,6 +51,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "claude-4.5-opus-high",
+    family: "claude-4.5-opus",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -55,6 +63,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "claude-4.5-sonnet-non-reasoning",
+    family: "claude-4.5-sonnet",
+    effort: "none",
     reasoning: false,
   },
   {
@@ -65,6 +75,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "claude-4.5-sonnet-reasoning",
+    family: "claude-4.5-sonnet",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -75,6 +87,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "seed-1.6-high",
+    family: "seed-1.6",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -85,11 +99,15 @@ export const MODELS: Model[] = [
       },
     }),
     name: "seed-1.6-flash-high",
+    family: "seed-1.6-flash",
+    effort: "high",
     reasoning: true,
   },
   {
     llm: openrouter("deepseek/deepseek-v3.2", defaultProviderOptions),
     name: "deepseek-v3.2",
+    family: "deepseek-v3.2",
+    effort: "none",
     reasoning: false,
   },
   {
@@ -100,11 +118,15 @@ export const MODELS: Model[] = [
       },
     }),
     name: "deepseek-v3.2-high",
+    family: "deepseek-v3.2",
+    effort: "high",
     reasoning: true,
   },
   {
     llm: openrouter("deepseek/deepseek-v3.2-speciale", defaultProviderOptions),
     name: "deepseek-v3.2-speciale",
+    family: "deepseek-v3.2-speciale",
+    effort: "none",
     reasoning: false,
   },
   {
@@ -115,6 +137,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "deepseek-v3.2-speciale-high",
+    family: "deepseek-v3.2-speciale",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -123,6 +147,8 @@ export const MODELS: Model[] = [
       extraBody: { reasoning: { effort: "minimal", exclude: true } },
     }),
     name: "gemini-3-flash-preview-minimal",
+    family: "gemini-3-flash-preview",
+    effort: "minimal",
     reasoning: true,
   },
   {
@@ -137,6 +163,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gemini-3-flash-preview-high",
+    family: "gemini-3-flash-preview",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -147,6 +175,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gemini-3-pro-preview-low",
+    family: "gemini-3-pro-preview",
+    effort: "low",
     reasoning: true,
   },
   {
@@ -161,6 +191,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gemini-3-pro-preview-high",
+    family: "gemini-3-pro-preview",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -171,6 +203,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gemini-3.1-pro-preview-low",
+    family: "gemini-3.1-pro-preview",
+    effort: "low",
     reasoning: true,
   },
   {
@@ -185,11 +219,15 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gemini-3.1-pro-preview-high",
+    family: "gemini-3.1-pro-preview",
+    effort: "high",
     reasoning: true,
   },
   {
     llm: openrouter("minimax/minimax-m2.1", defaultProviderOptions),
     name: "minimax-m2.1",
+    family: "minimax-m2.1",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -200,11 +238,15 @@ export const MODELS: Model[] = [
       },
     }),
     name: "minimax-m2.1-high",
+    family: "minimax-m2.1",
+    effort: "high",
     reasoning: true,
   },
   {
     llm: openrouter("minimax/minimax-m2.5", defaultProviderOptions),
     name: "minimax-m2.5",
+    family: "minimax-m2.5",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -215,26 +257,36 @@ export const MODELS: Model[] = [
       },
     }),
     name: "minimax-m2.5-high",
+    family: "minimax-m2.5",
+    effort: "high",
     reasoning: true,
   },
   {
     llm: openrouter("mistralai/ministral-14b-2512", defaultProviderOptions),
     name: "ministral-14b-2512",
+    family: "ministral-14b-2512",
+    effort: "none",
     reasoning: false,
   },
   {
     llm: openrouter("mistralai/mistral-large-2512", defaultProviderOptions),
     name: "mistral-large-2512",
+    family: "mistral-large-2512",
+    effort: "none",
     reasoning: false,
   },
   {
     llm: openrouter("moonshotai/kimi-k2-0905", defaultProviderOptions),
     name: "kimi-k2",
+    family: "kimi-k2",
+    effort: "none",
     reasoning: false,
   },
   {
     llm: openrouter("moonshotai/kimi-k2-thinking", defaultProviderOptions),
     name: "kimi-k2-thinking",
+    family: "kimi-k2-thinking",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -245,6 +297,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "kimi-k2.5-non-reasoning",
+    family: "kimi-k2.5",
+    effort: "none",
     reasoning: false,
   },
   {
@@ -255,6 +309,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "kimi-k2.5-high",
+    family: "kimi-k2.5",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -268,6 +324,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gpt-5.2-low",
+    family: "gpt-5.2",
+    effort: "low",
     reasoning: true,
   },
   {
@@ -281,6 +339,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gpt-5.2-high",
+    family: "gpt-5.2",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -294,14 +354,22 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gpt-5.2-xhigh",
+    family: "gpt-5.2",
+    effort: "xhigh",
     reasoning: true,
   },
   // {
   // 	llm: openrouter("openai/gpt-5.2-pro", defaultProviderOptions),
   // 	name: "gpt-5.2-pro",
+  // 	family: "gpt-5.2-pro",
+  // 	effort: "default",
+  // 	reasoning: true,
   // },
   // {
   // 	name: "gpt-5.2-pro-high",
+  // 	family: "gpt-5.2-pro",
+  // 	effort: "high",
+  // 	reasoning: true,
   // 	llm: openrouter("openai/gpt-5.2-pro", {
   // 		...defaultProviderOptions,
   // 		reasoning: {
@@ -321,6 +389,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gpt-5.4-low",
+    family: "gpt-5.4",
+    effort: "low",
     reasoning: true,
   },
   {
@@ -334,6 +404,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gpt-5.4-high",
+    family: "gpt-5.4",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -347,6 +419,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gpt-5.4-xhigh",
+    family: "gpt-5.4",
+    effort: "xhigh",
     reasoning: true,
   },
   {
@@ -355,6 +429,8 @@ export const MODELS: Model[] = [
       extraBody: { reasoning: { effort: "low", exclude: true } },
     }),
     name: "gpt-oss-120b-low",
+    family: "gpt-oss-120b",
+    effort: "low",
     reasoning: true,
   },
   {
@@ -365,11 +441,15 @@ export const MODELS: Model[] = [
       },
     }),
     name: "gpt-oss-120b-high",
+    family: "gpt-oss-120b",
+    effort: "high",
     reasoning: true,
   },
   {
     llm: openrouter("qwen/qwen3-next-80b-a3b-thinking", defaultProviderOptions),
     name: "qwen3-next-80b-a3b-thinking",
+    family: "qwen3-next-80b-a3b-thinking",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -378,11 +458,15 @@ export const MODELS: Model[] = [
       extraBody: { reasoning: { enabled: false, exclude: true } },
     }),
     name: "glm-4.7-non-reasoning",
+    family: "glm-4.7",
+    effort: "none",
     reasoning: false,
   },
   {
     llm: openrouter("z-ai/glm-4.7", defaultProviderOptions),
     name: "glm-4.7-reasoning",
+    family: "glm-4.7",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -393,6 +477,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "glm-4.7-reasoning-high",
+    family: "glm-4.7",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -401,11 +487,15 @@ export const MODELS: Model[] = [
       extraBody: { reasoning: { enabled: false, exclude: true } },
     }),
     name: "glm-5-non-reasoning",
+    family: "glm-5",
+    effort: "none",
     reasoning: false,
   },
   {
     llm: openrouter("z-ai/glm-5", defaultProviderOptions),
     name: "glm-5-reasoning",
+    family: "glm-5",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -416,11 +506,15 @@ export const MODELS: Model[] = [
       },
     }),
     name: "glm-5-reasoning-high",
+    family: "glm-5",
+    effort: "high",
     reasoning: true,
   },
   {
     llm: openrouter("x-ai/grok-4", defaultProviderOptions),
     name: "grok-4",
+    family: "grok-4",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -429,11 +523,15 @@ export const MODELS: Model[] = [
       extraBody: { reasoning: { enabled: false } },
     }),
     name: "grok-4.1-fast-non-reasoning",
+    family: "grok-4.1-fast",
+    effort: "none",
     reasoning: false,
   },
   {
     llm: openrouter("x-ai/grok-4.1-fast", defaultProviderOptions),
     name: "grok-4.1-fast-reasoning",
+    family: "grok-4.1-fast",
+    effort: "default",
     reasoning: true,
   },
   {
@@ -444,6 +542,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "grok-4.1-fast-reasoning-high",
+    family: "grok-4.1-fast",
+    effort: "high",
     reasoning: true,
   },
   {
@@ -452,6 +552,8 @@ export const MODELS: Model[] = [
       extraBody: { reasoning: { enabled: false } },
     }),
     name: "mimo-v2-flash",
+    family: "mimo-v2-flash:free",
+    effort: "none",
     reasoning: false,
   },
   {
@@ -462,6 +564,8 @@ export const MODELS: Model[] = [
       },
     }),
     name: "mimo-v2-flash-high",
+    family: "mimo-v2-flash:free",
+    effort: "high",
     reasoning: true,
   },
 ];

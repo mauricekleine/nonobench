@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-24T18:39:20.420Z",
+  "timestamp": "2026-09-24T19:11:33.393Z",
   "summary": {
     "models": [
       "gemini-3.1-pro-preview-high",
@@ -60,6 +60,8 @@
   "byModel": [
     {
       "model": "gemini-3.1-pro-preview-high",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 76.66666666666667,
       "overallCorrect": 23,
@@ -116,6 +118,8 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "family": "gpt-5.4",
+      "effort": "xhigh",
       "reasoning": true,
       "overallAccuracy": 76.66666666666667,
       "overallCorrect": 23,
@@ -172,6 +176,8 @@
     },
     {
       "model": "gpt-5.2-high",
+      "family": "gpt-5.2",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 66.66666666666666,
       "overallCorrect": 20,
@@ -228,6 +234,8 @@
     },
     {
       "model": "gpt-5.4-high",
+      "family": "gpt-5.4",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 66.66666666666666,
       "overallCorrect": 20,
@@ -284,6 +292,8 @@
     },
     {
       "model": "claude-4.5-opus-high",
+      "family": "claude-4.5-opus",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 56.666666666666664,
       "overallCorrect": 17,
@@ -340,6 +350,8 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "family": "gemini-3-pro-preview",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 56.666666666666664,
       "overallCorrect": 17,
@@ -396,6 +408,8 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "family": "gpt-5.2",
+      "effort": "xhigh",
       "reasoning": true,
       "overallAccuracy": 56.666666666666664,
       "overallCorrect": 17,
@@ -452,6 +466,8 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "family": "claude-4.5-opus",
+      "effort": "low",
       "reasoning": true,
       "overallAccuracy": 50,
       "overallCorrect": 15,
@@ -508,6 +524,8 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "family": "gemini-3-flash-preview",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 50,
       "overallCorrect": 15,
@@ -564,6 +582,8 @@
     },
     {
       "model": "gpt-5.2-low",
+      "family": "gpt-5.2",
+      "effort": "low",
       "reasoning": true,
       "overallAccuracy": 50,
       "overallCorrect": 15,
@@ -620,6 +640,8 @@
     },
     {
       "model": "gpt-5.4-low",
+      "family": "gpt-5.4",
+      "effort": "low",
       "reasoning": true,
       "overallAccuracy": 50,
       "overallCorrect": 15,
@@ -676,6 +698,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 46.666666666666664,
       "overallCorrect": 14,
@@ -732,6 +756,8 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "family": "deepseek-v3.2",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 43.333333333333336,
       "overallCorrect": 13,
@@ -788,6 +814,8 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "low",
       "reasoning": true,
       "overallAccuracy": 43.333333333333336,
       "overallCorrect": 13,
@@ -844,6 +872,8 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "family": "gpt-oss-120b",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 43.333333333333336,
       "overallCorrect": 13,
@@ -900,6 +930,8 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "family": "kimi-k2.5",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 43.333333333333336,
       "overallCorrect": 13,
@@ -956,6 +988,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 40,
       "overallCorrect": 12,
@@ -1012,6 +1046,8 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "family": "gpt-oss-120b",
+      "effort": "low",
       "reasoning": true,
       "overallAccuracy": 33.33333333333333,
       "overallCorrect": 10,
@@ -1068,6 +1104,8 @@
     },
     {
       "model": "grok-4",
+      "family": "grok-4",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 33.33333333333333,
       "overallCorrect": 10,
@@ -1124,6 +1162,8 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "family": "minimax-m2.5",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 33.33333333333333,
       "overallCorrect": 10,
@@ -1180,6 +1220,8 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "family": "qwen3-next-80b-a3b-thinking",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 33.33333333333333,
       "overallCorrect": 10,
@@ -1236,6 +1278,8 @@
     },
     {
       "model": "seed-1.6-high",
+      "family": "seed-1.6",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 33.33333333333333,
       "overallCorrect": 10,
@@ -1292,6 +1336,8 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "family": "glm-5",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 30,
       "overallCorrect": 9,
@@ -1348,6 +1394,8 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "family": "minimax-m2.1",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 30,
       "overallCorrect": 9,
@@ -1404,6 +1452,8 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "family": "kimi-k2-thinking",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 26.666666666666668,
       "overallCorrect": 8,
@@ -1460,6 +1510,8 @@
     },
     {
       "model": "minimax-m2.5",
+      "family": "minimax-m2.5",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 26.666666666666668,
       "overallCorrect": 8,
@@ -1516,6 +1568,8 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 23.333333333333332,
       "overallCorrect": 7,
@@ -1572,6 +1626,8 @@
     },
     {
       "model": "glm-5-reasoning",
+      "family": "glm-5",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 23.333333333333332,
       "overallCorrect": 7,
@@ -1628,6 +1684,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 23.333333333333332,
       "overallCorrect": 7,
@@ -1684,6 +1742,8 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "family": "glm-4.7",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 20,
       "overallCorrect": 6,
@@ -1740,6 +1800,8 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "family": "mimo-v2-flash:free",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 20,
       "overallCorrect": 6,
@@ -1796,6 +1858,8 @@
     },
     {
       "model": "minimax-m2.1",
+      "family": "minimax-m2.1",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 20,
       "overallCorrect": 6,
@@ -1852,6 +1916,8 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "family": "glm-4.7",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 13.333333333333334,
       "overallCorrect": 4,
@@ -1908,6 +1974,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "family": "grok-4.1-fast",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 13.333333333333334,
       "overallCorrect": 4,
@@ -1964,6 +2032,8 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "family": "olmo-3.1-32b-think",
+      "effort": "default",
       "reasoning": true,
       "overallAccuracy": 13.333333333333334,
       "overallCorrect": 4,
@@ -2020,6 +2090,8 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "family": "seed-1.6-flash",
+      "effort": "high",
       "reasoning": true,
       "overallAccuracy": 13.333333333333334,
       "overallCorrect": 4,
@@ -2076,6 +2148,8 @@
     },
     {
       "model": "kimi-k2",
+      "family": "kimi-k2",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 6.666666666666667,
       "overallCorrect": 2,
@@ -2132,6 +2206,8 @@
     },
     {
       "model": "deepseek-v3.2",
+      "family": "deepseek-v3.2",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 3.3333333333333335,
       "overallCorrect": 1,
@@ -2188,6 +2264,8 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2244,6 +2322,8 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "family": "gemini-3-flash-preview",
+      "effort": "minimal",
       "reasoning": true,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2300,6 +2380,8 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "family": "gemini-3-pro-preview",
+      "effort": "low",
       "reasoning": true,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2356,6 +2438,8 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "family": "glm-4.7",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2412,6 +2496,8 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "family": "glm-5",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2468,6 +2554,8 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2524,6 +2612,8 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "family": "kimi-k2.5",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2580,6 +2670,8 @@
     },
     {
       "model": "mimo-v2-flash",
+      "family": "mimo-v2-flash:free",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2636,6 +2728,8 @@
     },
     {
       "model": "ministral-14b-2512",
+      "family": "ministral-14b-2512",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2692,6 +2786,8 @@
     },
     {
       "model": "mistral-large-2512",
+      "family": "mistral-large-2512",
+      "effort": "none",
       "reasoning": false,
       "overallAccuracy": 0,
       "overallCorrect": 0,
@@ -2750,6 +2846,8 @@
   "chartData": [
     {
       "model": "claude-4.5-opus-high",
+      "family": "claude-4.5-opus",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T16:00:59.181Z",
       "accuracy": 100,
@@ -2766,6 +2864,8 @@
     },
     {
       "model": "claude-4.5-opus-high",
+      "family": "claude-4.5-opus",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T16:21:14.748Z",
       "accuracy": 40,
@@ -2782,6 +2882,8 @@
     },
     {
       "model": "claude-4.5-opus-high",
+      "family": "claude-4.5-opus",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T16:49:22.835Z",
       "accuracy": 30,
@@ -2798,6 +2900,8 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "family": "claude-4.5-opus",
+      "effort": "low",
       "size": "5x5",
       "timestamp": "2026-01-06T15:17:35.189Z",
       "accuracy": 100,
@@ -2814,6 +2918,8 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "family": "claude-4.5-opus",
+      "effort": "low",
       "size": "10x10",
       "timestamp": "2026-01-06T16:06:28.901Z",
       "accuracy": 40,
@@ -2830,6 +2936,8 @@
     },
     {
       "model": "claude-4.5-opus-low",
+      "family": "claude-4.5-opus",
+      "effort": "low",
       "size": "15x15",
       "timestamp": "2026-01-06T15:29:16.577Z",
       "accuracy": 10,
@@ -2846,6 +2954,8 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T10:19:34.747Z",
       "accuracy": 0,
@@ -2862,6 +2972,8 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T10:20:16.857Z",
       "accuracy": 0,
@@ -2878,6 +2990,8 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T10:20:54.267Z",
       "accuracy": 0,
@@ -2894,6 +3008,8 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T10:24:25.840Z",
       "accuracy": 70,
@@ -2910,6 +3026,8 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-06T16:06:40.472Z",
       "accuracy": 0,
@@ -2926,6 +3044,8 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
+      "family": "claude-4.5-sonnet",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-06T10:43:10.315Z",
       "accuracy": 0,
@@ -2942,6 +3062,8 @@
     },
     {
       "model": "deepseek-v3.2",
+      "family": "deepseek-v3.2",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T10:06:11.022Z",
       "accuracy": 10,
@@ -2958,6 +3080,8 @@
     },
     {
       "model": "deepseek-v3.2",
+      "family": "deepseek-v3.2",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T06:39:41.722Z",
       "accuracy": 0,
@@ -2974,6 +3098,8 @@
     },
     {
       "model": "deepseek-v3.2",
+      "family": "deepseek-v3.2",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T10:18:39.803Z",
       "accuracy": 0,
@@ -2990,6 +3116,8 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "family": "deepseek-v3.2",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:50:50.306Z",
       "accuracy": 100,
@@ -3006,6 +3134,8 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "family": "deepseek-v3.2",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-08T14:40:09.422Z",
       "accuracy": 20,
@@ -3022,6 +3152,8 @@
     },
     {
       "model": "deepseek-v3.2-high",
+      "family": "deepseek-v3.2",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T16:25:06.347Z",
       "accuracy": 10,
@@ -3038,6 +3170,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-08T09:18:33.423Z",
       "accuracy": 90,
@@ -3054,6 +3188,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-08T15:04:50.387Z",
       "accuracy": 20,
@@ -3070,6 +3206,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-08T15:48:03.170Z",
       "accuracy": 10,
@@ -3086,6 +3224,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-08T14:34:55.132Z",
       "accuracy": 90,
@@ -3102,6 +3242,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-08T15:34:55.923Z",
       "accuracy": 30,
@@ -3118,6 +3260,8 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
+      "family": "deepseek-v3.2-speciale",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-08T16:15:08.597Z",
       "accuracy": 20,
@@ -3134,6 +3278,8 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "family": "gemini-3-flash-preview",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:10:49.243Z",
       "accuracy": 100,
@@ -3150,6 +3296,8 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "family": "gemini-3-flash-preview",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T14:47:04.832Z",
       "accuracy": 40,
@@ -3166,6 +3314,8 @@
     },
     {
       "model": "gemini-3-flash-preview-high",
+      "family": "gemini-3-flash-preview",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T14:54:21.345Z",
       "accuracy": 10,
@@ -3182,6 +3332,8 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "family": "gemini-3-flash-preview",
+      "effort": "minimal",
       "size": "5x5",
       "timestamp": "2026-01-06T07:28:30.537Z",
       "accuracy": 0,
@@ -3198,6 +3350,8 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "family": "gemini-3-flash-preview",
+      "effort": "minimal",
       "size": "10x10",
       "timestamp": "2026-01-06T07:28:36.034Z",
       "accuracy": 0,
@@ -3214,6 +3368,8 @@
     },
     {
       "model": "gemini-3-flash-preview-minimal",
+      "family": "gemini-3-flash-preview",
+      "effort": "minimal",
       "size": "15x15",
       "timestamp": "2026-01-06T07:28:43.609Z",
       "accuracy": 0,
@@ -3230,6 +3386,8 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "family": "gemini-3-pro-preview",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T09:38:01.537Z",
       "accuracy": 100,
@@ -3246,6 +3404,8 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "family": "gemini-3-pro-preview",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T16:01:51.126Z",
       "accuracy": 60,
@@ -3262,6 +3422,8 @@
     },
     {
       "model": "gemini-3-pro-preview-high",
+      "family": "gemini-3-pro-preview",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T15:24:19.463Z",
       "accuracy": 10,
@@ -3278,6 +3440,8 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "family": "gemini-3-pro-preview",
+      "effort": "low",
       "size": "5x5",
       "timestamp": "2026-01-06T10:06:02.801Z",
       "accuracy": 0,
@@ -3294,6 +3458,8 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "family": "gemini-3-pro-preview",
+      "effort": "low",
       "size": "10x10",
       "timestamp": "2026-01-06T10:06:07.022Z",
       "accuracy": 0,
@@ -3310,6 +3476,8 @@
     },
     {
       "model": "gemini-3-pro-preview-low",
+      "family": "gemini-3-pro-preview",
+      "effort": "low",
       "size": "15x15",
       "timestamp": "2026-01-06T09:37:00.274Z",
       "accuracy": 0,
@@ -3326,6 +3494,8 @@
     },
     {
       "model": "gemini-3.1-pro-preview-high",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-02-19T17:08:41.706Z",
       "accuracy": 100,
@@ -3342,6 +3512,8 @@
     },
     {
       "model": "gemini-3.1-pro-preview-high",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-02-19T17:13:16.692Z",
       "accuracy": 90,
@@ -3358,6 +3530,8 @@
     },
     {
       "model": "gemini-3.1-pro-preview-high",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-02-19T17:19:17.876Z",
       "accuracy": 40,
@@ -3374,6 +3548,8 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "low",
       "size": "5x5",
       "timestamp": "2026-02-19T17:09:17.191Z",
       "accuracy": 90,
@@ -3390,6 +3566,8 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "low",
       "size": "10x10",
       "timestamp": "2026-03-06T14:40:46.773Z",
       "accuracy": 20,
@@ -3406,6 +3584,8 @@
     },
     {
       "model": "gemini-3.1-pro-preview-low",
+      "family": "gemini-3.1-pro-preview",
+      "effort": "low",
       "size": "15x15",
       "timestamp": "2026-02-19T17:13:47.443Z",
       "accuracy": 20,
@@ -3422,6 +3602,8 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "family": "glm-4.7",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T09:35:46.667Z",
       "accuracy": 0,
@@ -3438,6 +3620,8 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "family": "glm-4.7",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T10:06:01.471Z",
       "accuracy": 0,
@@ -3454,6 +3638,8 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
+      "family": "glm-4.7",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T10:18:38.310Z",
       "accuracy": 0,
@@ -3470,6 +3656,8 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "family": "glm-4.7",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T10:20:57.622Z",
       "accuracy": 60,
@@ -3486,6 +3674,8 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "family": "glm-4.7",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-08T14:30:58.244Z",
       "accuracy": 0,
@@ -3502,6 +3692,8 @@
     },
     {
       "model": "glm-4.7-reasoning",
+      "family": "glm-4.7",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-06T16:38:49.336Z",
       "accuracy": 0,
@@ -3518,6 +3710,8 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "family": "glm-4.7",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:26:54.442Z",
       "accuracy": 40,
@@ -3534,6 +3728,8 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "family": "glm-4.7",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T13:07:19.454Z",
       "accuracy": 0,
@@ -3550,6 +3746,8 @@
     },
     {
       "model": "glm-4.7-reasoning-high",
+      "family": "glm-4.7",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T10:48:21.306Z",
       "accuracy": 0,
@@ -3566,6 +3764,8 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "family": "glm-5",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-02-13T06:33:19.353Z",
       "accuracy": 0,
@@ -3582,6 +3782,8 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "family": "glm-5",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-02-13T06:33:41.863Z",
       "accuracy": 0,
@@ -3598,6 +3800,8 @@
     },
     {
       "model": "glm-5-non-reasoning",
+      "family": "glm-5",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-02-13T07:13:11.329Z",
       "accuracy": 0,
@@ -3614,6 +3818,8 @@
     },
     {
       "model": "glm-5-reasoning",
+      "family": "glm-5",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-02-13T06:40:33.191Z",
       "accuracy": 70,
@@ -3630,6 +3836,8 @@
     },
     {
       "model": "glm-5-reasoning",
+      "family": "glm-5",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-02-13T07:17:19.949Z",
       "accuracy": 0,
@@ -3646,6 +3854,8 @@
     },
     {
       "model": "glm-5-reasoning",
+      "family": "glm-5",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-02-13T07:41:19.888Z",
       "accuracy": 0,
@@ -3662,6 +3872,8 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "family": "glm-5",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-02-13T06:36:22.389Z",
       "accuracy": 70,
@@ -3678,6 +3890,8 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "family": "glm-5",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-02-13T07:09:30.062Z",
       "accuracy": 10,
@@ -3694,6 +3908,8 @@
     },
     {
       "model": "glm-5-reasoning-high",
+      "family": "glm-5",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-02-13T07:50:49.162Z",
       "accuracy": 10,
@@ -3710,6 +3926,8 @@
     },
     {
       "model": "gpt-5.2-high",
+      "family": "gpt-5.2",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T09:38:34.982Z",
       "accuracy": 100,
@@ -3726,6 +3944,8 @@
     },
     {
       "model": "gpt-5.2-high",
+      "family": "gpt-5.2",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T13:07:31.242Z",
       "accuracy": 80,
@@ -3742,6 +3962,8 @@
     },
     {
       "model": "gpt-5.2-high",
+      "family": "gpt-5.2",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T16:23:52.436Z",
       "accuracy": 20,
@@ -3758,6 +3980,8 @@
     },
     {
       "model": "gpt-5.2-low",
+      "family": "gpt-5.2",
+      "effort": "low",
       "size": "5x5",
       "timestamp": "2026-01-06T10:20:39.339Z",
       "accuracy": 100,
@@ -3774,6 +3998,8 @@
     },
     {
       "model": "gpt-5.2-low",
+      "family": "gpt-5.2",
+      "effort": "low",
       "size": "10x10",
       "timestamp": "2026-01-06T10:34:55.304Z",
       "accuracy": 30,
@@ -3790,6 +4016,8 @@
     },
     {
       "model": "gpt-5.2-low",
+      "family": "gpt-5.2",
+      "effort": "low",
       "size": "15x15",
       "timestamp": "2026-01-06T10:44:30.295Z",
       "accuracy": 20,
@@ -3806,6 +4034,8 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "family": "gpt-5.2",
+      "effort": "xhigh",
       "size": "5x5",
       "timestamp": "2026-01-06T15:59:25.040Z",
       "accuracy": 100,
@@ -3822,6 +4052,8 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "family": "gpt-5.2",
+      "effort": "xhigh",
       "size": "10x10",
       "timestamp": "2026-01-06T16:22:32.929Z",
       "accuracy": 70,
@@ -3838,6 +4070,8 @@
     },
     {
       "model": "gpt-5.2-xhigh",
+      "family": "gpt-5.2",
+      "effort": "xhigh",
       "size": "15x15",
       "timestamp": "2026-01-06T16:51:00.310Z",
       "accuracy": 0,
@@ -3854,6 +4088,8 @@
     },
     {
       "model": "gpt-5.4-high",
+      "family": "gpt-5.4",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-03-06T14:41:05.911Z",
       "accuracy": 100,
@@ -3870,6 +4106,8 @@
     },
     {
       "model": "gpt-5.4-high",
+      "family": "gpt-5.4",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-03-06T14:53:32.821Z",
       "accuracy": 70,
@@ -3886,6 +4124,8 @@
     },
     {
       "model": "gpt-5.4-high",
+      "family": "gpt-5.4",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-03-06T15:10:08.749Z",
       "accuracy": 30,
@@ -3902,6 +4142,8 @@
     },
     {
       "model": "gpt-5.4-low",
+      "family": "gpt-5.4",
+      "effort": "low",
       "size": "5x5",
       "timestamp": "2026-03-06T14:40:15.875Z",
       "accuracy": 90,
@@ -3918,6 +4160,8 @@
     },
     {
       "model": "gpt-5.4-low",
+      "family": "gpt-5.4",
+      "effort": "low",
       "size": "10x10",
       "timestamp": "2026-03-06T14:46:16.651Z",
       "accuracy": 40,
@@ -3934,6 +4178,8 @@
     },
     {
       "model": "gpt-5.4-low",
+      "family": "gpt-5.4",
+      "effort": "low",
       "size": "15x15",
       "timestamp": "2026-03-06T14:51:05.571Z",
       "accuracy": 20,
@@ -3950,6 +4196,8 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "family": "gpt-5.4",
+      "effort": "xhigh",
       "size": "5x5",
       "timestamp": "2026-03-06T14:44:13.948Z",
       "accuracy": 100,
@@ -3966,6 +4214,8 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "family": "gpt-5.4",
+      "effort": "xhigh",
       "size": "10x10",
       "timestamp": "2026-03-06T14:55:01.687Z",
       "accuracy": 90,
@@ -3982,6 +4232,8 @@
     },
     {
       "model": "gpt-5.4-xhigh",
+      "family": "gpt-5.4",
+      "effort": "xhigh",
       "size": "15x15",
       "timestamp": "2026-03-06T15:11:16.893Z",
       "accuracy": 40,
@@ -3998,6 +4250,8 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "family": "gpt-oss-120b",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T10:06:41.917Z",
       "accuracy": 90,
@@ -4014,6 +4268,8 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "family": "gpt-oss-120b",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-08T14:22:47.652Z",
       "accuracy": 40,
@@ -4030,6 +4286,8 @@
     },
     {
       "model": "gpt-oss-120b-high",
+      "family": "gpt-oss-120b",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-08T14:26:31.608Z",
       "accuracy": 0,
@@ -4046,6 +4304,8 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "family": "gpt-oss-120b",
+      "effort": "low",
       "size": "5x5",
       "timestamp": "2026-01-06T12:49:27.014Z",
       "accuracy": 100,
@@ -4062,6 +4322,8 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "family": "gpt-oss-120b",
+      "effort": "low",
       "size": "10x10",
       "timestamp": "2026-01-06T12:53:28.047Z",
       "accuracy": 0,
@@ -4078,6 +4340,8 @@
     },
     {
       "model": "gpt-oss-120b-low",
+      "family": "gpt-oss-120b",
+      "effort": "low",
       "size": "15x15",
       "timestamp": "2026-01-06T12:55:14.317Z",
       "accuracy": 0,
@@ -4094,6 +4358,8 @@
     },
     {
       "model": "grok-4",
+      "family": "grok-4",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T12:21:56.660Z",
       "accuracy": 80,
@@ -4110,6 +4376,8 @@
     },
     {
       "model": "grok-4",
+      "family": "grok-4",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-06T13:08:59.190Z",
       "accuracy": 20,
@@ -4126,6 +4394,8 @@
     },
     {
       "model": "grok-4",
+      "family": "grok-4",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-06T15:13:25.097Z",
       "accuracy": 0,
@@ -4142,6 +4412,8 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T09:35:24.904Z",
       "accuracy": 0,
@@ -4158,6 +4430,8 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T09:43:06.572Z",
       "accuracy": 0,
@@ -4174,6 +4448,8 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T09:44:13.222Z",
       "accuracy": 0,
@@ -4190,6 +4466,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T06:10:58.097Z",
       "accuracy": 60,
@@ -4206,6 +4484,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-06T12:55:33.988Z",
       "accuracy": 10,
@@ -4222,6 +4502,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
+      "family": "grok-4.1-fast",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-06T13:09:23.210Z",
       "accuracy": 0,
@@ -4238,6 +4520,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "family": "grok-4.1-fast",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:10:42.904Z",
       "accuracy": 40,
@@ -4254,6 +4538,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "family": "grok-4.1-fast",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T06:39:27.264Z",
       "accuracy": 0,
@@ -4270,6 +4556,8 @@
     },
     {
       "model": "grok-4.1-fast-reasoning-high",
+      "family": "grok-4.1-fast",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T16:09:55.861Z",
       "accuracy": 0,
@@ -4286,6 +4574,8 @@
     },
     {
       "model": "kimi-k2",
+      "family": "kimi-k2",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T10:26:36.484Z",
       "accuracy": 20,
@@ -4302,6 +4592,8 @@
     },
     {
       "model": "kimi-k2",
+      "family": "kimi-k2",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T10:35:36.042Z",
       "accuracy": 0,
@@ -4318,6 +4610,8 @@
     },
     {
       "model": "kimi-k2",
+      "family": "kimi-k2",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T10:43:05.503Z",
       "accuracy": 0,
@@ -4334,6 +4628,8 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "family": "kimi-k2-thinking",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T06:26:37.078Z",
       "accuracy": 80,
@@ -4350,6 +4646,8 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "family": "kimi-k2-thinking",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-08T14:33:28.366Z",
       "accuracy": 0,
@@ -4366,6 +4664,8 @@
     },
     {
       "model": "kimi-k2-thinking",
+      "family": "kimi-k2-thinking",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-08T14:44:17.655Z",
       "accuracy": 0,
@@ -4382,6 +4682,8 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "family": "kimi-k2.5",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-27T07:20:57.729Z",
       "accuracy": 100,
@@ -4398,6 +4700,8 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "family": "kimi-k2.5",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-27T07:44:35.737Z",
       "accuracy": 30,
@@ -4414,6 +4718,8 @@
     },
     {
       "model": "kimi-k2.5-high",
+      "family": "kimi-k2.5",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-27T08:08:39.848Z",
       "accuracy": 0,
@@ -4430,6 +4736,8 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "family": "kimi-k2.5",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-27T07:12:17.929Z",
       "accuracy": 0,
@@ -4446,6 +4754,8 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "family": "kimi-k2.5",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-27T07:12:20.631Z",
       "accuracy": 0,
@@ -4462,6 +4772,8 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
+      "family": "kimi-k2.5",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-27T07:12:26.376Z",
       "accuracy": 0,
@@ -4478,6 +4790,8 @@
     },
     {
       "model": "mimo-v2-flash",
+      "family": "mimo-v2-flash:free",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T10:06:07.614Z",
       "accuracy": 0,
@@ -4494,6 +4808,8 @@
     },
     {
       "model": "mimo-v2-flash",
+      "family": "mimo-v2-flash:free",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T10:07:32.851Z",
       "accuracy": 0,
@@ -4510,6 +4826,8 @@
     },
     {
       "model": "mimo-v2-flash",
+      "family": "mimo-v2-flash:free",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T06:22:51.320Z",
       "accuracy": 0,
@@ -4526,6 +4844,8 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "family": "mimo-v2-flash:free",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:18:30.274Z",
       "accuracy": 60,
@@ -4542,6 +4862,8 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "family": "mimo-v2-flash:free",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-08T14:26:58.557Z",
       "accuracy": 0,
@@ -4558,6 +4880,8 @@
     },
     {
       "model": "mimo-v2-flash-high",
+      "family": "mimo-v2-flash:free",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-08T14:32:15.173Z",
       "accuracy": 0,
@@ -4574,6 +4898,8 @@
     },
     {
       "model": "minimax-m2.1",
+      "family": "minimax-m2.1",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T10:20:32.253Z",
       "accuracy": 60,
@@ -4590,6 +4916,8 @@
     },
     {
       "model": "minimax-m2.1",
+      "family": "minimax-m2.1",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-06T16:04:13.691Z",
       "accuracy": 0,
@@ -4606,6 +4934,8 @@
     },
     {
       "model": "minimax-m2.1",
+      "family": "minimax-m2.1",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-06T16:09:06.390Z",
       "accuracy": 0,
@@ -4622,6 +4952,8 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "family": "minimax-m2.1",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T10:21:56.757Z",
       "accuracy": 90,
@@ -4638,6 +4970,8 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "family": "minimax-m2.1",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-08T14:22:58.700Z",
       "accuracy": 0,
@@ -4654,6 +4988,8 @@
     },
     {
       "model": "minimax-m2.1-high",
+      "family": "minimax-m2.1",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-08T14:27:36.285Z",
       "accuracy": 0,
@@ -4670,6 +5006,8 @@
     },
     {
       "model": "minimax-m2.5",
+      "family": "minimax-m2.5",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-02-13T06:39:05.371Z",
       "accuracy": 80,
@@ -4686,6 +5024,8 @@
     },
     {
       "model": "minimax-m2.5",
+      "family": "minimax-m2.5",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-02-13T07:39:19.691Z",
       "accuracy": 0,
@@ -4702,6 +5042,8 @@
     },
     {
       "model": "minimax-m2.5",
+      "family": "minimax-m2.5",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-02-13T08:03:27.480Z",
       "accuracy": 0,
@@ -4718,6 +5060,8 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "family": "minimax-m2.5",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-02-13T06:39:59.833Z",
       "accuracy": 90,
@@ -4734,6 +5078,8 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "family": "minimax-m2.5",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-02-13T07:27:42.954Z",
       "accuracy": 10,
@@ -4750,6 +5096,8 @@
     },
     {
       "model": "minimax-m2.5-high",
+      "family": "minimax-m2.5",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-02-13T07:54:26.195Z",
       "accuracy": 0,
@@ -4766,6 +5114,8 @@
     },
     {
       "model": "ministral-14b-2512",
+      "family": "ministral-14b-2512",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T06:08:00.015Z",
       "accuracy": 0,
@@ -4782,6 +5132,8 @@
     },
     {
       "model": "ministral-14b-2512",
+      "family": "ministral-14b-2512",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T06:08:09.701Z",
       "accuracy": 0,
@@ -4798,6 +5150,8 @@
     },
     {
       "model": "ministral-14b-2512",
+      "family": "ministral-14b-2512",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T06:14:32.525Z",
       "accuracy": 0,
@@ -4814,6 +5168,8 @@
     },
     {
       "model": "mistral-large-2512",
+      "family": "mistral-large-2512",
+      "effort": "none",
       "size": "5x5",
       "timestamp": "2026-01-06T06:08:02.021Z",
       "accuracy": 0,
@@ -4830,6 +5186,8 @@
     },
     {
       "model": "mistral-large-2512",
+      "family": "mistral-large-2512",
+      "effort": "none",
       "size": "10x10",
       "timestamp": "2026-01-06T10:06:00.987Z",
       "accuracy": 0,
@@ -4846,6 +5204,8 @@
     },
     {
       "model": "mistral-large-2512",
+      "family": "mistral-large-2512",
+      "effort": "none",
       "size": "15x15",
       "timestamp": "2026-01-06T10:06:24.925Z",
       "accuracy": 0,
@@ -4862,6 +5222,8 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "family": "olmo-3.1-32b-think",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T06:17:10.821Z",
       "accuracy": 40,
@@ -4878,6 +5240,8 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "family": "olmo-3.1-32b-think",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-06T06:35:46.182Z",
       "accuracy": 0,
@@ -4894,6 +5258,8 @@
     },
     {
       "model": "olmo-3.1-32b-think",
+      "family": "olmo-3.1-32b-think",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-06T12:46:16.673Z",
       "accuracy": 0,
@@ -4910,6 +5276,8 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "family": "qwen3-next-80b-a3b-thinking",
+      "effort": "default",
       "size": "5x5",
       "timestamp": "2026-01-06T10:20:38.274Z",
       "accuracy": 100,
@@ -4926,6 +5294,8 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "family": "qwen3-next-80b-a3b-thinking",
+      "effort": "default",
       "size": "10x10",
       "timestamp": "2026-01-06T10:30:34.983Z",
       "accuracy": 0,
@@ -4942,6 +5312,8 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
+      "family": "qwen3-next-80b-a3b-thinking",
+      "effort": "default",
       "size": "15x15",
       "timestamp": "2026-01-06T10:35:18.054Z",
       "accuracy": 0,
@@ -4958,6 +5330,8 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "family": "seed-1.6-flash",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:13:18.337Z",
       "accuracy": 40,
@@ -4974,6 +5348,8 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "family": "seed-1.6-flash",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T10:20:10.544Z",
       "accuracy": 0,
@@ -4990,6 +5366,8 @@
     },
     {
       "model": "seed-1.6-flash-high",
+      "family": "seed-1.6-flash",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T06:34:41.943Z",
       "accuracy": 0,
@@ -5006,6 +5384,8 @@
     },
     {
       "model": "seed-1.6-high",
+      "family": "seed-1.6",
+      "effort": "high",
       "size": "5x5",
       "timestamp": "2026-01-06T06:15:27.304Z",
       "accuracy": 100,
@@ -5022,6 +5402,8 @@
     },
     {
       "model": "seed-1.6-high",
+      "family": "seed-1.6",
+      "effort": "high",
       "size": "10x10",
       "timestamp": "2026-01-06T10:24:59.451Z",
       "accuracy": 0,
@@ -5038,6 +5420,8 @@
     },
     {
       "model": "seed-1.6-high",
+      "family": "seed-1.6",
+      "effort": "high",
       "size": "15x15",
       "timestamp": "2026-01-06T06:54:00.436Z",
       "accuracy": 0,

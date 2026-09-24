@@ -1,4 +1,5 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
+import { MODELS } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
 import { gradeOutput } from "./grade";
 import { sortSizes } from "./sizes";
@@ -44,6 +45,8 @@ type SizeData = {
 
 type ModelData = {
 	model: string;
+	family: string;
+	effort: string;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -71,7 +74,7 @@ type BenchmarkResults = {
 		sizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: Array<{ model: string } & SizeData>;
+	chartData: Array<{ model: string; family: string; effort: string } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
 
@@ -247,8 +250,11 @@ for (const row of aggregatedResults) {
 // Build byModel array
 const byModel: ModelData[] = [];
 const chartData: BenchmarkResults["chartData"] = [];
+const modelsByName = new Map(MODELS.map((model) => [model.name, model]));
 
 for (const [model, sizeDatas] of modelMap) {
+	const metadata = modelsByName.get(model);
+	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
 	// Sort size data by size
 	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
 		(size) => sizeDatas.find((s) => s.size === size)!,
@@ -269,6 +275,8 @@ for (const [model, sizeDatas] of modelMap) {
 		// Add to chartData
 		chartData.push({
 			model,
+			family: metadata.family,
+			effort: metadata.effort,
 			...sizeData,
 		});
 	}
@@ -276,6 +284,8 @@ for (const [model, sizeDatas] of modelMap) {
 	// Overall accuracy uses runs (excluding failed), not total
 	byModel.push({
 		model,
+		family: metadata.family,
+		effort: metadata.effort,
 		reasoning: modelReasoningMap.get(model) ?? false,
 		overallAccuracy: overallRuns > 0 ? (overallCorrect / overallRuns) * 100 : 0,
 		overallCorrect,
