@@ -16,7 +16,7 @@ for (const row of db
 	)
 	.all()) {
 	const puzzle = puzzlesById.get(row.puzzle_id);
-	const correct = puzzle ? row.status === "success" && gradeOutput(puzzle, row.raw_output) : row.correct === 1;
+	const correct = row.status === "success" && (puzzle ? gradeOutput(puzzle, row.raw_output) : row.correct === 1);
 	if (correct) correctRuns.add(`${row.model}\u0000${row.puzzle_id}`);
 }
 const correctRunsJson = JSON.stringify([...correctRuns]);
