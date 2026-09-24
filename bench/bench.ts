@@ -14,7 +14,7 @@ import {
   saveRunToDb,
   type BenchmarkResult,
 } from "./db";
-import { parseSolution } from "./parse-solution";
+import { gradeOutput } from "./grade";
 import { sortSizes } from "./sizes";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
@@ -168,9 +168,7 @@ async function runBenchmark(
     });
 
     rawOutput = resp.text;
-    const llmSolution = parseSolution(resp.text, puzzle.width * puzzle.height);
-    const expectedSolution = puzzle.solution.replace(/\s+/g, "");
-    correct = !!llmSolution && llmSolution === expectedSolution;
+    correct = gradeOutput(puzzle, resp.text);
 
     const openrouterMeta = resp.providerMetadata?.openrouter as
       | { usage?: { costDetails?: { upstreamInferenceCost?: number }; cost?: number } }

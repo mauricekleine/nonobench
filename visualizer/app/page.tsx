@@ -477,6 +477,12 @@ export default function Page() {
 									across different grid sizes (5×5, 10×10, 15×15), measuring
 									accuracy, response time, and cost.
 								</p>
+								<p>
+									An answer counts as correct when it satisfies every row and
+									column clue. Some puzzles have more than one valid solution,
+									so answers are checked against the clues rather than a single
+									stored solution.
+								</p>
 								<a
 									href="https://en.wikipedia.org/wiki/Nonogram"
 									target="_blank"

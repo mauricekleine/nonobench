@@ -1,12 +1,29 @@
-import { openReadDb } from "./db";
+import { PUZZLES } from "../visualizer/components/puzzles";
+import { getPuzzleId, openReadDb } from "./db";
+import { gradeOutput } from "./grade";
 import { sortSizes } from "./sizes";
 
 const db = openReadDb();
 if (!db) throw new Error("Database does not exist");
 
+// Correctness is re-derived from each stored output (any grid satisfying all
+// clues counts), so the database itself is never rewritten.
+const puzzlesById = new Map(PUZZLES.map((puzzle) => [getPuzzleId(puzzle), puzzle]));
+const correctRuns = new Set<string>();
+for (const row of db
+	.query<{ model: string; puzzle_id: string; status: string; correct: number; raw_output: string | null }, []>(
+		"SELECT model, puzzle_id, status, correct, raw_output FROM runs",
+	)
+	.all()) {
+	const puzzle = puzzlesById.get(row.puzzle_id);
+	const correct = puzzle ? row.status === "success" && gradeOutput(puzzle, row.raw_output) : row.correct === 1;
+	if (correct) correctRuns.add(`${row.model}\u0000${row.puzzle_id}`);
+}
+const correctRunsJson = JSON.stringify([...correctRuns]);
+
 // Output paths
 const resultsPath = process.env.NONOBENCH_RESULTS_JSON ?? new URL("../visualizer/app/results.json", import.meta.url).pathname;
-const resultsRawPath = process.env.NONOBENCH_RESULTS_RAW_JSON ?? new URL("../visualizer/app/results-raw.json", import.meta.url).pathname;
+const resultsRawPath = process.env.NONOBENCH_RESULTS_RAW_JSON ?? new URL("../visualizer/public/results-raw.json", import.meta.url).pathname;
 
 // Types for the JSON output (matching existing format)
 type SizeData = {
@@ -118,7 +135,7 @@ type RawResults = {
 // Aggregate stats from the runs table
 // All averages and totals EXCLUDE failed runs (status = 'failed')
 const aggregatedResults = db
-	.query<AggregatedRow, []>(
+	.query<AggregatedRow, { $correctRuns: string }>(
 		`
     SELECT
       model,
@@ -127,7 +144,7 @@ const aggregatedResults = db
       MAX(reasoning) as reasoning,
       COUNT(*) as total,
       SUM(CASE WHEN status != 'failed' THEN 1 ELSE 0 END) as runs,
-      SUM(correct) as correct,
+      SUM(CASE WHEN model || char(0) || puzzle_id IN (SELECT value FROM json_each($correctRuns)) THEN 1 ELSE 0 END) as correct,
       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
       AVG(CASE WHEN status != 'failed' THEN duration_ms ELSE NULL END) as avg_duration_ms,
       SUM(CASE WHEN status != 'failed' THEN duration_ms ELSE 0 END) as total_duration_ms,
@@ -140,7 +157,7 @@ const aggregatedResults = db
     ORDER BY model, size
   `,
 	)
-	.all();
+	.all({ $correctRuns: correctRunsJson });
 
 if (aggregatedResults.length === 0) {
 	console.log("No runs found in database. Nothing to export.");
@@ -340,7 +357,7 @@ const rawResultsOutput: RawResults = {
 		size: row.size,
 		timestamp: row.timestamp,
 		reasoning: row.reasoning === 1,
-		correct: row.correct === 1,
+		correct: correctRuns.has(`${row.model}\u0000${row.puzzle_id}`),
 		status: row.status,
 		durationMs: row.duration_ms,
 		tokens: row.tokens,
