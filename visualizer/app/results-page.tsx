@@ -7,6 +7,7 @@ import {
   GridFour,
   GithubLogo,
   Question,
+  Info,
   Rows,
   XLogo,
 } from "@phosphor-icons/react";
@@ -31,10 +32,10 @@ import {
   type Filters,
 } from "@/lib/leaderboard";
 import { chartStats, type XMetric } from "@/lib/chart-data";
-import { effortLabel, effortTitle, formatDuration } from "@/lib/display";
+import { effortLabel, effortTitle, formatCost, formatDuration, shortSizeLabel, sizeLabel } from "@/lib/display";
 import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
-import { AccuracyScatter, EffortLadder, SizeBreakdown } from "./insight-charts";
+import { AccuracyScatter, EffortLadder } from "./insight-charts";
 import resultsData from "./results.json";
 
 type SizeData = {
@@ -74,6 +75,8 @@ type Results = {
 };
 const results = resultsData as Results;
 const allFamilies = [...new Set(results.byModel.map((model) => model.family))];
+const familiesWithResults = new Set(results.byModel.filter((model) => model.overallCorrect > 0).map((model) => model.family)).size;
+const variantsWithResults = results.byModel.filter((model) => model.overallCorrect > 0).length;
 const providerGroups = [
   ...new Set(results.byModel.map((model) => model.provider)),
 ]
@@ -94,8 +97,6 @@ const effortLevels = [
 ].sort();
 const control =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
-const formatCost = (value: number) =>
-  value < 0.01 ? `$${value.toFixed(4)}` : `$${value.toFixed(2)}`;
 
 function IncompleteBadge({ model }: { model: Model }) {
   return (
@@ -168,7 +169,6 @@ export default function ResultsPage({
   onPerPuzzleChange: (average: boolean) => void;
 }) {
   const [search, setSearch] = useState("");
-  const [aboutOpen, setAboutOpen] = useState(false);
   const [sort, setSort] = useState<{ key: string; desc: boolean }>({
     key: "accuracy",
     desc: true,
@@ -285,57 +285,31 @@ export default function ResultsPage({
       <div className="noise-overlay" />
       <div className="pointer-events-none fixed inset-0 grid-pattern" />
       <div className="pointer-events-none fixed inset-0 atmosphere" />
-      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-        <header className="mb-8">
-          <div className="nono-trigger mb-4 flex w-fit items-end gap-4">
+      <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-12">
+        <header className="mb-6 sm:mb-8">
+          <div className="nono-trigger mb-3 flex w-fit items-end gap-2 sm:mb-4 sm:gap-4">
             <NonobenchMark />
-            <h1 className="pb-px font-display text-3xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
+            <h1 className="pb-px font-display text-2xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
               nonobench<span className="sr-only"> results</span>
             </h1>
+            <Link href="/how-it-works#whats-new" className="mb-0.5 rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link>
           </div>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
             Benchmark results for LLM performance on Nonogram puzzle solving.
             Compare accuracy, speed, and cost across grid sizes.
           </p>
-          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-dim">
-            <span>{allFamilies.length} model families</span>
-            <span>{results.byModel.length} variants</span>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-dim sm:mt-5 sm:gap-x-6">
+            <span>{familiesWithResults} models · {variantsWithResults} variants with solved results</span>
             <span>
               Updated {new Date(results.timestamp).toLocaleDateString()}
             </span>
           </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={control}
-              onClick={() => setAboutOpen(!aboutOpen)}
-              aria-expanded={aboutOpen}
-            >
-              <Question size={16} />
-              What are Nonograms?
-              <CaretDown size={13} />
-            </button>
-            <Link href="/puzzles" className={control}>
-              <Rows size={16} />
-              Explore puzzles
-            </Link>
-            <Link href="/puzzles/overview" className={control}>
-              <GridFour size={16} />
-              Puzzle insights
-            </Link>
-            <a href="/results-raw.json" download className={control}>
-              <DownloadSimple size={16} />
-              Raw results
-            </a>
-          </div>
-          {aboutOpen && (
-            <div className="mt-3 max-w-2xl rounded-lg border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
-              Nonograms are logic puzzles solved by filling cells according to
-              row and column clues. A model scores when its answer satisfies
-              every clue. The headline score covers 5×5, 10×10 and 15×15
-              puzzles.
-            </div>
-          )}
+          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 whitespace-nowrap sm:mt-5" aria-label="Site navigation">
+            <Link href="/how-it-works" className={control}><Question size={16} />How it works</Link>
+            <Link href="/puzzles" className={control}><Rows size={16} />Explore puzzles</Link>
+            <Link href="/puzzles/overview" className={control}><GridFour size={16} />Puzzle insights</Link>
+            <a href="/results-raw.json" download className={control}><DownloadSimple size={16} />Raw results</a>
+          </nav>
         </header>
         <div
           role="group"
@@ -344,7 +318,7 @@ export default function ResultsPage({
         >
           <Popover>
             <PopoverTrigger type="button" className={control}>
-              Models{" "}
+              Model families{" "}
               <span className="font-mono text-xs text-muted-foreground">
                 {selectedFamilies.size} of {allFamilies.length}
               </span>
@@ -550,55 +524,40 @@ export default function ResultsPage({
               }
               className={control + " appearance-none pr-8"}
             >
-              <option value="all">Core overall</option>
+              <option value="all">Standard</option>
               {displayedSizes.map((value) => (
                 <option key={value} value={value}>
-                  {value}
+                  {sizeLabel(value)}
                 </option>
               ))}
             </select>
             <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
           </label>
+          {hiddenCount > 0 && (
+            <p className="w-full text-xs text-muted-foreground sm:ml-auto sm:w-auto">
+              {hiddenCount} variants with no solved puzzles {includeUnsolved ? "shown" : "hidden"} ·{" "}
+              <button type="button" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={() => onIncludeUnsolvedChange(!includeUnsolved)}>{includeUnsolved ? "Hide" : "Show"} them</button>
+            </p>
+          )}
         </div>
-        {hiddenCount > 0 && (
-          <p className="mb-5 -mt-2 text-xs text-muted-foreground">
-            {includeUnsolved
-              ? `${hiddenCount} variants that solved no puzzles are shown`
-              : `${hiddenCount} variants that solved no puzzles are hidden`}{" "}
-            ·{" "}
-            <button type="button" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={() => onIncludeUnsolvedChange(!includeUnsolved)}>
-              {includeUnsolved ? "Hide them" : "Show them"}
-            </button>
-          </p>
-        )}
         <section className="mb-10">
           <Card className="pb-0">
             <div ref={chartRef}>
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <CardTitle>
-                    <h2 className="font-display text-base font-medium lowercase">
-                      model accuracy
-                    </h2>
-                  </CardTitle>
-                  <span className="font-mono text-xs text-dim">
-                    {chosen.length} {allLevels ? "variants" : "models"} ·{" "}
-                    {size ?? "core overall"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <CardTitle><h2 className="font-display text-base font-medium lowercase">model accuracy</h2></CardTitle>
+                    <Popover>
+                      <PopoverTrigger type="button" aria-label="What do the thin ranges mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={17} /></PopoverTrigger>
+                      <PopoverContent side="bottom">The thin ranges show 95% Wilson intervals. On the 30 Standard puzzles, one puzzle changes the score by 3.3 points.</PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-dim">{chosen.length} {allLevels ? "variants" : "models"} · {size ? shortSizeLabel(size) : "Standard"}</span>
+                    <button type="button" title={copyDone ? "Copied" : "Copy link"} aria-label={copyDone ? "Copied" : "Copy link"} className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={copyLink}><Copy size={15} /></button>
+                    <button type="button" title="Download chart as PNG" aria-label="Download chart as PNG" className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={downloadChart}><DownloadSimple size={15} /></button>
+                  </div>
                 </div>
-                <Popover>
-                  <PopoverTrigger
-                    type="button"
-                    className="mt-2 text-left text-xs text-muted-foreground underline decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright"
-                  >
-                    What do the thin ranges mean?
-                  </PopoverTrigger>
-                  <PopoverContent side="bottom">
-                    The thin whiskers show 95% Wilson intervals. With 30
-                    puzzles, one puzzle is 3.3 points; overlapping ranges are
-                    statistically close.
-                  </PopoverContent>
-                </Popover>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1 pb-6">
@@ -623,7 +582,7 @@ export default function ResultsPage({
                         <Tooltip>
                           <TooltipTrigger
                             type="button"
-                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(perPuzzle ? value.cost / value.runs : value.cost)} ${perPuzzle ? "cost per puzzle" : "total cost"}; ${formatDuration(perPuzzle ? value.time / value.runs : value.time)} ${perPuzzle ? "time per puzzle" : "total time"}`}
+                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)} ${perPuzzle ? "cost per puzzle" : "total cost"}; ${formatDuration(perPuzzle ? value.time / value.runs : value.time)} ${perPuzzle ? "time per puzzle" : "total time"}`}
                             className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ember-bright sm:col-span-1 sm:col-start-2 sm:row-start-1"
                           >
                             <span
@@ -659,16 +618,15 @@ export default function ResultsPage({
                               {(interval.high * 100).toFixed(0)}%
                             </p>
                             <p>
-                              {perPuzzle ? "Cost / puzzle" : "Total cost"} {formatCost(perPuzzle ? value.cost / value.runs : value.cost)} · {perPuzzle ? "Time / puzzle" : "Total time"}{" "}
+                              {perPuzzle ? "Cost / puzzle" : "Total cost"} {formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)} · {perPuzzle ? "Time / puzzle" : "Total time"}{" "}
                               {formatDuration(perPuzzle ? value.time / value.runs : value.time)}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                         <span className="col-start-2 row-start-1 text-right font-mono text-[10px] font-medium tabular-nums sm:col-start-3 sm:text-xs">
                           {value.accuracy.toFixed(1)}%{" "}
-                          <span className="text-muted-foreground">
-                            ({(interval.low * 100).toFixed(0)}–
-                            {(interval.high * 100).toFixed(0)}%)
+                          <span className="whitespace-nowrap text-muted-foreground">
+                            ({(interval.low * 100).toFixed(0)}–{(interval.high * 100).toFixed(0)}%)
                           </span>
                         </span>
                       </div>
@@ -676,16 +634,6 @@ export default function ResultsPage({
                   })}
                 </div>
               </CardContent>
-            </div>
-            <div className="flex flex-wrap gap-2 px-6 pb-5">
-              <button type="button" className={control} onClick={copyLink}>
-                <Copy size={15} />
-                {copyDone ? "Copied" : "Copy link"}
-              </button>
-              <button type="button" className={control} onClick={downloadChart}>
-                <DownloadSimple size={15} />
-                Download chart as PNG
-              </button>
             </div>
           </Card>
         </section>
@@ -696,7 +644,6 @@ export default function ResultsPage({
           onMetricChange={onMetricChange}
         />
         <EffortLadder models={results.byModel} filters={filters} />
-        <SizeBreakdown models={chosen} size={size} />
         <section className="mt-10 rounded-lg border border-border bg-card" aria-labelledby="details-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
             <div>
@@ -715,7 +662,7 @@ export default function ResultsPage({
             <table className="w-full min-w-[650px] text-sm">
               <thead>
                 <tr className="border-b border-border bg-foreground/5 text-left">
-                  <th className="sticky left-0 bg-card px-4 py-3">Model</th>
+                  <th className="sticky left-0 z-10 w-32 max-w-32 bg-card px-2 py-3 sm:w-56 sm:max-w-56 sm:px-4">Model</th>
                   <th
                     className="px-3 py-3"
                     aria-sort={
@@ -727,7 +674,7 @@ export default function ResultsPage({
                     }
                   >
                     {sortButton(
-                      size ? `${size} accuracy` : "Core accuracy",
+                      size ? `${shortSizeLabel(size)} accuracy` : "Standard accuracy",
                       "accuracy",
                     )}
                     <span className="block text-[10px] font-normal text-muted-foreground">
@@ -736,7 +683,7 @@ export default function ResultsPage({
                   </th>
                   {displayedSizes.map((value) => (
                     <th key={value} className="px-3 py-3">
-                      {value}
+                      {shortSizeLabel(value)}
                     </th>
                   ))}
                   <th
@@ -778,7 +725,7 @@ export default function ResultsPage({
                       key={model.model}
                       className="border-b border-border/50 last:border-b-0 hover:bg-foreground/5"
                     >
-                      <td className="sticky left-0 max-w-64 bg-card px-4 py-3">
+                      <td className="sticky left-0 z-10 w-32 max-w-32 bg-card px-2 py-3 sm:w-56 sm:max-w-56 sm:px-4">
                         <div className="flex items-center gap-1">
                           <ModelName model={model} />
                           {!model.complete && <IncompleteBadge model={model} />}
@@ -786,9 +733,8 @@ export default function ResultsPage({
                       </td>
                       <td className="px-3 py-3 font-mono text-ember">
                         {value.accuracy.toFixed(1)}%{" "}
-                        <span className="text-xs text-muted-foreground">
-                          ({(interval.low * 100).toFixed(0)}–
-                          {(interval.high * 100).toFixed(0)}%)
+                        <span className="block whitespace-nowrap text-[10px] text-muted-foreground sm:inline sm:text-xs">
+                          ({(interval.low * 100).toFixed(0)}–{(interval.high * 100).toFixed(0)}%)
                         </span>
                       </td>
                       {displayedSizes.map((grid) => {
@@ -805,7 +751,7 @@ export default function ResultsPage({
                         );
                       })}
                       <td className="px-3 py-3 font-mono text-muted-foreground">
-                        {formatCost(perPuzzle ? value.cost / value.runs : value.cost)}
+                        {formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)}
                       </td>
                       <td className="px-3 py-3 font-mono text-muted-foreground">
                         {formatDuration(perPuzzle ? value.time / value.runs : value.time)}
@@ -820,8 +766,8 @@ export default function ResultsPage({
         <section className="mt-10 rounded-lg border border-border bg-card p-4 sm:p-6" aria-labelledby="grid-stats-heading">
           <h2 id="grid-stats-heading" className="font-display text-base font-medium lowercase">statistics by grid size</h2>
           <p className="mt-1 text-sm text-muted-foreground">Combined results for the selected models.</p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {results.summary.sizes.map((grid, index) => {
+          <div className={`mt-5 grid gap-4 sm:grid-cols-2 ${displayedSizes.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
+            {displayedSizes.map((grid, index) => {
               const entries = chosen
                 .map((model) => model.bySize.find((row) => row.size === grid))
                 .filter((row): row is SizeData => !!row && row.runs > 0);
@@ -848,10 +794,10 @@ export default function ResultsPage({
                         className="rounded px-2 py-1 font-mono text-sm"
                         style={{ color, backgroundColor: `${color}20` }}
                       >
-                        {grid}
+                        {sizeLabel(grid)}
                       </span>
                       <span className="ml-3 text-sm font-normal text-muted-foreground">
-                        {entries.length} models
+                        {entries.length} {allLevels ? "variants" : "models"}
                       </span>
                     </CardTitle>
                   </CardHeader>
@@ -864,7 +810,7 @@ export default function ResultsPage({
                     </p>
                     <div className="mt-4 flex gap-4 border-t border-border pt-3 font-mono text-xs text-muted-foreground">
                       <span>{formatDuration(totalTime / runs)} avg time</span>
-                      <span>{formatCost(totalCost / runs)} avg cost</span>
+                      <span>{formatCost(totalCost / runs, true)} avg cost</span>
                     </div>
                   </CardContent>
                 </Card>
