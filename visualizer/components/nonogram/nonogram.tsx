@@ -14,6 +14,8 @@ type Props = {
   solution: string;
   width: number;
   overlay?: CellState[];
+  violatedRows?: number[];
+  violatedColumns?: number[];
 };
 
 export function Nonogram({
@@ -21,6 +23,8 @@ export function Nonogram({
   solution,
   width,
   overlay,
+  violatedRows,
+  violatedColumns,
 }: Props) {
   const initialize = useNonogramStore((state) => state.initialize);
 
@@ -58,12 +62,12 @@ export function Nonogram({
   return (
     <div className="grid w-fit relative">
       <div className="col-start-2">
-        <NonogramColumnClues />
+        <NonogramColumnClues violatedColumns={violatedColumns} />
       </div>
 
-      <NonogramRowClues />
+      <NonogramRowClues violatedRows={violatedRows} />
 
-      <NonogramsGrid onDragMove={handleDragMove} overlay={overlay} />
+      <NonogramsGrid onDragMove={handleDragMove} overlay={overlay} violatedRows={violatedRows} violatedColumns={violatedColumns} />
 
       <DragTooltip ref={tooltipReference} />
     </div>

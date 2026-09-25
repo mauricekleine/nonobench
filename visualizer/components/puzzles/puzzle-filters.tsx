@@ -9,6 +9,7 @@ import { PROVIDERS } from "@/lib/providers";
 
 export type DisplayModel = LeaderboardVariant & { displayName: string; familyDisplayName: string };
 const models = resultsData.byModel as DisplayModel[];
+export function puzzleModel(id: string) { return models.find((model) => model.model === id); }
 const families = [...new Map(models.map((model) => [model.family, model.familyDisplayName])).entries()];
 const providers = [...new Set(models.map((model) => model.provider))].sort();
 

@@ -4,7 +4,8 @@ import type { Puzzle } from "@/components/puzzles/types";
 export type PuzzleRun = { model: string; status: "success" | "timeout"; correct: boolean; answer: string | null; answerIssue?: "no-solution-claimed" | "empty" | "no-grid" | "wrong-size"; answerCells?: number; tokens: number; cost: number; durationMs: number };
 export type PuzzleResult = { id: string; index: number; size: string; width: number; height: number; multipleSolutions: boolean; lineSolvable: boolean; attempts: number; solved: number; solveRate: number; runs: PuzzleRun[] };
 export type PuzzleExport = { timestamp: string; puzzles: PuzzleResult[] };
-export type CellState = "correct-filled" | "wrong-filled" | "missed" | "empty";
+export type CellState = "correct-filled" | "wrong-filled" | "missed" | "neutral-filled" | "empty";
+export type OverlayMode = "valid" | "unique-wrong" | "ambiguous-wrong";
 
 export function classifyAnswer(solution: string, answer: string) {
   const cells: CellState[] = [...solution].map((bit, index) =>
@@ -15,10 +16,22 @@ export function classifyAnswer(solution: string, answer: string) {
     missed: cells.filter((cell) => cell === "missed").length };
 }
 
-export function inspectAnswer(puzzle: Puzzle, answer: string) {
+export function inspectAnswer(puzzle: Puzzle, answer: string, multipleSolutions: boolean) {
   const solution = puzzle.solution.replace(/\s/g, "");
   if (!/^[01]+$/.test(answer) || answer.length !== solution.length) return null;
-  return { ...classifyAnswer(solution, answer), clues: checkClues(puzzle, answer) };
+  const clues = checkClues(puzzle, answer);
+  const referenceDifference = [...solution].filter((bit, index) => bit !== answer[index]).length;
+  if (clues.correct) return {
+    mode: "valid" as const,
+    cells: [...answer].map((bit): CellState => bit === "1" ? "correct-filled" : "empty"),
+    referenceDifference, wrong: 0, wrongFilled: 0, missed: 0, clues,
+  };
+  if (multipleSolutions) return {
+    mode: "ambiguous-wrong" as const,
+    cells: [...answer].map((bit): CellState => bit === "1" ? "neutral-filled" : "empty"),
+    referenceDifference, wrong: 0, wrongFilled: 0, missed: 0, clues,
+  };
+  return { mode: "unique-wrong" as const, ...classifyAnswer(solution, answer), referenceDifference, clues };
 }
 
 export type HeatmapState = "solved" | "wrong" | "cut-off" | "not-run";

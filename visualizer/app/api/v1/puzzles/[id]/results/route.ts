@@ -7,6 +7,7 @@ export async function GET(request: Request, { params }: RouteContext<"/api/v1/pu
   const { id } = await params;
   if (!getPuzzle(id)) return apiError(404, `Unknown puzzle "${id}".`);
   const search = new URL(request.url).searchParams;
+  if (search.has("size")) return apiError(400, "A puzzle has one size; omit the size filter.");
   const { filters, error } = parseApiFilters(search);
   const invalid = error ?? validateFilters(getVariants().map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), filters, SIZES);
   if (invalid) return apiError(400, invalid);

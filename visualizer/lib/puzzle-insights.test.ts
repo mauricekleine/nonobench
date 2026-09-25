@@ -10,20 +10,44 @@ test("classifies extra and missed cells with separate counts", () => {
 test("valid reference grid satisfies clues", () => {
   const puzzle = PUZZLES[0];
   const answer = puzzle.solution.replace(/\s/g, "");
-  const inspection = inspectAnswer(puzzle, answer);
+  const inspection = inspectAnswer(puzzle, answer, false);
+  expect(inspection?.mode).toBe("valid");
   expect(inspection?.wrong).toBe(0);
   expect(inspection?.clues.correct).toBe(true);
-  expect(inspectAnswer(puzzle, "1")).toBeNull();
+  expect(inspectAnswer(puzzle, "1", false)).toBeNull();
 });
 
-test("another valid solution may differ from the reference grid", () => {
+test("a correct alternative has no error cells despite differing from the reference", () => {
   const puzzle = PUZZLES[8];
   const reference = puzzle.solution.replace(/\s/g, "");
   const alternative = puzzleData.puzzles[8].runs.find((run) => run.correct && run.answer && run.answer !== reference)?.answer;
   expect(alternative).toBeDefined();
-  const inspection = inspectAnswer(puzzle, alternative!);
-  expect(inspection!.wrong).toBeGreaterThan(0);
+  const inspection = inspectAnswer(puzzle, alternative!, true);
+  expect(inspection!.mode).toBe("valid");
+  expect(inspection!.referenceDifference).toBeGreaterThan(0);
+  expect(inspection!.wrong).toBe(0);
+  expect(inspection!.cells).not.toContain("wrong-filled");
+  expect(inspection!.cells).not.toContain("missed");
   expect(inspection!.clues.correct).toBe(true);
+});
+
+test("a wrong ambiguous answer shows neutral cells and clue violations", () => {
+  const run = puzzleData.puzzles[8].runs.find((entry) => !entry.correct && entry.answer);
+  const inspection = inspectAnswer(PUZZLES[8], run!.answer!, true);
+  expect(inspection!.mode).toBe("ambiguous-wrong");
+  expect(inspection!.cells).toContain("neutral-filled");
+  expect(inspection!.cells).not.toContain("wrong-filled");
+  expect(inspection!.cells).not.toContain("missed");
+  expect(inspection!.clues.rowViolations.length + inspection!.clues.columnViolations.length).toBeGreaterThan(0);
+});
+
+test("a wrong unique answer keeps reference diff and clue violations", () => {
+  const run = puzzleData.puzzles[0].runs.find((entry) => !entry.correct && entry.answer);
+  const inspection = inspectAnswer(PUZZLES[0], run!.answer!, false);
+  expect(inspection!.mode).toBe("unique-wrong");
+  expect(inspection!.wrong).toBeGreaterThan(0);
+  expect(inspection!.cells.some((cell) => cell === "wrong-filled" || cell === "missed")).toBe(true);
+  expect(inspection!.clues.rowViolations.length + inspection!.clues.columnViolations.length).toBeGreaterThan(0);
 });
 
 test("heatmap maps missing runs and timeout separately", () => {

@@ -8,9 +8,10 @@ import { useNonogramStore } from "./store";
 
 type Props = {
   shouldHighlightMistakes?: boolean;
+  violatedRows?: number[];
 };
 
-export function NonogramRowClues({ shouldHighlightMistakes }: Props) {
+export function NonogramRowClues({ shouldHighlightMistakes, violatedRows }: Props) {
   const cluesGrid = useNonogramStore((state) => state.clues.rows);
   const highlightedRow = useNonogramStore((state) => state.highlightedRow);
   const zoomLevel = useNonogramStore((state) => state.zoomLevel);
@@ -38,9 +39,12 @@ export function NonogramRowClues({ shouldHighlightMistakes }: Props) {
             "flex flex-row justify-end border-foreground not-last:border-b not-last:nth-[5n]:border-b-2 font-mono text-xs",
             {
               "bg-border": highlightedRow === index,
+              "bg-[#D871A1]/20 outline outline-2 outline-dashed outline-[#D871A1]": violatedRows?.includes(index + 1),
             }
           )}
           key={`row-${index}`}
+          role={violatedRows?.includes(index + 1) ? "group" : undefined}
+          aria-label={violatedRows?.includes(index + 1) ? `Row ${index + 1} clue not satisfied` : undefined}
         >
           {row.map((id) => (
             <NonogramCluesCell

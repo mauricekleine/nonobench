@@ -140,7 +140,7 @@ export function createMcpServer() {
 			const { answer, ...rest } = run;
 			return { ...rest, displayName: model?.displayName ?? run.model, family: model?.family ?? run.model, effort: model?.effort ?? null, provider: model?.provider ?? null, ...(include_answers ? { answer } : {}) };
 		});
-		return result({ puzzleId: id, index: puzzle.index, size: puzzle.size, attempts: runs.length, solved: runs.filter((run) => run.correct).length, runs });
+		return result({ updatedAt: RESULTS_TIMESTAMP, puzzleId: id, index: puzzle.index, size: puzzle.size, attempts: runs.length, solved: runs.filter((run) => run.correct).length, runs });
 	});
 
 	server.registerTool("get_model_puzzles", {
@@ -152,7 +152,7 @@ export function createMcpServer() {
 		if (!metadata) return failure(`Unknown model "${model}".`);
 		const puzzles = (await loadPuzzleResults()).puzzles.map((puzzle) => {
 			const run = puzzle.runs.find((entry) => entry.model === model);
-			return { id: puzzle.id, index: puzzle.index, size: puzzle.size, solveRate: puzzle.solveRate, state: runState(run) };
+			return { id: puzzle.id, index: puzzle.index, size: puzzle.size, solveRate: puzzle.solveRate, state: runState(run), ...(run ? { correct: run.correct, status: run.status, cost: run.cost, durationMs: run.durationMs } : {}) };
 		});
 		return result({ model, displayName: metadata.displayName, solved: puzzles.filter((puzzle) => puzzle.state === "solved").length, attempted: puzzles.filter((puzzle) => puzzle.state !== "not-run").length, puzzles });
 	});
