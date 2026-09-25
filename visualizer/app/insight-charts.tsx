@@ -96,26 +96,31 @@ export function AccuracyScatter({
     .join(" ");
   const decades = decadeTicks(lower, upper);
   const ticks = decades.length ? decades : [Math.sqrt(lower * upper)];
-  // Place frontier labels beside their point, choosing the least crowded corner.
+  // Place frontier labels beside their point, choosing the least crowded side.
+  // Labels are anchored on the point and nudged by a few pixels, so they stay
+  // attached to their dot at any chart width; the % boxes below are only an
+  // approximate footprint for collision scoring.
+  const LABEL_W = 11, LABEL_H = 6, GAP = 1;
   const occupied: { left: number; right: number; top: number; bottom: number }[] = [];
-  const labelPositions = new Map<string, { left: string; top: string }>();
+  const labelPositions = new Map<string, { left: string; top: string; transform: string }>();
   for (const point of frontier) {
     const px = xPosition(point.x), py = yPosition(point.y);
     const candidates = [
-      { left: px + 2, top: py - 10 }, { left: px - 20, top: py - 10 },
-      { left: px + 2, top: py + 2 }, { left: px - 20, top: py + 2 },
-      { left: px - 9, top: py - 15 }, { left: px - 9, top: py + 5 },
+      { transform: "translate(10px, -50%)", box: { left: px + GAP, top: py - LABEL_H / 2 } },
+      { transform: "translate(calc(-100% - 10px), -50%)", box: { left: px - GAP - LABEL_W, top: py - LABEL_H / 2 } },
+      { transform: "translate(-50%, calc(-100% - 10px))", box: { left: px - LABEL_W / 2, top: py - GAP - LABEL_H } },
+      { transform: "translate(-50%, 10px)", box: { left: px - LABEL_W / 2, top: py + GAP } },
     ];
-    const score = (box: { left: number; top: number }) => {
-      const right = box.left + 18, bottom = box.top + 8;
+    const score = ({ box }: (typeof candidates)[number]) => {
+      const right = box.left + LABEL_W, bottom = box.top + LABEL_H;
       let penalty = box.left < 0 || right > 100 || box.top < 0 || bottom > 100 ? 100 : 0;
-      penalty += points.filter((other) => other.id !== point.id && xPosition(other.x) >= box.left - 1 && xPosition(other.x) <= right + 1 && yPosition(other.y) >= box.top - 1 && yPosition(other.y) <= bottom + 1).length * 8;
+      penalty += points.filter((other) => other.id !== point.id && xPosition(other.x) >= box.left && xPosition(other.x) <= right && yPosition(other.y) >= box.top && yPosition(other.y) <= bottom).length * 8;
       penalty += occupied.filter((other) => box.left < other.right && right > other.left && box.top < other.bottom && bottom > other.top).length * 12;
       return penalty;
     };
-    const best = candidates.sort((a, b) => score(a) - score(b))[0];
-    occupied.push({ ...best, right: best.left + 18, bottom: best.top + 8 });
-    labelPositions.set(point.id, { left: `${best.left}%`, top: `${best.top}%` });
+    const best = [...candidates].sort((a, b) => score(a) - score(b))[0];
+    occupied.push({ ...best.box, right: best.box.left + LABEL_W, bottom: best.box.top + LABEL_H });
+    labelPositions.set(point.id, { left: `${px}%`, top: `${py}%`, transform: best.transform });
   }
   const hovered = points.find((point) => point.id === hoveredId);
 
@@ -301,7 +306,7 @@ export function AccuracyScatter({
                 </div>
               );
             })}
-            {frontier.map((point) => <span key={`label-${point.id}`} className={`pointer-events-none absolute z-10 max-w-[110px] items-center gap-1 rounded border border-border/60 bg-card px-1 py-0.5 text-[10px] leading-tight text-foreground sm:flex ${mobileLabelIds.has(point.id) ? "flex" : "hidden"}`} style={{ ...labelPositions.get(point.id), opacity: activeFamily && activeFamily !== point.model.family ? 0.25 : 1 }}><ProviderLogo provider={point.model.provider} size={12} className="shrink-0" /><span className="truncate">{point.model.familyDisplayName}</span></span>)}
+            {frontier.map((point) => <span key={`label-${point.id}`} className={`pointer-events-none absolute z-10 max-w-[150px] whitespace-nowrap items-center gap-1 rounded border border-border/60 bg-card px-1 py-0.5 text-[10px] leading-tight text-foreground sm:flex ${mobileLabelIds.has(point.id) ? "flex" : "hidden"}`} style={{ ...labelPositions.get(point.id), opacity: activeFamily && activeFamily !== point.model.family ? 0.25 : 1 }}><ProviderLogo provider={point.model.provider} size={12} className="shrink-0" /><span className="truncate">{point.model.familyDisplayName}</span></span>)}
             {hovered && (
               <div
                 role="status"
