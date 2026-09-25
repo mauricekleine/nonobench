@@ -109,9 +109,10 @@ const showProgress =
   process.env.NEXT_PUBLIC_SHOW_PROGRESS === "1";
 
 function IncompleteBadge({ model, size }: { model: Model; size?: string }) {
-  const progress = showProgress
-    ? ` ${chartStats(model, size).runs}/${size ? 10 : 30}`
-    : "";
+  const runs = chartStats(model, size).runs;
+  const expected = size ? 10 : 30;
+  // Only while puzzles are still missing; timeouts are finished attempts.
+  const progress = showProgress && runs < expected ? ` ${runs}/${expected}` : "";
   return (
     <Popover>
       <PopoverTrigger
