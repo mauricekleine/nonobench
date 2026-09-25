@@ -44,25 +44,14 @@ export function WebMcp() {
 		const tools: WebMcpTool[] = [
 			{
 				name: "get_leaderboard",
-				description: "Nonobench models ranked by accuracy at solving nonogram puzzles, overall or for one grid size.",
+				description: "Nonobench models ranked by accuracy, overall or for one grid size. Effort defaults to all levels; use effort=best to match the homepage.",
 				inputSchema: { type: "object", properties: filterProperties },
 				annotations: { readOnlyHint: true },
 				execute: (input) => api(`/api/v1/leaderboard?${query(input)}`),
 			},
 			{ name: "list_providers", description: "Provider ids, names, families and variant counts.", inputSchema: { type: "object", properties: {} }, annotations: { readOnlyHint: true }, execute: () => api("/api/v1/providers") },
 			{ name: "list_families", description: "Model families, efforts and best variants.", inputSchema: { type: "object", properties: {} }, annotations: { readOnlyHint: true }, execute: () => api("/api/v1/families") },
-			{ name: "compare_models", description: "Compare two or more model ids or family names side by side.", inputSchema: { type: "object", properties: { models: { type: "array", items: { type: "string" }, minItems: 2 } }, required: ["models"] }, annotations: { readOnlyHint: true }, execute: async ({ models }) => {
-				const names = Array.isArray(models) ? models.map(String) : [];
-				const families = (await (await fetch("/api/v1/families")).json()).families as { family: string; displayName: string; bestVariant: string }[];
-				const variants = (await (await fetch("/api/v1/leaderboard?effort=all")).json()).models as { model: string; displayName: string }[];
-				const compared = await Promise.all(names.map(async (name) => {
-					const normalized = name.trim().toLocaleLowerCase();
-					const model = families.find((family) => family.family.toLocaleLowerCase() === normalized || family.displayName.toLocaleLowerCase() === normalized)?.bestVariant ?? variants.find((variant) => variant.displayName.toLocaleLowerCase() === normalized)?.model ?? name;
-					const response = await fetch(`/api/v1/models/${encodeURIComponent(model)}`);
-					return response.ok ? response.json() : { error: `Unknown model or family: ${name}` };
-				}));
-				return text({ models: compared });
-			} },
+			{ name: "compare_models", description: "Compare two or more model ids or family names side by side.", inputSchema: { type: "object", properties: { models: { type: "array", items: { type: "string" }, minItems: 2 } }, required: ["models"] }, annotations: { readOnlyHint: true }, execute: ({ models }) => api("/api/v1/compare", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ models }) }) },
 			{ name: "set_filters", description: "Update the visible leaderboard filters and URL.", inputSchema: { type: "object", properties: filterProperties }, execute: async (input) => {
 				const response = await fetch(`/api/v1/leaderboard?${query(input)}`);
 				if (!response.ok) return text(await response.json());

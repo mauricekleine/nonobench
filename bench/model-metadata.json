@@ -1,7 +1,7 @@
 {
   "allenai/olmo-3.1-32b-think": {
-    "displayName": "Olmo 3.1 32b Think",
-    "openWeights": null,
+    "displayName": "OLMo 3.1 32B Think",
+    "openWeights": true,
     "addedAt": null
   },
   "anthropic/claude-fable-5.1": {
@@ -45,8 +45,8 @@
     "addedAt": "2025-12-01T13:10:42.000Z"
   },
   "deepseek/deepseek-v3.2-speciale": {
-    "displayName": "Deepseek V3.2 Speciale",
-    "openWeights": null,
+    "displayName": "DeepSeek V3.2 Speciale",
+    "openWeights": true,
     "addedAt": null
   },
   "deepseek/deepseek-v4-pro-0813": {
@@ -101,7 +101,7 @@
   },
   "mistralai/mistral-large-2512": {
     "displayName": "Mistral Large 3 2512",
-    "openWeights": false,
+    "openWeights": true,
     "addedAt": "2025-12-01T21:27:52.000Z"
   },
   "mistralai/mistral-medium-3-5": {
@@ -170,7 +170,7 @@
     "addedAt": "2026-08-26T19:37:40.000Z"
   },
   "qwen/qwen3.8-max-0902": {
-    "displayName": "Qwen3.8 Max (0902)",
+    "displayName": "Qwen3.8 Max",
     "openWeights": false,
     "addedAt": "2026-09-03T21:08:24.000Z"
   },
@@ -190,8 +190,8 @@
     "addedAt": "2026-09-21T16:19:01.000Z"
   },
   "xiaomi/mimo-v2-flash:free": {
-    "displayName": "Mimo V2 Flash",
-    "openWeights": null,
+    "displayName": "MiMo V2 Flash",
+    "openWeights": true,
     "addedAt": null
   },
   "xiaomi/mimo-v2.6-flash": {

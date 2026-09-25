@@ -5,7 +5,7 @@ import path from "node:path";
 import resultsData from "@/app/results.json";
 import { PUZZLES, type Puzzle } from "@/components/puzzles";
 import { parseClues } from "@/lib/nonogram";
-import { applyFilters, type Filters } from "@/lib/leaderboard";
+import { applyFilters, resolveModel, type Filters } from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
 
 // Read-only views over the exported benchmark data, shared by the REST API,
@@ -147,11 +147,9 @@ export function listFamilies() {
 }
 
 export function compareModels(names: string[]) {
+	const variants = results.byModel.map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" }));
 	return names.map((name) => {
-		const normalized = name.trim().toLocaleLowerCase();
-		const direct = results.byModel.find((model) => model.model.toLocaleLowerCase() === normalized || model.displayName?.toLocaleLowerCase() === normalized);
-		const family = results.byModel.find((model) => model.family?.toLocaleLowerCase() === normalized || model.familyDisplayName?.toLocaleLowerCase() === normalized)?.family;
-		const selected = direct ?? (family ? applyFilters(results.byModel.map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), { families: [family] })[0] : undefined);
+		const selected = resolveModel(variants, name);
 		return selected ? getModel(selected.model) : null;
 	});
 }

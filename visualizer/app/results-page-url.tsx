@@ -1,8 +1,14 @@
 "use client";
 
 import { parseAsString, useQueryStates } from "nuqs";
-import { type Filters } from "@/lib/leaderboard";
+import { useEffect } from "react";
+import {
+  availableSizes,
+  sanitizeUrlFilters,
+  type Filters,
+} from "@/lib/leaderboard";
 import ResultsPage from "./results-page";
+import resultsData from "./results.json";
 
 // Short shareable parameters. Null means the default and is omitted by nuqs.
 const parsers = {
@@ -16,14 +22,19 @@ const parsers = {
 };
 export function UrlResultsPage() {
   const [query, setQuery] = useQueryStates(parsers);
-  const filters: Filters = {
-    providers: query.p ? query.p.split(",") : undefined,
-    families: query.f === "~" ? [] : query.f ? query.f.split(",") : undefined,
-    effort: query.e ?? (query.levels === "all" ? "all" : "best"),
-    reasoning: query.r === null ? undefined : query.r === "true",
-    openWeights: query.w === null ? undefined : query.w === "true",
-    size: query.s ?? undefined,
-  };
+  const { filters, invalidKeys } = sanitizeUrlFilters(
+    resultsData.byModel,
+    availableSizes(resultsData.byModel),
+    query,
+  );
+  const invalidSignature = invalidKeys.join(",");
+  useEffect(() => {
+    if (!invalidSignature) return;
+    const cleared: Partial<Record<keyof typeof parsers, null>> = {};
+    for (const key of invalidSignature.split(",") as (keyof typeof parsers)[])
+      cleared[key] = null;
+    void setQuery(cleared);
+  }, [invalidSignature, setQuery]);
   const change = (patch: Partial<Filters>) => {
     void setQuery({
       ...(Object.hasOwn(patch, "providers")

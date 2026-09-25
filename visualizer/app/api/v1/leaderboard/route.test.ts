@@ -33,3 +33,25 @@ test("filters models and rejects unknown values", async () => {
   expect(invalid.status).toBe(400);
   expect((await invalid.json()).error).toContain("open_weights");
 });
+
+test("empty provider and family lists impose no filter; empty effort means all", async () => {
+  const response = GET(
+    new Request(
+      "https://example.test/api/v1/leaderboard?provider=%20,%20&family=,&effort=",
+    ),
+  );
+  expect(response.status).toBe(200);
+  expect((await response.json()).models.length).toBe(getVariants().length);
+  const trimmed = GET(
+    new Request(
+      "https://example.test/api/v1/leaderboard?provider=%20openai%20,%20anthropic%20&effort=best",
+    ),
+  );
+  const body = await trimmed.json();
+  expect(body.models.length).toBeGreaterThan(0);
+  expect(
+    body.models.every((model: { provider: string }) =>
+      ["openai", "anthropic"].includes(model.provider),
+    ),
+  ).toBe(true);
+});

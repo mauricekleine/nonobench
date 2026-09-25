@@ -24,7 +24,12 @@ import {
 } from "@/components/ui/tooltip";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { NonobenchMark } from "@/components/nonobench-mark";
-import { applyFilters, scoreForSize, type Filters } from "@/lib/leaderboard";
+import {
+  applyFilters,
+  availableSizes,
+  scoreForSize,
+  type Filters,
+} from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
 import resultsData from "./results.json";
 
@@ -77,6 +82,12 @@ const providerGroups = [
       ),
     ),
   }));
+const displayedSizes = results.summary.sizes.filter((size) =>
+  availableSizes(results.byModel).includes(size),
+);
+const effortLevels = [
+  ...new Set(results.byModel.map((model) => model.effort)),
+].sort();
 const control =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
 const formatCost = (value: number) =>
@@ -318,6 +329,7 @@ export default function ResultsPage({
           )}
         </header>
         <div
+          role="group"
           aria-label="Leaderboard filters"
           className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-foreground/5 p-3"
         >
@@ -437,7 +449,13 @@ export default function ResultsPage({
               Filters
               {(filters.reasoning !== undefined ||
                 filters.openWeights !== undefined) && (
-                <span className="size-1.5 rounded-full bg-ember" />
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full bg-ember"
+                  />
+                  <span className="sr-only">Active filters</span>
+                </>
               )}
               <CaretDown size={13} />
             </PopoverTrigger>
@@ -501,6 +519,11 @@ export default function ResultsPage({
             >
               <option value="best">Best</option>
               <option value="all">All levels</option>
+              {effortLevels.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -518,7 +541,7 @@ export default function ResultsPage({
               className={control + " appearance-none pr-3"}
             >
               <option value="all">Core overall</option>
-              {results.summary.sizes.map((value) => (
+              {displayedSizes.map((value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>
@@ -618,7 +641,16 @@ export default function ResultsPage({
               <thead>
                 <tr className="border-b border-border bg-foreground/5 text-left">
                   <th className="sticky left-0 bg-card px-4 py-3">Model</th>
-                  <th className="px-3 py-3">
+                  <th
+                    className="px-3 py-3"
+                    aria-sort={
+                      sort.key === "accuracy"
+                        ? sort.desc
+                          ? "descending"
+                          : "ascending"
+                        : "none"
+                    }
+                  >
                     {sortButton(
                       size ? `${size} accuracy` : "Core accuracy",
                       "accuracy",
@@ -629,8 +661,30 @@ export default function ResultsPage({
                       {value}
                     </th>
                   ))}
-                  <th className="px-3 py-3">{sortButton("Cost", "cost")}</th>
-                  <th className="px-3 py-3">{sortButton("Time", "time")}</th>
+                  <th
+                    className="px-3 py-3"
+                    aria-sort={
+                      sort.key === "cost"
+                        ? sort.desc
+                          ? "descending"
+                          : "ascending"
+                        : "none"
+                    }
+                  >
+                    {sortButton("Cost", "cost")}
+                  </th>
+                  <th
+                    className="px-3 py-3"
+                    aria-sort={
+                      sort.key === "time"
+                        ? sort.desc
+                          ? "descending"
+                          : "ascending"
+                        : "none"
+                    }
+                  >
+                    {sortButton("Time", "time")}
+                  </th>
                 </tr>
               </thead>
               <tbody>

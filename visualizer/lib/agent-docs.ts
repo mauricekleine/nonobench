@@ -9,8 +9,10 @@ No authentication. Everything is read-only.
 
 - REST API: \`${SITE_URL}/api/v1\`. OpenAPI spec: ${SITE_URL}/api/openapi.json
   - \`GET /api/v1/leaderboard?size=10x10&provider=openai&effort=best\`: models ranked by accuracy. Filters: \`provider\` and \`family\` (comma-separated ids), \`effort\` (best, all, or a level), \`reasoning\` and \`open_weights\` (true/false), \`size\`. API default effort is all.
+  - Empty \`provider\` or \`family\` values mean no filter; spaces around comma-separated ids are ignored. Empty \`effort\` means all. Unknown open-weight status is excluded by both weights filters.
   - \`GET /api/v1/providers\`: provider ids, names and families
   - \`GET /api/v1/families\`: family ids, display names, efforts and best variants
+  - \`POST /api/v1/compare\` with \`{"models":["Claude Sonnet 4.5","GLM 5"]}\`: compare family-best variants or exact variant ids
   - \`GET /api/v1/models/{model}\`: one model, per grid size (accuracy, cost, latency, tokens)
   - \`GET /api/v1/puzzles?size=5x5\`: the puzzles with ids and clues
   - \`GET /api/v1/puzzles/{id}?include_solution=true\`: one puzzle and the exact prompt text

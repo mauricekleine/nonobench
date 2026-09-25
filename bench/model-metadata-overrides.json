@@ -1,0 +1,18 @@
+{
+  "allenai/olmo-3.1-32b-think": {
+    "openWeights": true,
+    "sourceUrl": "https://huggingface.co/allenai/Olmo-3.1-32B-Think"
+  },
+  "deepseek/deepseek-v3.2-speciale": {
+    "openWeights": true,
+    "sourceUrl": "https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Speciale"
+  },
+  "mistralai/mistral-large-2512": {
+    "openWeights": true,
+    "sourceUrl": "https://huggingface.co/mistralai/Mistral-Large-3-675B-Instruct-2512"
+  },
+  "xiaomi/mimo-v2-flash:free": {
+    "openWeights": true,
+    "sourceUrl": "https://huggingface.co/XiaomiMiMo/MiMo-V2-Flash"
+  }
+}

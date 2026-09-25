@@ -17,7 +17,7 @@ import {
 	SIZES,
 } from "@/lib/data";
 import { checkClues } from "@/lib/nonogram";
-import { validateFilters, type Filters } from "@/lib/leaderboard";
+import { parseCommaList, validateFilters, type Filters } from "@/lib/leaderboard";
 
 export const MCP_SERVER_INFO = { name: "nonobench", title: "Nonobench", version: "1.0.0" };
 
@@ -41,11 +41,11 @@ export function createMcpServer() {
 		{
 			title: "Get leaderboard",
 			description: "Models ranked by accuracy; defaults to all effort levels for compatibility.",
-			inputSchema: { size, provider: z.string().optional().describe("Comma-separated provider ids"), family: z.string().optional().describe("Comma-separated family ids"), effort: z.string().optional().describe("best, all (default), or one effort level"), reasoning: z.boolean().optional(), open_weights: z.boolean().optional() },
+			inputSchema: { size, provider: z.string().optional().describe("Comma-separated provider ids; empty means no filter"), family: z.string().optional().describe("Comma-separated family ids; empty means no filter"), effort: z.string().optional().describe("best, all (default), or one effort level; empty means all"), reasoning: z.boolean().optional(), open_weights: z.boolean().optional() },
 			annotations: readOnly,
 		},
 		async ({ size, provider, family, effort, reasoning, open_weights }) => {
-			const filters: Filters = { size, providers: provider?.split(","), families: family?.split(","), effort: effort ?? "all", reasoning, openWeights: open_weights };
+			const filters: Filters = { size, providers: parseCommaList(provider), families: parseCommaList(family), effort: effort?.trim() || "all", reasoning, openWeights: open_weights };
 			const error = validateFilters(getVariants().map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), filters, SIZES);
 			return error ? failure(error) : result({ updatedAt: RESULTS_TIMESTAMP, size: size ?? "all", models: getLeaderboard(size, filters) });
 		},

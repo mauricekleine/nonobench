@@ -4,6 +4,8 @@ import { getPuzzleId, openReadDb } from "./db";
 import { gradeOutput } from "./grade";
 import { CORE_SIZES, sortSizes } from "./sizes";
 import modelMetadata from "./model-metadata.json";
+import familyDisplayNames from "./family-display-names.json";
+import metadataOverrides from "./model-metadata-overrides.json";
 import { PROVIDERS } from "../visualizer/lib/providers";
 
 const db = openReadDb();
@@ -323,10 +325,10 @@ for (const [model, sizeDatas] of modelMap) {
 	const { provider } = metadata;
 	const catalog = (modelMetadata as Record<string, { displayName: string; openWeights: boolean | null; addedAt: string | null }>)[metadata.llm.modelId];
 	if (!catalog) throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
-	const familyDisplayName = catalog.displayName;
-	const displayName = metadata.effort === "none" || metadata.effort === "default"
-		? familyDisplayName + (metadata.effort === "default" && metadata.reasoning ? " (default)" : "")
-		: `${familyDisplayName} (${metadata.effort})`;
+	const familyDisplayName = (familyDisplayNames as Record<string, string>)[metadata.family];
+	if (!familyDisplayName) throw new Error(`Missing family display name for ${metadata.family}`);
+	const displayName = `${familyDisplayName} (${metadata.effort === "none" ? "no reasoning" : metadata.effort === "default" ? "reasoning" : metadata.effort})`;
+	const weightOverride = (metadataOverrides as Record<string, { openWeights: boolean; sourceUrl: string }>)[metadata.llm.modelId];
 	// Sort size data by size
 	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
 		(size) => sizeDatas.find((s) => s.size === size)!,
@@ -363,7 +365,7 @@ for (const [model, sizeDatas] of modelMap) {
 		displayName,
 		familyDisplayName,
 		providerName: PROVIDERS[provider]?.name ?? provider,
-		openWeights: catalog.openWeights,
+		openWeights: weightOverride?.openWeights ?? catalog.openWeights,
 		addedAt: catalog.addedAt,
 		provider,
 		family: metadata.family,

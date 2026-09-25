@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-25T07:48:05.049Z",
+  "timestamp": "2026-09-25T08:30:30.923Z",
   "summary": {
     "models": [
       "claude-opus-5.5-high",
@@ -1447,7 +1447,7 @@
     },
     {
       "model": "qwen3.8-flash",
-      "displayName": "Qwen3.8 Flash (default)",
+      "displayName": "Qwen3.8 Flash (reasoning)",
       "familyDisplayName": "Qwen3.8 Flash",
       "providerName": "Qwen",
       "openWeights": true,
@@ -1518,8 +1518,8 @@
     },
     {
       "model": "deepseek-v4-pro-medium",
-      "displayName": "DeepSeek V4 Pro 0813 (medium)",
-      "familyDisplayName": "DeepSeek V4 Pro 0813",
+      "displayName": "DeepSeek V4 Pro (medium)",
+      "familyDisplayName": "DeepSeek V4 Pro",
       "providerName": "DeepSeek",
       "openWeights": true,
       "addedAt": "2026-08-12T15:42:44.000Z",
@@ -1660,8 +1660,8 @@
     },
     {
       "model": "deepseek-v4-pro-low",
-      "displayName": "DeepSeek V4 Pro 0813 (low)",
-      "familyDisplayName": "DeepSeek V4 Pro 0813",
+      "displayName": "DeepSeek V4 Pro (low)",
+      "familyDisplayName": "DeepSeek V4 Pro",
       "providerName": "DeepSeek",
       "openWeights": true,
       "addedAt": "2026-08-12T15:42:44.000Z",
@@ -1731,8 +1731,8 @@
     },
     {
       "model": "qwen3.8-max-low",
-      "displayName": "Qwen3.8 Max (0902) (low)",
-      "familyDisplayName": "Qwen3.8 Max (0902)",
+      "displayName": "Qwen3.8 Max (low)",
+      "familyDisplayName": "Qwen3.8 Max",
       "providerName": "Qwen",
       "openWeights": false,
       "addedAt": "2026-09-03T21:08:24.000Z",
@@ -2157,7 +2157,7 @@
     },
     {
       "model": "seed-2.1-turbo",
-      "displayName": "Seed 2.1 Turbo (default)",
+      "displayName": "Seed 2.1 Turbo (reasoning)",
       "familyDisplayName": "Seed 2.1 Turbo",
       "providerName": "ByteDance Seed",
       "openWeights": false,
@@ -2654,10 +2654,10 @@
     },
     {
       "model": "deepseek-v3.2-speciale-high",
-      "displayName": "Deepseek V3.2 Speciale (high)",
-      "familyDisplayName": "Deepseek V3.2 Speciale",
+      "displayName": "DeepSeek V3.2 Speciale (high)",
+      "familyDisplayName": "DeepSeek V3.2 Speciale",
       "providerName": "DeepSeek",
-      "openWeights": null,
+      "openWeights": true,
       "addedAt": null,
       "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
@@ -2725,8 +2725,8 @@
     },
     {
       "model": "mimo-v2.6-pro",
-      "displayName": "MiMo-V2.6-Pro (default)",
-      "familyDisplayName": "MiMo-V2.6-Pro",
+      "displayName": "MiMo V2.6 Pro (reasoning)",
+      "familyDisplayName": "MiMo V2.6 Pro",
       "providerName": "Xiaomi",
       "openWeights": true,
       "addedAt": "2026-09-21T20:07:39.000Z",
@@ -3080,10 +3080,10 @@
     },
     {
       "model": "deepseek-v3.2-speciale",
-      "displayName": "Deepseek V3.2 Speciale",
-      "familyDisplayName": "Deepseek V3.2 Speciale",
+      "displayName": "DeepSeek V3.2 Speciale (no reasoning)",
+      "familyDisplayName": "DeepSeek V3.2 Speciale",
       "providerName": "DeepSeek",
-      "openWeights": null,
+      "openWeights": true,
       "addedAt": null,
       "provider": "deepseek",
       "family": "deepseek-v3.2-speciale",
@@ -3293,7 +3293,7 @@
     },
     {
       "model": "grok-4",
-      "displayName": "Grok 4 (default)",
+      "displayName": "Grok 4 (reasoning)",
       "familyDisplayName": "Grok 4",
       "providerName": "xAI",
       "openWeights": null,
@@ -3364,8 +3364,8 @@
     },
     {
       "model": "mimo-v2.6-flash",
-      "displayName": "MiMo-V2.6-Flash (default)",
-      "familyDisplayName": "MiMo-V2.6-Flash",
+      "displayName": "MiMo V2.6 Flash (reasoning)",
+      "familyDisplayName": "MiMo V2.6 Flash",
       "providerName": "Xiaomi",
       "openWeights": true,
       "addedAt": "2026-09-21T20:07:44.000Z",
@@ -3506,7 +3506,7 @@
     },
     {
       "model": "qwen3-next-80b-a3b-thinking",
-      "displayName": "Qwen3 Next 80B A3B Thinking (default)",
+      "displayName": "Qwen3 Next 80B A3B Thinking (reasoning)",
       "familyDisplayName": "Qwen3 Next 80B A3B Thinking",
       "providerName": "Qwen",
       "openWeights": true,
@@ -3861,7 +3861,7 @@
     },
     {
       "model": "kimi-k2-thinking",
-      "displayName": "Kimi K2 Thinking (default)",
+      "displayName": "Kimi K2 Thinking (reasoning)",
       "familyDisplayName": "Kimi K2 Thinking",
       "providerName": "Moonshot AI",
       "openWeights": true,
@@ -3932,7 +3932,7 @@
     },
     {
       "model": "minimax-m2.5",
-      "displayName": "MiniMax M2.5 (default)",
+      "displayName": "MiniMax M2.5 (reasoning)",
       "familyDisplayName": "MiniMax M2.5",
       "providerName": "MiniMax",
       "openWeights": true,
@@ -4003,7 +4003,7 @@
     },
     {
       "model": "claude-4.5-sonnet-reasoning",
-      "displayName": "Claude Sonnet 4.5 (default)",
+      "displayName": "Claude Sonnet 4.5 (reasoning)",
       "familyDisplayName": "Claude Sonnet 4.5",
       "providerName": "Anthropic",
       "openWeights": false,
@@ -4074,7 +4074,7 @@
     },
     {
       "model": "glm-5-reasoning",
-      "displayName": "GLM 5 (default)",
+      "displayName": "GLM 5 (reasoning)",
       "familyDisplayName": "GLM 5",
       "providerName": "Z.ai",
       "openWeights": true,
@@ -4216,7 +4216,7 @@
     },
     {
       "model": "grok-4.1-fast-reasoning",
-      "displayName": "Grok 4.1 Fast (default)",
+      "displayName": "Grok 4.1 Fast (reasoning)",
       "familyDisplayName": "Grok 4.1 Fast",
       "providerName": "xAI",
       "openWeights": null,
@@ -4287,7 +4287,7 @@
     },
     {
       "model": "glm-4.7-reasoning",
-      "displayName": "GLM 4.7 (default)",
+      "displayName": "GLM 4.7 (reasoning)",
       "familyDisplayName": "GLM 4.7",
       "providerName": "Z.ai",
       "openWeights": true,
@@ -4429,10 +4429,10 @@
     },
     {
       "model": "mimo-v2-flash-high",
-      "displayName": "Mimo V2 Flash (high)",
-      "familyDisplayName": "Mimo V2 Flash",
+      "displayName": "MiMo V2 Flash (high)",
+      "familyDisplayName": "MiMo V2 Flash",
       "providerName": "Xiaomi",
-      "openWeights": null,
+      "openWeights": true,
       "addedAt": null,
       "provider": "xiaomi",
       "family": "mimo-v2-flash",
@@ -4500,7 +4500,7 @@
     },
     {
       "model": "minimax-m2.1",
-      "displayName": "MiniMax M2.1 (default)",
+      "displayName": "MiniMax M2.1 (reasoning)",
       "familyDisplayName": "MiniMax M2.1",
       "providerName": "MiniMax",
       "openWeights": true,
@@ -4784,10 +4784,10 @@
     },
     {
       "model": "olmo-3.1-32b-think",
-      "displayName": "Olmo 3.1 32b Think (default)",
-      "familyDisplayName": "Olmo 3.1 32b Think",
+      "displayName": "OLMo 3.1 32B Think (reasoning)",
+      "familyDisplayName": "OLMo 3.1 32B Think",
       "providerName": "Allen Institute for AI",
-      "openWeights": null,
+      "openWeights": true,
       "addedAt": null,
       "provider": "allenai",
       "family": "olmo-3.1-32b-think",
@@ -4926,8 +4926,8 @@
     },
     {
       "model": "kimi-k2",
-      "displayName": "Kimi K2 0905",
-      "familyDisplayName": "Kimi K2 0905",
+      "displayName": "Kimi K2 (no reasoning)",
+      "familyDisplayName": "Kimi K2",
       "providerName": "Moonshot AI",
       "openWeights": true,
       "addedAt": "2025-09-04T21:25:47.000Z",
@@ -4997,7 +4997,7 @@
     },
     {
       "model": "deepseek-v3.2",
-      "displayName": "DeepSeek V3.2",
+      "displayName": "DeepSeek V3.2 (no reasoning)",
       "familyDisplayName": "DeepSeek V3.2",
       "providerName": "DeepSeek",
       "openWeights": true,
@@ -5068,7 +5068,7 @@
     },
     {
       "model": "claude-4.5-sonnet-non-reasoning",
-      "displayName": "Claude Sonnet 4.5",
+      "displayName": "Claude Sonnet 4.5 (no reasoning)",
       "familyDisplayName": "Claude Sonnet 4.5",
       "providerName": "Anthropic",
       "openWeights": false,
@@ -5281,7 +5281,7 @@
     },
     {
       "model": "glm-4.7-non-reasoning",
-      "displayName": "GLM 4.7",
+      "displayName": "GLM 4.7 (no reasoning)",
       "familyDisplayName": "GLM 4.7",
       "providerName": "Z.ai",
       "openWeights": true,
@@ -5352,7 +5352,7 @@
     },
     {
       "model": "glm-5-non-reasoning",
-      "displayName": "GLM 5",
+      "displayName": "GLM 5 (no reasoning)",
       "familyDisplayName": "GLM 5",
       "providerName": "Z.ai",
       "openWeights": true,
@@ -5423,7 +5423,7 @@
     },
     {
       "model": "grok-4.1-fast-non-reasoning",
-      "displayName": "Grok 4.1 Fast",
+      "displayName": "Grok 4.1 Fast (no reasoning)",
       "familyDisplayName": "Grok 4.1 Fast",
       "providerName": "xAI",
       "openWeights": null,
@@ -5494,7 +5494,7 @@
     },
     {
       "model": "kimi-k2.5-non-reasoning",
-      "displayName": "Kimi K2.5",
+      "displayName": "Kimi K2.5 (no reasoning)",
       "familyDisplayName": "Kimi K2.5",
       "providerName": "Moonshot AI",
       "openWeights": true,
@@ -5565,10 +5565,10 @@
     },
     {
       "model": "mimo-v2-flash",
-      "displayName": "Mimo V2 Flash",
-      "familyDisplayName": "Mimo V2 Flash",
+      "displayName": "MiMo V2 Flash (no reasoning)",
+      "familyDisplayName": "MiMo V2 Flash",
       "providerName": "Xiaomi",
-      "openWeights": null,
+      "openWeights": true,
       "addedAt": null,
       "provider": "xiaomi",
       "family": "mimo-v2-flash",
@@ -5636,7 +5636,7 @@
     },
     {
       "model": "ministral-14b-2512",
-      "displayName": "Ministral 3 14B 2512",
+      "displayName": "Ministral 3 14B 2512 (no reasoning)",
       "familyDisplayName": "Ministral 3 14B 2512",
       "providerName": "Mistral AI",
       "openWeights": true,
@@ -5707,10 +5707,10 @@
     },
     {
       "model": "mistral-large-2512",
-      "displayName": "Mistral Large 3 2512",
+      "displayName": "Mistral Large 3 2512 (no reasoning)",
       "familyDisplayName": "Mistral Large 3 2512",
       "providerName": "Mistral AI",
-      "openWeights": false,
+      "openWeights": true,
       "addedAt": "2025-12-01T21:27:52.000Z",
       "provider": "mistralai",
       "family": "mistral-large-2512",

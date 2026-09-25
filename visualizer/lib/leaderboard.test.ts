@@ -1,5 +1,10 @@
 import { expect, test } from "bun:test";
-import { applyFilters, validateFilters } from "./leaderboard";
+import {
+  applyFilters,
+  parseApiFilters,
+  sanitizeUrlFilters,
+  validateFilters,
+} from "./leaderboard";
 
 const variants = [
   {
@@ -74,4 +79,51 @@ test("unknown filter values have helpful errors", () => {
   expect(validateFilters(variants, { effort: "extreme" }, ["5x5"])).toContain(
     "Unknown effort",
   );
+});
+
+test("URL filters drop invalid keys while keeping valid filters", () => {
+  const query = {
+    p: "one",
+    f: null,
+    e: "bogus",
+    r: "maybe",
+    w: "maybe",
+    s: "bogus",
+    levels: null,
+  };
+  const parsed = sanitizeUrlFilters(variants, ["5x5"], query);
+  expect(parsed.invalidKeys).toEqual(["e", "s", "r", "w"]);
+  expect(parsed.filters).toMatchObject({
+    providers: ["one"],
+    effort: "best",
+    reasoning: undefined,
+    openWeights: undefined,
+    size: undefined,
+  });
+  expect(
+    sanitizeUrlFilters(variants, ["5x5"], {
+      ...query,
+      e: "high",
+      s: "5x5",
+      r: "false",
+      w: "true",
+    }).invalidKeys,
+  ).toEqual([]);
+});
+
+test("REST comma parsing trims and ignores empty entries", () => {
+  const { filters } = parseApiFilters(
+    new URLSearchParams("provider=+one+,,+two+&family=,+&effort="),
+  );
+  expect(filters).toMatchObject({
+    providers: ["one", "two"],
+    families: undefined,
+    effort: "all",
+  });
+});
+
+test("unknown weight status matches neither true nor false", () => {
+  const unknown = [{ ...variants[0], openWeights: null }];
+  expect(applyFilters(unknown, { openWeights: true })).toEqual([]);
+  expect(applyFilters(unknown, { openWeights: false })).toEqual([]);
 });

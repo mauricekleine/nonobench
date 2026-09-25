@@ -20,7 +20,45 @@ export type LeaderboardVariant = {
   overallAccuracy: number;
   overallRuns: number;
   bySize: { size: string; runs: number; accuracy: number; totalCost: number }[];
+  displayName?: string;
+  familyDisplayName?: string;
 };
+
+export function availableSizes(variants: LeaderboardVariant[]): string[] {
+  return [
+    ...new Set(
+      variants.flatMap((model) =>
+        model.bySize.filter((size) => size.runs > 0).map((size) => size.size),
+      ),
+    ),
+  ];
+}
+
+// Exact variant IDs take precedence, including IDs that happen to equal a
+// family ID. Human-readable family names always select the best core variant.
+export function resolveModel<T extends LeaderboardVariant>(
+  variants: T[],
+  name: string,
+): T | undefined {
+  const normalized = name.trim().toLocaleLowerCase();
+  if (!normalized) return undefined;
+  const exact = variants.find(
+    (model) => model.model.toLocaleLowerCase() === normalized,
+  );
+  if (exact) return exact;
+  const family = variants.find(
+    (model) =>
+      model.family.toLocaleLowerCase() === normalized ||
+      model.familyDisplayName?.toLocaleLowerCase() === normalized,
+  )?.family;
+  if (family)
+    return selectBestVariants(
+      variants.filter((model) => model.family === family),
+    )[0];
+  return variants.find(
+    (model) => model.displayName?.toLocaleLowerCase() === normalized,
+  );
+}
 
 export function scoreForSize(model: LeaderboardVariant, size?: string) {
   return size
@@ -68,8 +106,10 @@ export function applyFilters<T extends LeaderboardVariant>(
     )
     .sort(
       (a, b) =>
-        Number(scoreForSize(b, filters.size).toFixed(1)) - Number(scoreForSize(a, filters.size).toFixed(1)) ||
-        Number(costForSize(a, filters.size).toFixed(6)) - Number(costForSize(b, filters.size).toFixed(6)),
+        Number(scoreForSize(b, filters.size).toFixed(1)) -
+          Number(scoreForSize(a, filters.size).toFixed(1)) ||
+        Number(costForSize(a, filters.size).toFixed(6)) -
+          Number(costForSize(b, filters.size).toFixed(6)),
     );
 }
 
@@ -103,14 +143,6 @@ export function parseApiFilters(params: URLSearchParams): {
   filters: Filters;
   error: string | null;
 } {
-  const list = (key: string) =>
-    params.has(key)
-      ? params
-          .get(key)!
-          .split(",")
-          .map((value) => value.trim())
-          .filter(Boolean)
-      : undefined;
   const bool = (key: string): boolean | undefined | null => {
     const value = params.get(key);
     return value === null
@@ -132,13 +164,89 @@ export function parseApiFilters(params: URLSearchParams): {
     };
   return {
     filters: {
-      providers: list("provider"),
-      families: list("family"),
-      effort: params.get("effort") ?? "all",
+      providers: parseCommaList(params.get("provider")),
+      families: parseCommaList(params.get("family")),
+      effort: params.get("effort")?.trim() || "all",
       reasoning,
       openWeights,
-      size: params.get("size") ?? undefined,
+      size: params.get("size")?.trim() || undefined,
     },
     error: null,
+  };
+}
+
+// Empty comma lists mean no restriction in REST, MCP, and page URLs.
+export function parseCommaList(
+  value: string | null | undefined,
+): string[] | undefined {
+  const entries = value
+    ?.split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  return entries?.length ? entries : undefined;
+}
+
+type UrlQuery = Record<
+  "p" | "f" | "e" | "r" | "w" | "s" | "levels",
+  string | null
+>;
+export function sanitizeUrlFilters(
+  variants: LeaderboardVariant[],
+  sizes: string[],
+  query: UrlQuery,
+): { filters: Filters; invalidKeys: (keyof UrlQuery)[] } {
+  const invalidKeys: (keyof UrlQuery)[] = [];
+  const providers = parseCommaList(query.p);
+  const families = query.f === "~" ? [] : parseCommaList(query.f);
+  const effort = query.e?.trim();
+  const size = query.s?.trim();
+  if (
+    query.p !== null &&
+    (!providers || validateFilters(variants, { providers }, sizes))
+  )
+    invalidKeys.push("p");
+  if (
+    query.f !== null &&
+    query.f !== "~" &&
+    (!families || validateFilters(variants, { families }, sizes))
+  )
+    invalidKeys.push("f");
+  if (
+    query.e !== null &&
+    (!effort || validateFilters(variants, { effort }, sizes))
+  )
+    invalidKeys.push("e");
+  if (query.s !== null && (!size || validateFilters(variants, { size }, sizes)))
+    invalidKeys.push("s");
+  if (query.r !== null && query.r !== "true" && query.r !== "false")
+    invalidKeys.push("r");
+  if (query.w !== null && query.w !== "true" && query.w !== "false")
+    invalidKeys.push("w");
+  if (
+    query.levels !== null &&
+    query.levels !== "all" &&
+    query.levels !== "best"
+  )
+    invalidKeys.push("levels");
+  return {
+    filters: {
+      providers: invalidKeys.includes("p") ? undefined : providers,
+      families: invalidKeys.includes("f") ? undefined : families,
+      effort: invalidKeys.includes("e")
+        ? query.levels === "all"
+          ? "all"
+          : "best"
+        : (effort ?? (query.levels === "all" ? "all" : "best")),
+      reasoning:
+        invalidKeys.includes("r") || query.r === null
+          ? undefined
+          : query.r === "true",
+      openWeights:
+        invalidKeys.includes("w") || query.w === null
+          ? undefined
+          : query.w === "true",
+      size: invalidKeys.includes("s") ? undefined : size || undefined,
+    },
+    invalidKeys,
   };
 }
