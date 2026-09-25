@@ -2,6 +2,8 @@
 
 A benchmark suite for evaluating LLM reasoning capabilities on Nonogram (Picross) puzzle solving across different grid sizes. Results are published at [nonobench.com](https://nonobench.com).
 
+Built by [Maurice Kleine](https://www.mauricekleine.com/).
+
 ## What is a Nonogram?
 
 Nonograms (also known as Picross, Griddlers, or Paint by Numbers) are logic puzzles where you fill in cells on a grid based on numeric clues for each row and column. The clues indicate consecutive groups of filled cells, separated by at least one empty cell. Solving these puzzles requires logical deduction and constraint satisfaction - making them an excellent test of LLM reasoning abilities.
