@@ -21,7 +21,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-	metadataBase: new URL("https://nonobench.com"),
+	metadataBase: new URL("https://www.nonobench.com"),
 	title: "NonoBench – LLM Nonogram Puzzle Solving Benchmark",
 	description:
 		"Evaluate and compare how well large language models solve Nonogram (Picross) puzzles. Interactive benchmark results, visualizations, and leaderboards for AI reasoning capabilities.",

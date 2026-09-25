@@ -9,7 +9,8 @@ import { parseClues } from "@/lib/nonogram";
 // Read-only views over the exported benchmark data, shared by the REST API,
 // the MCP server and the markdown pages.
 
-export const SITE_URL = "https://nonobench.com";
+// Canonical host: Dokploy redirects the bare domain to www.
+export const SITE_URL = "https://www.nonobench.com";
 
 type SizeData = {
 	size: string;
