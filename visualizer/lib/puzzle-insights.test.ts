@@ -1,6 +1,6 @@
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { PUZZLES } from "@/components/puzzles";
-import { classifyAnswer, inspectAnswer, shapeHeatmap, type PuzzleResult } from "./puzzle-insights";
+import { classifyAnswer, describeMissingAnswer, inspectAnswer, shapeHeatmap, type PuzzleResult, type PuzzleRun } from "./puzzle-insights";
 import puzzleData from "@/public/puzzle-results.json";
 
 test("classifies extra and missed cells with separate counts", () => {
@@ -29,4 +29,17 @@ test("another valid solution may differ from the reference grid", () => {
 test("heatmap maps missing runs and timeout separately", () => {
   const puzzle = { index: 0, runs: [{ model: "a", status: "timeout", correct: false, answer: null, tokens: 0, cost: 0, durationMs: 1 }] } as PuzzleResult;
   expect(shapeHeatmap([puzzle], ["a", "b"])).toEqual([{ model: "a", cells: [{ puzzle: 0, state: "cut-off" }] }, { model: "b", cells: [{ puzzle: 0, state: "not-run" }] }]);
+});
+
+describe("describeMissingAnswer", () => {
+	const run = (patch: Partial<PuzzleRun>): PuzzleRun => ({ model: "m", status: "success", correct: false, answer: null, tokens: 0, cost: 0, durationMs: 0, ...patch });
+	test("explains each reason in plain language", () => {
+		expect(describeMissingAnswer(undefined, 25)).toBe("This model has not run this puzzle.");
+		expect(describeMissingAnswer(run({ status: "timeout" }), 25)).toMatch(/time limit/);
+		expect(describeMissingAnswer(run({ answerIssue: "wrong-size", answerCells: 224 }), 225)).toBe("Answered with 224 cells instead of 225 (1 cell short), so it can't be laid on the grid.");
+		expect(describeMissingAnswer(run({ answerIssue: "wrong-size", answerCells: 240 }), 225)).toMatch(/15 cells too many/);
+		expect(describeMissingAnswer(run({ answerIssue: "no-solution-claimed" }), 25)).toBe("Claimed the puzzle has no solution.");
+		expect(describeMissingAnswer(run({ answerIssue: "empty" }), 25)).toBe("Returned an empty answer.");
+		expect(describeMissingAnswer(run({ answerIssue: "no-grid" }), 25)).toBe("The answer didn't contain a grid.");
+	});
 });

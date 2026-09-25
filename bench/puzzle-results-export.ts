@@ -21,6 +21,10 @@ type PuzzleResultRun = {
 	status: "success" | "timeout";
 	correct: boolean;
 	answer: string | null;
+	// Why there is no overlayable answer (absent when `answer` is set).
+	answerIssue?: AnswerIssue;
+	// Cells in the extracted grid when it has the wrong size.
+	answerCells?: number;
 	tokens: number;
 	cost: number;
 	durationMs: number;
@@ -39,6 +43,24 @@ type PuzzleResult = {
 	solveRate: number;
 	runs: PuzzleResultRun[];
 };
+
+type AnswerIssue = "no-solution-claimed" | "empty" | "no-grid" | "wrong-size";
+
+// Classify a run without an overlayable grid, so the explorer can say what
+// the model actually did instead of a generic "no usable grid".
+function answerIssue(rawOutput: string | null, extracted: string | null, cells: number): { answerIssue: AnswerIssue; answerCells?: number } {
+	if (extracted && extracted.length !== cells) return { answerIssue: "wrong-size", answerCells: extracted.length };
+	let text = rawOutput ?? "";
+	try {
+		const parsed: unknown = JSON.parse(text);
+		if (parsed && typeof parsed === "object" && "solution" in parsed && typeof parsed.solution === "string") text = parsed.solution;
+	} catch {
+		// Free-text answer.
+	}
+	if (!text.trim()) return { answerIssue: "empty" };
+	if (/^\s*0\s*$/.test(text)) return { answerIssue: "no-solution-claimed" };
+	return { answerIssue: "no-grid" };
+}
 
 type PuzzleResults = {
 	timestamp: string;
@@ -74,11 +96,13 @@ export async function writePuzzleResultsExport(): Promise<void> {
 				const answer = extracted?.length === puzzle.width * puzzle.height && /^[01]+$/.test(extracted)
 					? extracted
 					: null;
+				const cells = puzzle.width * puzzle.height;
 				return {
 					model: row.model,
 					status: row.status,
 					correct,
 					answer,
+					...(row.status === "success" && !answer ? answerIssue(row.raw_output, extracted, cells) : {}),
 					tokens: row.tokens,
 					cost: row.cost,
 					durationMs: row.duration_ms,

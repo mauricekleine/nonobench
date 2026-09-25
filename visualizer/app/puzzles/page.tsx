@@ -9,7 +9,7 @@ import { Nonogram } from "@/components/nonogram/nonogram";
 import { PUZZLES } from "@/components/puzzles";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { PuzzleFilters, usePuzzleExport, usePuzzleFilters } from "@/components/puzzles/puzzle-filters";
-import { inspectAnswer } from "@/lib/puzzle-insights";
+import { describeMissingAnswer, inspectAnswer } from "@/lib/puzzle-insights";
 import { PROVIDERS } from "@/lib/providers";
 
 function PuzzlesContent() {
@@ -48,7 +48,7 @@ function PuzzlesContent() {
           {result?.multipleSolutions && <p className="mt-1 text-muted-foreground">A different valid grid counts as correct. Clue check: {inspection.clues.correct ? "all rows and columns match" : `${inspection.clues.rowViolations.length} row and ${inspection.clues.columnViolations.length} column violations`}.</p>}
           {!inspection.clues.correct && <p className="mt-1 text-xs text-muted-foreground">Rows: {inspection.clues.rowViolations.map((line) => line.index).join(", ") || "none"}. Columns: {inspection.clues.columnViolations.map((line) => line.index).join(", ") || "none"}.</p>}
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs"><span className="flex items-center gap-1"><span className="size-4 bg-[#46FEA5]" /> Correct filled</span><span className="flex items-center gap-1"><span className="flex size-4 items-center justify-center bg-[#FFCA16] font-bold text-black">×</span> Extra filled</span><span className="flex items-center gap-1"><span className="flex size-4 items-center justify-center border-2 border-[#C69CFF] font-bold text-[#C69CFF]">·</span> Missed</span></div>
-        </> : <p className="mt-1 text-muted-foreground">{!selected ? "This model has not run this puzzle." : selected.status === "timeout" ? "Cut off before a grid was returned." : "No usable grid was returned."}</p>}</div>}
+        </> : <p className="mt-1 text-muted-foreground">{describeMissingAnswer(selected, puzzle.width * puzzle.height)}</p>}</div>}
         <p className="text-xs text-muted-foreground">Use ← and → to change puzzles when focus is outside a control.</p>
       </section>
       <aside aria-label="Model answers" className="min-w-0" onKeyDown={(event) => {
