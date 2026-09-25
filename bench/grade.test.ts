@@ -68,3 +68,30 @@ describe("gradeOutput", () => {
     expect(gradeOutput(puzzle, output)).toBe(false);
   });
 });
+
+describe("row-format answers (Hard mode)", () => {
+  const puzzle = PUZZLES.find((candidate) => candidate.width === 20)!;
+  const grid = puzzle.solution.replace(/\s+/g, "");
+  const rows = grid.match(/.{20}/g)!;
+
+  test("grades a structured array of row strings", () => {
+    expect(gradeOutput(puzzle, JSON.stringify({ solution: rows }))).toBe(true);
+    expect(gradeOutput(puzzle, JSON.stringify({ solution: rows.slice(0, 19) }))).toBe(false);
+  });
+
+  test("takes the last complete block of rows in text answers", () => {
+    const draft = rows.map((row) => row.replace(/1/g, "0")).join("\n");
+    expect(extractOutputSolution(puzzle, `${draft}\n\nFinal:\n${rows.join("\n")}`)).toBe(grid);
+    expect(gradeOutput(puzzle, rows.map((row) => row.split("").join(" ")).join("\n"))).toBe(true);
+  });
+
+  test("rejects a block with a miscounted row", () => {
+    const broken = [...rows];
+    broken[7] = `${broken[7]}0`;
+    expect(gradeOutput(puzzle, broken.join("\n"))).toBe(false);
+  });
+
+  test("still accepts a correct flat grid", () => {
+    expect(gradeOutput(puzzle, grid)).toBe(true);
+  });
+});

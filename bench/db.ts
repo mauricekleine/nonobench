@@ -48,7 +48,7 @@ function openWriteDb(): Database {
   `);
   const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((row) => row.name));
   // output_mode: NULL for legacy free-text runs, "json_schema" for strict structured output.
-  for (const column of ["raw_input", "raw_output", "reasoning", "output_mode", "reasoning_tokens", "provider_name", "quantization", "generation_id", "finish_reason", "code_revision"] as const) {
+  for (const column of ["raw_input", "raw_output", "reasoning", "output_mode", "reasoning_tokens", "provider_name", "quantization", "generation_id", "finish_reason", "code_revision", "answer_format"] as const) {
     const type = column === "reasoning" || column === "reasoning_tokens" ? "INTEGER" : "TEXT";
     if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${type}`);
   }
@@ -79,6 +79,8 @@ function openWriteDb(): Database {
     CREATE TRIGGER IF NOT EXISTS attempts_no_delete BEFORE DELETE ON attempts
     BEGIN SELECT RAISE(ABORT, 'attempts are append-only'); END;
   `);
+  const attemptColumns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(attempts)").all().map((row) => row.name));
+  if (!attemptColumns.has("answer_format")) db.run("ALTER TABLE attempts ADD COLUMN answer_format TEXT");
   writeDb = db;
   return db;
 }
@@ -100,6 +102,8 @@ export type BenchmarkResult = {
   rawOutput: string;
   reasoning: boolean;
   outputMode: "json_schema" | "text";
+  // How the grid was requested; NULL in older rows means "flat".
+  answerFormat?: "flat" | "rows";
   // Null when the provider does not report reasoning tokens.
   reasoningTokens: number | null;
   providerName?: string | null;
@@ -168,15 +172,16 @@ export function saveRunToDb(result: BenchmarkResult): void {
     $generation_id: result.generationId ?? null,
     $finish_reason: result.finishReason ?? null,
     $code_revision: result.codeRevision ?? codeRevision(),
+    $answer_format: result.answerFormat ?? "flat",
   };
   db.transaction(() => {
     db.query(`
-      INSERT INTO attempts (model, puzzle_id, size, started_at, duration_ms, status, error_message, tokens, reasoning_tokens, cost, provider_name, quantization, generation_id, finish_reason, output_mode, code_revision, raw_output)
-      VALUES ($model, $puzzle_id, $size, $started_at, $attempt_duration_ms, $status, $error_message, $tokens, $reasoning_tokens, $cost, $provider_name, $quantization, $generation_id, $finish_reason, $output_mode, $code_revision, $raw_output)
+      INSERT INTO attempts (model, puzzle_id, size, started_at, duration_ms, status, error_message, tokens, reasoning_tokens, cost, provider_name, quantization, generation_id, finish_reason, output_mode, code_revision, raw_output, answer_format)
+      VALUES ($model, $puzzle_id, $size, $started_at, $attempt_duration_ms, $status, $error_message, $tokens, $reasoning_tokens, $cost, $provider_name, $quantization, $generation_id, $finish_reason, $output_mode, $code_revision, $raw_output, $answer_format)
     `).run(values);
     db.query(`
-    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning, output_mode, reasoning_tokens, provider_name, quantization, generation_id, finish_reason, code_revision)
-    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning, $output_mode, $reasoning_tokens, $provider_name, $quantization, $generation_id, $finish_reason, $code_revision)
+    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning, output_mode, reasoning_tokens, provider_name, quantization, generation_id, finish_reason, code_revision, answer_format)
+    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning, $output_mode, $reasoning_tokens, $provider_name, $quantization, $generation_id, $finish_reason, $code_revision, $answer_format)
     ON CONFLICT(model, puzzle_id) DO UPDATE SET
       size = excluded.size,
       timestamp = excluded.timestamp,
@@ -195,7 +200,8 @@ export function saveRunToDb(result: BenchmarkResult): void {
       quantization = excluded.quantization,
       generation_id = excluded.generation_id,
       finish_reason = excluded.finish_reason,
-      code_revision = excluded.code_revision
+      code_revision = excluded.code_revision,
+      answer_format = excluded.answer_format
     WHERE runs.status = 'failed' AND runs.output_mode IS NOT NULL
   `).run(values);
   })();

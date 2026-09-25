@@ -14,6 +14,9 @@ const db = read();
 type Row = { model: string; puzzle_id: string; size: string; raw_output: string | null; status: string };
 const original = db.query<Row, []>("SELECT model, puzzle_id, size, raw_output, status FROM runs WHERE status = 'success' LIMIT 1").get();
 assert(original);
+// The copy already holds real attempts; only check the ones written here.
+const hasAttempts = db.query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'attempts'").get();
+const firstTestAttempt = (hasAttempts ? db.query<{ max: number | null }, []>("SELECT MAX(id) AS max FROM attempts").get()?.max ?? 0 : 0) + 1;
 db.close();
 const fake: BenchmarkResult = {
   model: original.model,
@@ -52,8 +55,8 @@ check = read();
 const final = check.query<{ status: string; raw_output: string; provider_name: string; quantization: string; generation_id: string; finish_reason: string; code_revision: string }, [string]>("SELECT status, raw_output, provider_name, quantization, generation_id, finish_reason, code_revision FROM runs WHERE model = ?").get(retry.model);
 assert.deepEqual(final, { status: "success", raw_output: "retried", provider_name: "Test Provider", quantization: "fp8", generation_id: "gen-test", finish_reason: "stop", code_revision: "test123" });
 const columns = check.query<{ name: string }, []>("PRAGMA table_info(attempts)").all().map((column) => column.name);
-assert.deepEqual(columns, ["id", "model", "puzzle_id", "size", "started_at", "duration_ms", "status", "error_message", "tokens", "reasoning_tokens", "cost", "provider_name", "quantization", "generation_id", "finish_reason", "output_mode", "code_revision", "raw_output"]);
-const attempts = check.query<{ model: string; status: string; raw_output: string; started_at: string; duration_ms: number; finish_reason: string; code_revision: string }, []>("SELECT model, status, raw_output, started_at, duration_ms, finish_reason, code_revision FROM attempts ORDER BY id").all();
+assert.deepEqual(columns, ["id", "model", "puzzle_id", "size", "started_at", "duration_ms", "status", "error_message", "tokens", "reasoning_tokens", "cost", "provider_name", "quantization", "generation_id", "finish_reason", "output_mode", "code_revision", "raw_output", "answer_format"]);
+const attempts = check.query<{ model: string; status: string; raw_output: string; started_at: string; duration_ms: number; finish_reason: string; code_revision: string }, [number]>("SELECT model, status, raw_output, started_at, duration_ms, finish_reason, code_revision FROM attempts WHERE id >= ? ORDER BY id").all(firstTestAttempt);
 assert.deepEqual(attempts, [
   { model: original.model, status: "failed", raw_output: "overwrite attempt", started_at: fake.startedAt, duration_ms: 23, finish_reason: "stop", code_revision: "test123" },
   { model: retry.model, status: "failed", raw_output: "overwrite attempt", started_at: fake.startedAt, duration_ms: 23, finish_reason: "stop", code_revision: "test123" },

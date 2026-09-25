@@ -18,5 +18,4 @@ test("current families contain every supported effort up to their maximum", () =
     if (entry.levels.length === 0) expect(configured.some((model) => NEW_VARIANT_NAMES.has(model.name))).toBe(false);
   }
   expect(MODELS.find((model) => model.name === "claude-fable-5.1-max")).toBeDefined();
-  expect(MODELS.find((model) => model.name === "claude-fable-5.1-max")).toBeUndefined();
 });

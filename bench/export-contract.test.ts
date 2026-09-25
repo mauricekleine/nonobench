@@ -34,10 +34,9 @@ test("temp export preserves committed fields and gives each variant one version"
     const oldRaw = JSON.parse(readFileSync(join(import.meta.dir, "../visualizer/public/results-raw.json"), "utf8"));
     const summary = JSON.parse(readFileSync(paths.results, "utf8"));
     const raw = JSON.parse(readFileSync(paths.raw, "utf8"));
-    // The checked-in exports predate the integrated grader repair: five raw
-    // answers now grade correctly, which also changes four summary scores and
-    // their sort order. Keep that known drift separate from this export change.
-    const additions = new Set(["harness", "version", "reasoningTokens", "finishReason", "providerName", "quantization", "generationId"]);
+    // The checked-in exports must be exactly what the database produces
+    // (apart from the timestamp), so commit them together with results.db.
+    const additions = new Set(["harness", "version", "reasoningTokens", "finishReason", "providerName", "quantization", "generationId", "answerFormat"]);
     let correctedRawRuns = 0;
     const compare = (before: any, after: any, path = "root") => {
       if (Array.isArray(before)) {
@@ -64,7 +63,7 @@ test("temp export preserves committed fields and gives each variant one version"
     };
     compare(oldSummary, summary);
     compare(oldRaw, raw);
-    expect(correctedRawRuns).toBe(5);
+    expect(correctedRawRuns).toBe(0);
 
     const db = new Database(dbPath, { readonly: true, create: false });
     const first = new Map(db.query<{ model: string; first_run: string }, []>("SELECT model, MIN(timestamp) AS first_run FROM runs GROUP BY model").all().map((row) => [row.model, row.first_run]));
@@ -77,7 +76,8 @@ test("temp export preserves committed fields and gives each variant one version"
     for (const run of raw.runs) {
       expect(run.version).toBe(expectedVersion(run.model));
       expect(run.reasoningTokens === null || typeof run.reasoningTokens === "number").toBe(true);
-      expect(run.finishReason).toBeNull(); // committed DB predates finish-reason capture
+      expect(run.finishReason === null || typeof run.finishReason === "string").toBe(true);
+      expect(["flat", "rows"]).toContain(run.answerFormat);
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });

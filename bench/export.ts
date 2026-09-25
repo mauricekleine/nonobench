@@ -183,6 +183,7 @@ type RawRow = {
 	generation_id: string | null;
 	reasoning_tokens: number | null;
 	finish_reason: string | null;
+	answer_format: string | null;
 };
 
 // Output type for raw results JSON
@@ -205,6 +206,8 @@ type RawResult = {
 	version: "1.0" | "1.1" | "1.2";
 	reasoningTokens: number | null;
 	finishReason: string | null;
+	// "flat" (one string) or "rows" (one line per row, Hard mode).
+	answerFormat: "flat" | "rows";
 	providerName: string | null;
 	quantization: string | null;
 	generationId: string | null;
@@ -478,6 +481,7 @@ const rawResults = db
       ${optionalColumn("generation_id")}
       , ${optionalColumn("reasoning_tokens")}
       , ${optionalColumn("finish_reason")}
+      , ${optionalColumn("answer_format")}
     FROM runs
     ORDER BY model, size, timestamp
   `,
@@ -506,6 +510,7 @@ const rawResultsOutput: RawResults = {
 		version: versionFor(row.model),
 		reasoningTokens: row.reasoning_tokens,
 		finishReason: row.finish_reason,
+		answerFormat: row.answer_format === "rows" ? "rows" : "flat",
 		providerName: row.provider_name,
 		quantization: row.quantization,
 		generationId: row.generation_id,

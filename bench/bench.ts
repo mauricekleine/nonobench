@@ -1,5 +1,4 @@
 import { generateText, jsonSchema, NoObjectGeneratedError, Output, streamText } from "ai";
-import { codeBlock } from "common-tags";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
   MAX_PARALLEL_RUNS_PER_MODEL,
@@ -22,7 +21,8 @@ import {
 } from "./db";
 import { gradeOutput } from "./grade";
 import { firstPartyAvailableFor, quantizationFor } from "./provider-pins";
-import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
+import { systemPromptFor } from "./prompt";
+import { answerFormatFor, CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 import { isProviderTimeout } from "./timeout";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
@@ -209,39 +209,8 @@ async function runBenchmark(
   let finishReason: string | null = null;
   const cells = puzzle.width * puzzle.height;
   const outputMode = outputModeFor(model);
-
-  const systemPrompt = codeBlock`
-		You are solving a nonogram (also known as picross or griddlers).
-
-		## Rules
-		- Each row and column has clues: numbers indicating consecutive groups of filled cells
-		- Groups are separated by at least one empty cell
-		- The clues appear in order from left-to-right (for rows) or top-to-bottom (for columns)
-
-		## Example
-		A row clue "2 1" on a 5-cell row means: 2 filled cells, then a gap, then 1 filled cell.
-		Possible solutions: "11010" or "11001" (but only one will satisfy all column constraints)
-
-		## Your Task
-		Solve the puzzle so ALL row AND column clues are satisfied simultaneously.
-
-		## Output Format
-		Output ONLY the solution as a single string of ${
-      puzzle.width * puzzle.height
-    } characters.
-		- Use "1" for filled cells, "0" for empty cells
-		- Read left-to-right, top-to-bottom (row 1 first, then row 2, etc.)
-
-		IMPORTANT:
-		- Do NOT include any explanation, reasoning, or intermediate steps
-		- Do NOT include any other text, formatting, or symbols
-		- Before outputting, ensure the solution satisfies every row and every column clue
-		- If no solution satisfies all constraints, do NOT guess; output "0" instead
-
-		You MUST ONLY output the ${
-      puzzle.width * puzzle.height
-    }-character solution string and nothing else.
-	`;
+  const answerFormat = answerFormatFor(size);
+  const systemPrompt = systemPromptFor(puzzle, answerFormat);
 
   const rawInput = `${systemPrompt}\n\n${puzzle.clues.canonical}`;
   const startedAt = new Date().toISOString();
@@ -260,13 +229,21 @@ async function runBenchmark(
       providerOptions: requestProviderOptions(model),
       ...(outputMode === "json_schema" ? { output: Output.object({
         name: "nonogram_solution",
-        schema: jsonSchema<{ solution: string }>({
+        schema: jsonSchema<{ solution: string | string[] }>({
           type: "object",
           properties: {
-            solution: {
-              type: "string",
-              description: `The solved grid as exactly ${cells} characters of "1" (filled) and "0" (empty), row by row.`,
-            },
+            solution: answerFormat === "flat"
+              ? {
+                type: "string",
+                description: `The solved grid as exactly ${cells} characters of "1" (filled) and "0" (empty), row by row.`,
+              }
+              : {
+                // Counts live in the description: not every provider accepts
+                // minItems/maxItems in strict schemas. The grader checks them.
+                type: "array",
+                items: { type: "string" },
+                description: `The solved grid as exactly ${puzzle.height} strings, one per row from top to bottom, each exactly ${puzzle.width} characters of "1" (filled) and "0" (empty).`,
+              },
           },
           required: ["solution"],
           additionalProperties: false,
@@ -352,6 +329,7 @@ async function runBenchmark(
     rawOutput,
     reasoning: model.reasoning,
     outputMode,
+    answerFormat,
     reasoningTokens,
     providerName,
     quantization,
