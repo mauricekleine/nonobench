@@ -30,7 +30,7 @@ async function api(path: string, init?: RequestInit) {
 	return text(await response.json());
 }
 
-const sizeSchema = { type: "string", enum: ["5x5", "10x10", "15x15"], description: "Grid size to filter on" };
+const sizeSchema = { type: "string", enum: ["5x5", "10x10", "15x15", "20x20"], description: "Grid size to filter on" };
 const filterProperties = { size: sizeSchema, provider: { type: "string", description: "Comma-separated provider ids" }, family: { type: "string", description: "Comma-separated family ids" }, effort: { type: "string", description: "best, all, or an effort level" }, reasoning: { type: "boolean" }, open_weights: { type: "boolean" } };
 function query(input: Record<string, unknown>) { const params = new URLSearchParams(); for (const key of Object.keys(filterProperties)) if (input[key] !== undefined) params.set(key, String(input[key])); return params; }
 
@@ -79,6 +79,17 @@ export function WebMcp() {
 				execute: ({ size }) => api(`/api/v1/puzzles${size ? `?size=${encodeURIComponent(String(size))}` : ""}`),
 			},
 			{
+				name: "get_puzzle_results", description: "Per-model outcomes for a puzzle, optionally including parsed grids.",
+				inputSchema: { type: "object", properties: { id: { type: "string" }, ...filterProperties, include_answers: { type: "boolean" } }, required: ["id"] },
+				annotations: { readOnlyHint: true },
+				execute: ({ id, include_answers, ...filters }) => { const params = query(filters); if (include_answers !== undefined) params.set("include_answers", String(include_answers)); return api(`/api/v1/puzzles/${encodeURIComponent(String(id))}/results?${params}`); },
+			},
+			{
+				name: "get_model_puzzles", description: "Which puzzles a model solved, missed, or did not run.",
+				inputSchema: { type: "object", properties: { model: { type: "string" } }, required: ["model"] },
+				annotations: { readOnlyHint: true }, execute: ({ model }) => api(`/api/v1/models/${encodeURIComponent(String(model))}/puzzles`),
+			},
+			{
 				name: "check_solution",
 				description: "Check a nonogram grid (row-major 0/1 string) against a puzzle's clues.",
 				inputSchema: {
@@ -99,11 +110,12 @@ export function WebMcp() {
 				description: "Show a puzzle in the puzzle explorer on this page.",
 				inputSchema: {
 					type: "object",
-					properties: { index: { type: "integer", minimum: 0, description: "0-based puzzle index from list_puzzles" } },
+					properties: { index: { type: "integer", minimum: 0, maximum: 39, description: "0-based puzzle index from list_puzzles" }, model: { type: "string", description: "Optional model variant to show its answer overlay" } },
 					required: ["index"],
 				},
-				execute: async ({ index }) => {
-					router.push(`/puzzles?puzzle=${Number(index)}`);
+				execute: async ({ index, model }) => {
+					if (!Number.isInteger(Number(index)) || Number(index) < 0 || Number(index) > 39) return text("Puzzle index must be 0 through 39.");
+					router.push(`/puzzles?puzzle=${Number(index)}${model ? `&model=${encodeURIComponent(String(model))}` : ""}`);
 					return text(`Opened puzzle ${Number(index)}.`);
 				},
 			},

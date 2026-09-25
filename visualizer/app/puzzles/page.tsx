@@ -1,244 +1,74 @@
 "use client";
 
-import {
-  CaretLeft,
-  CaretRight,
-  
-  House,
-} from "@phosphor-icons/react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import Link from "next/link";
-import { parseAsInteger, useQueryState } from "nuqs";
-import { Suspense, useCallback, useEffect } from "react";
-
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
 import { NonobenchMark } from "@/components/nonobench-mark";
 import { Nonogram } from "@/components/nonogram/nonogram";
 import { PUZZLES } from "@/components/puzzles";
-import { Button } from "@/components/ui/button";
+import { ProviderLogo } from "@/components/provider-logos/provider-logo";
+import { PuzzleFilters, puzzleModel, usePuzzleExport, usePuzzleFilters } from "@/components/puzzles/puzzle-filters";
+import { describeMissingAnswer, inspectAnswer } from "@/lib/puzzle-insights";
+import { PROVIDERS } from "@/lib/providers";
 
 function PuzzlesContent() {
-  const [currentIndex, setCurrentIndex] = useQueryState(
-    "puzzle",
-    parseAsInteger.withDefault(0)
-  );
-
-  // Clamp index to valid range (in case of invalid URL values)
+  const [currentIndex, setCurrentIndex] = useQueryState("puzzle", parseAsInteger.withDefault(0));
+  const [selectedModel, setSelectedModel] = useQueryState("model", parseAsString);
+  const { filters, models, change } = usePuzzleFilters();
+  const { data, error } = usePuzzleExport();
   const safeIndex = Math.max(0, Math.min(currentIndex, PUZZLES.length - 1));
   const puzzle = PUZZLES[safeIndex];
-
-  // Clean solution string (remove whitespace from codeBlock solutions)
-  const cleanSolution = puzzle.solution.replace(/\s/g, "");
-
-  const goToPrevious = useCallback(() => {
-    setCurrentIndex(safeIndex === 0 ? PUZZLES.length - 1 : safeIndex - 1);
-  }, [safeIndex, setCurrentIndex]);
-
-  const goToNext = useCallback(() => {
-    setCurrentIndex(safeIndex === PUZZLES.length - 1 ? 0 : safeIndex + 1);
-  }, [safeIndex, setCurrentIndex]);
-
-  // Keyboard navigation
+  const result = data?.puzzles.find((entry) => entry.index === safeIndex);
+  const visible = useMemo(() => new Set(models.map((model) => model.model)), [models]);
+  const runs = result?.runs.filter((run) => visible.has(run.model)) ?? [];
+  const selected = result?.runs.find((run) => run.model === selectedModel);
+  const selectedMetadata = selectedModel ? puzzleModel(selectedModel) : undefined;
+  const inspection = selected?.answer ? inspectAnswer(puzzle, selected.answer, result?.multipleSolutions ?? false) : null;
+  const violatedRows = inspection?.mode === "ambiguous-wrong" ? inspection.clues.rowViolations.map((line) => line.index) : undefined;
+  const violatedColumns = inspection?.mode === "ambiguous-wrong" ? inspection.clues.columnViolations.map((line) => line.index) : undefined;
+  const goTo = useCallback((index: number) => { void setCurrentIndex(index); void setSelectedModel(null); }, [setCurrentIndex, setSelectedModel]);
+  const previous = useCallback(() => goTo(safeIndex === 0 ? PUZZLES.length - 1 : safeIndex - 1), [goTo, safeIndex]);
+  const next = useCallback(() => goTo(safeIndex === PUZZLES.length - 1 ? 0 : safeIndex + 1), [goTo, safeIndex]);
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        goToPrevious();
-      } else if (e.key === "ArrowRight") {
-        goToNext();
-      }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLElement && (event.target.closest("button, a, input, select, textarea, [role=button]") || event.target.isContentEditable)) return;
+      if (event.key === "ArrowLeft") previous();
+      if (event.key === "ArrowRight") next();
     };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [previous, next]);
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [goToNext, goToPrevious]);
-
-  // Get size label
-  const getSizeLabel = () => `${puzzle.width}×${puzzle.height}`;
-
-  // Grid-size colours, shared with the results page
-  const getSizeColor = () => {
-    if (puzzle.width === 5) return "text-[#70B8FF]"; // Blue
-    if (puzzle.width === 10) return "text-[#46FEA5]"; // Green
-    if (puzzle.width === 15) return "text-[#FFCA16]"; // Amber
-    return "text-[#C69CFF]"; // Violet
-  };
-
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Film grain, nonogram paper and the ember glow */}
-      <div className="noise-overlay" />
-      <div className="fixed inset-0 grid-pattern pointer-events-none" />
-      <div className="fixed inset-0 atmosphere pointer-events-none" />
-
-      {/* Header */}
-      <header className="relative border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="nono-trigger flex items-center gap-3">
-              <NonobenchMark size="sm" />
-              <div>
-                <h1 className="font-display text-lg font-semibold lowercase tracking-[-0.02em]">
-                  puzzle explorer
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Browse all {PUZZLES.length} puzzles in the benchmark
-                </p>
-              </div>
-            </div>
-
-            <Button render={<Link href="/" />} variant="ghost" size="sm">
-              <House className="size-4" weight="bold" />
-              <span className="hidden sm:inline">Back to results</span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="relative flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
-        {/* Navigation arrow - Left */}
-        <button
-          type="button"
-          onClick={goToPrevious}
-          className="absolute top-[17%] sm:top-auto left-2 sm:left-8 lg:left-16 p-2 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer z-10"
-          aria-label="Previous puzzle"
-        >
-          <CaretLeft
-            className="size-6 sm:size-8 text-muted-foreground group-hover:text-foreground transition-colors"
-            weight="bold"
-          />
-        </button>
-
-        {/* Nonogram container */}
-        <div className="flex flex-col items-center gap-6 max-w-full">
-          {/* Puzzle info */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Puzzle</span>
-              <span className="font-mono text-lg font-semibold text-foreground">
-                {safeIndex + 1}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                of {PUZZLES.length}
-              </span>
-            </div>
-            <div className="h-4 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Size</span>
-              <span className={`font-mono text-lg font-semibold ${getSizeColor()}`}>
-                {getSizeLabel()}
-              </span>
-            </div>
-          </div>
-
-          {/* Nonogram */}
-          <div className="p-3 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/30 max-w-full overflow-hidden">
-            <div className={puzzle.width === 20 ? "[zoom:0.54] sm:[zoom:1]" : ""}>
-              <Nonogram
-                key={safeIndex}
-                height={puzzle.height}
-                width={puzzle.width}
-                solution={cleanSolution}
-              />
-            </div>
-          </div>
-
-          {/* Keyboard hint */}
-          <div className="flex items-center gap-2 text-xs text-dim">
-            <span className="hidden sm:flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-foreground/5 border border-border font-mono text-[10px]">
-                ←
-              </kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-foreground/5 border border-border font-mono text-[10px]">
-                →
-              </kbd>
-              <span className="ml-1">to navigate</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Navigation arrow - Right */}
-        <button
-          type="button"
-          onClick={goToNext}
-          className="absolute top-[17%] sm:top-auto right-2 sm:right-8 lg:right-16 p-2 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer z-10"
-          aria-label="Next puzzle"
-        >
-          <CaretRight
-            className="size-6 sm:size-8 text-muted-foreground group-hover:text-foreground transition-colors"
-            weight="bold"
-          />
-        </button>
-      </main>
-
-      {/* Bottom navigation dots, coloured by grid size */}
-      <footer className="relative border-t border-border bg-card/50 backdrop-blur-sm py-4">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-center gap-1.5 flex-wrap">
-            {PUZZLES.map((p, idx) => {
-              const isActive = idx === safeIndex;
-              // Grid-size colours
-              const dotColor =
-                p.width === 5
-                  ? "bg-[#70B8FF]"  // Blue
-                  : p.width === 10
-                    ? "bg-[#46FEA5]"  // Green
-                    : p.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]";
-
-              return (
-                <button
-                  type="button"
-                  key={idx}
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${isActive
-                    ? `${dotColor} scale-125 ring-2 ring-offset-2 ring-offset-background ring-white/20`
-                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                    }`}
-                  aria-label={`Go to puzzle ${idx + 1}`}
-                />
-              );
-            })}
-          </div>
-          <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#70B8FF]" />
-              5×5
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#46FEA5]" />
-              10×10
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#FFCA16]" />
-              15×15
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#C69CFF]" />
-              20×20
-            </span>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
+  return <div className="relative min-h-screen overflow-x-clip bg-background text-foreground"><div className="noise-overlay" /><div className="fixed inset-0 grid-pattern pointer-events-none" /><div className="fixed inset-0 atmosphere pointer-events-none" />
+    <header className="relative border-b border-border bg-card/50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6"><div className="flex items-center gap-3"><NonobenchMark size="sm" /><div><h1 className="font-display text-lg font-semibold lowercase tracking-tight">puzzle explorer</h1><p className="text-sm text-muted-foreground">Browse all {PUZZLES.length} puzzles</p></div></div><nav className="flex gap-4 text-sm"><Link href="/puzzles/overview" className="text-ember underline focus-visible:outline-2 focus-visible:outline-ember">Puzzle insights</Link><Link href="/" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">Results</Link></nav></div></header>
+    <main className="relative mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,24rem)]">
+      <section aria-label={`Puzzle ${safeIndex + 1}`} className="flex min-w-0 flex-col items-center gap-5"><div className="flex w-full items-center justify-center gap-3"><button type="button" onClick={previous} aria-label="Previous puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretLeft size={20} /></button><div className="min-w-0 text-center"><span className="font-mono font-semibold">Puzzle {safeIndex + 1} of {PUZZLES.length}</span><span className="mx-2 text-muted-foreground">·</span><span className="font-mono text-[#FFCA16]">{puzzle.width}×{puzzle.height}</span></div><button type="button" onClick={next} aria-label="Next puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretRight size={20} /></button></div>
+        <div className="max-w-full overflow-x-auto rounded-2xl border border-border bg-card/70 p-3 sm:p-6"><div className={puzzle.width === 20 ? "[zoom:0.54] sm:[zoom:1]" : ""}><Nonogram key={safeIndex} height={puzzle.height} width={puzzle.width} solution={puzzle.solution.replace(/\s/g, "")} overlay={inspection?.cells} violatedRows={violatedRows} violatedColumns={violatedColumns} /></div></div>
+        {selectedModel && <div className="w-full max-w-xl rounded-lg border border-border bg-card/80 p-4 text-sm"><h2 className="font-semibold">{selectedMetadata?.displayName ?? selectedModel}’s answer</h2>{inspection ? <>
+          {inspection.mode === "valid" && <p className="mt-1 text-muted-foreground">{inspection.referenceDifference ? `A valid alternative solution: differs from the reference grid in ${inspection.referenceDifference} cells but satisfies every clue.` : "This grid satisfies every row and column clue."}</p>}
+          {inspection.mode === "unique-wrong" && <p className="mt-1 text-muted-foreground">{inspection.wrong} cells wrong: {inspection.wrongFilled} extra filled, {inspection.missed} missed.</p>}
+          {inspection.mode === "ambiguous-wrong" && <p className="mt-1 text-muted-foreground">{inspection.clues.rowViolations.length} {inspection.clues.rowViolations.length === 1 ? "row" : "rows"} and {inspection.clues.columnViolations.length} {inspection.clues.columnViolations.length === 1 ? "column" : "columns"} don’t match their clues. Filled cells show the model’s grid without comparing it to one reference solution.</p>}
+          {inspection.mode !== "valid" && <p className="mt-1 text-xs text-muted-foreground">Violated rows: {inspection.clues.rowViolations.map((line) => line.index).join(", ") || "none"}. Violated columns: {inspection.clues.columnViolations.map((line) => line.index).join(", ") || "none"}.</p>}
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs"><span className="flex items-center gap-1"><span className={`size-4 ${inspection.mode === "ambiguous-wrong" ? "bg-foreground/75" : "bg-[#46FEA5]"}`} /> {inspection.mode === "ambiguous-wrong" ? "Model filled" : "Correct filled"}</span>
+            {inspection.mode === "unique-wrong" && <><span className="flex items-center gap-1"><span className="flex size-4 items-center justify-center bg-[#FFCA16] font-bold text-black">×</span> Extra filled</span><span className="flex items-center gap-1"><span className="flex size-4 items-center justify-center border-2 border-[#C69CFF] font-bold text-[#C69CFF]">·</span> Missed</span></>}
+            {inspection.mode === "ambiguous-wrong" && <span className="flex items-center gap-1"><span className="size-4 border-2 border-dashed border-[#D871A1]" /> Row/column clue not satisfied</span>}</div>
+        </> : <p className="mt-1 text-muted-foreground">{describeMissingAnswer(selected, puzzle.width * puzzle.height)}</p>}</div>}
+        <p className="text-xs text-muted-foreground">Use ← and → to change puzzles when focus is outside a control.</p>
+      </section>
+      <aside aria-label="Model answers" className="min-w-0" onKeyDown={(event) => {
+        if (!(event.target instanceof HTMLButtonElement) || !event.target.closest("ul")) return;
+        const delta = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+        if (!delta) return;
+        const buttons = [...event.currentTarget.querySelectorAll<HTMLButtonElement>("ul button")];
+        const next = buttons[buttons.indexOf(event.target) + delta];
+        if (next) { event.preventDefault(); next.focus(); }
+      }}><div className="rounded-xl border border-border bg-card/70 p-4"><h2 className="font-display text-xl font-semibold">Model answers</h2><p className="mt-1 text-sm text-muted-foreground">Select a model to compare its grid with the puzzle. Use ↑ and ↓ to move between models.</p><div className="mt-4"><PuzzleFilters filters={filters} change={change} count={models.length} /></div>
+        {error ? <p role="alert" className="mt-4 text-sm">Could not load model answers. Refresh to try again.</p> : !data ? <p role="status" className="mt-4 text-sm">Loading answers…</p> : runs.length ? <ul className="mt-4 max-h-[38rem] space-y-1 overflow-y-auto" aria-label="Model results for this puzzle">{runs.map((run) => { const model = models.find((entry) => entry.model === run.model); const active = selectedModel === run.model; return <li key={run.model}><button type="button" onClick={() => void setSelectedModel(active ? null : run.model)} aria-pressed={active} className={`flex w-full items-center gap-2 rounded-md border p-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember ${active ? "border-ember bg-ember/10" : "border-transparent hover:bg-foreground/5"}`}><span style={{ color: PROVIDERS[model?.provider ?? ""]?.color }}><ProviderLogo provider={model?.provider ?? ""} size={16} /></span><span className="min-w-0 flex-1"><span className="block truncate font-medium">{model?.displayName ?? run.model}</span><span className="block truncate text-xs text-muted-foreground">{model?.effort ?? "none"} · ${run.cost.toFixed(4)} · {(run.durationMs / 1000).toFixed(1)}s</span></span><span className={`font-mono font-bold ${run.status === "timeout" ? "text-[#D871A1]" : run.correct ? "text-[#46FEA5]" : "text-[#FFCA16]"}`} aria-hidden="true">{run.status === "timeout" ? "cut off" : run.correct ? "✓" : "✗"}</span><span className="sr-only">{run.status === "timeout" ? "Cut off" : run.correct ? "Solved" : "Wrong"}</span></button></li>; })}</ul> : <p className="mt-4 text-sm text-muted-foreground">No model results match these filters{result?.attempts === 0 ? "; this puzzle has not been run yet" : ""}.</p>}
+      </div></aside>
+    </main>
+    <footer className="relative border-t border-border bg-card/50 px-4 py-4"><div className="mx-auto flex max-w-7xl flex-wrap justify-center gap-1.5">{PUZZLES.map((entry, index) => <button type="button" key={index} onClick={() => goTo(index)} aria-label={`Go to puzzle ${index + 1}`} aria-current={index === safeIndex ? "step" : undefined} className={`size-3 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember ${index === safeIndex ? "ring-2 ring-white/30" : "opacity-60"} ${entry.width === 5 ? "bg-[#70B8FF]" : entry.width === 10 ? "bg-[#46FEA5]" : entry.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]"}`} />)}</div></footer>
+  </div>;
 }
 
-function PuzzlesLoading() {
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="noise-overlay" />
-      <div className="fixed inset-0 grid-pattern pointer-events-none" />
-      <div className="fixed inset-0 atmosphere pointer-events-none" />
-      <div className="relative flex flex-col items-center gap-4">
-        <NonobenchMark className="animate-pulse motion-reduce:animate-none" />
-        <p className="text-sm text-muted-foreground">Loading puzzles...</p>
-      </div>
-    </div>
-  );
-}
-
-export default function PuzzlesPage() {
-  return (
-    <Suspense fallback={<PuzzlesLoading />}>
-      <PuzzlesContent />
-    </Suspense>
-  );
-}
+export default function PuzzlesPage() { return <Suspense fallback={<main className="min-h-screen bg-background p-6 text-foreground">Loading puzzle explorer…</main>}><PuzzlesContent /></Suspense>; }
