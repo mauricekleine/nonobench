@@ -630,6 +630,12 @@ export const MODELS: Model[] = [
   reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"),
   reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"),
   { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"), outputMode: "text" },
+  // Effort ladder, step 1: the cheapest promising models at medium effort.
+  reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "medium"),
+  reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "medium"),
+  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "medium"),
+  reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"),
+  reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "medium"),
   // No effort control on OpenRouter: reasoning on at the provider default.
   { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
