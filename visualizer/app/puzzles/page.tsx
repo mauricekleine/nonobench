@@ -3,13 +3,13 @@
 import {
   CaretLeft,
   CaretRight,
-  GridFour,
   House,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect } from "react";
 
+import { Logo } from "@/components/logo";
 import { Nonogram } from "@/components/nonogram/nonogram";
 import { PUZZLES } from "@/components/puzzles";
 import { Button } from "@/components/ui/button";
@@ -72,8 +72,8 @@ function PuzzlesContent() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-foreground/10 rounded-lg border border-border">
-                <GridFour className="size-5 text-foreground" weight="duotone" />
+              <div className="p-2 bg-foreground/10 rounded-lg border border-border">
+                <Logo className="size-6 text-foreground" />
               </div>
               <div>
                 <h1 className="text-lg font-semibold tracking-tight">
@@ -224,7 +224,7 @@ function PuzzlesLoading() {
       <div className="fixed inset-0 bg-linear-to-br from-chart-1/3 via-transparent to-chart-2/3 pointer-events-none" />
       <div className="relative flex flex-col items-center gap-4">
         <div className="p-3 bg-foreground/10 rounded-xl border border-border animate-pulse">
-          <GridFour className="size-8 text-foreground" weight="duotone" />
+          <Logo className="size-8 text-foreground" />
         </div>
         <p className="text-sm text-muted-foreground">Loading puzzles...</p>
       </div>
