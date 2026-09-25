@@ -690,21 +690,23 @@ const configuredModels: Model[] = ([
   reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"),
   { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
   { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"), outputMode: "text" },
+  // Mistral Medium 3.5 only exposes "high" or "none" (bench/effort-levels.json);
+  // the earlier "low" request may have been served at the default (high).
+  { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "high"), outputMode: "text" },
   // Muse Spark: Meta caps non-streaming requests at ~5 minutes (504; streaming
   // is exempt per its docs), and schema-constrained responses still hit the
   // cap through OpenRouter, so it streams in text mode. Its 5x5 A/B showed no
   // format effect (10/10 either way).
   // Effort ladder, step 1: the cheapest promising models at medium effort.
-  { ...reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "medium"), outputMode: "text" },
+  // DeepSeek V4 and Kimi K3 expose only low/high/max (bench/effort-levels.json), so
+  // their earlier "medium" variants were retired when they moved to first-party.
   reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "medium"),
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "medium"),
   { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
-  { ...reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "medium"), outputMode: "text" },
   // Effort ladder, step 2: step 1 gained 2+ puzzles (Sol 17 to 21, Gemini
   // 3.8 Flash 11 to 20), plus a first step for the pricier leaders.
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "high"),
   reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "high"),
-  reasoningModel("moonshotai/kimi-k3", "kimi-k3", "medium"),
   reasoningModel("x-ai/grok-4.7", "grok-4.7", "medium"),
   reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "medium"),
   // Effort ladder, step 3: Sol gained 5 at high; Opus gets its first step.
