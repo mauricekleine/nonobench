@@ -104,6 +104,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
+  --color-ember: var(--ember);
+  --color-ember-bright: var(--ember-bright);
+  --color-dim: var(--dim);
+  --color-line-strong: var(--line-strong);
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -142,7 +148,7 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Resend Brand Colors - Light Mode */
+/* Light mode (unused: the site always renders with the .dark class) */
 :root {
   --background: #FDFDFD;
   --foreground: #000000;
@@ -179,112 +185,149 @@
   --sidebar-ring: #000000;
 }
 
-/* Resend Brand Colors - Dark Mode */
+/* Superthread void mode: Nonobench is an instrument surface in the dark register.
+   Ground is night, never pure black; text is warm starlight; ember is the one
+   thread (links, focus, checked states, the leaderboard ramp). The grid-size
+   colours (blue, green, amber, violet) stay as data categories, not accents. */
 .dark {
-  --background: #000000;
-  --foreground: #FDFDFD;
-  --card: #16171AEB;
-  --card-foreground: #FDFDFD;
-  --popover: #16171AEB;
-  --popover-foreground: #FDFDFD;
-  --primary: #FDFDFD;
-  --primary-foreground: #000000;
-  --secondary: #16171AEB;
-  --secondary-foreground: #FDFEFFA6;
-  --muted: #16171AEB;
-  --muted-foreground: #FDFEFFA6;
-  --accent: #FDFDFD14;
-  --accent-foreground: #FDFDFD;
-  --destructive: #FF9592;
-  --border: #FDFDFD14;
-  --input: #FDFDFD14;
-  --ring: #FDFDFD;
-  /* Semantic chart colors for dark mode */
-  --chart-1: #70B8FF; /* Blue - interactive */
-  --chart-2: #46FEA5D4; /* Green - success */
-  --chart-3: #FFCA16; /* Amber - caution */
-  --chart-4: #FF9592; /* Red - critical */
-  --chart-5: #FDFEFFA6; /* Gray */
-  --sidebar: #0A0A0A;
-  --sidebar-foreground: #FDFDFD;
-  --sidebar-primary: #FDFDFD;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #FDFDFD0A;
-  --sidebar-accent-foreground: #FDFDFD;
-  --sidebar-border: #FDFDFD14;
-  --sidebar-ring: #FDFDFD;
+  --night: oklch(17% 0.035 275);
+  --night-deep: oklch(13% 0.03 280);
+  --panel: oklch(20% 0.035 278);
+  --line: oklch(30% 0.03 278);
+  --line-strong: oklch(40% 0.03 278);
+  --starlight: oklch(94% 0.01 85);
+  --muted-ink: oklch(76% 0.02 275);
+  --dim: oklch(66% 0.015 275);
+  --ember: oklch(75% 0.13 55);
+  --ember-bright: oklch(84% 0.12 65);
+
+  --background: var(--night);
+  --foreground: var(--starlight);
+  --card: var(--panel);
+  --card-foreground: var(--starlight);
+  --popover: var(--panel);
+  --popover-foreground: var(--starlight);
+  --primary: var(--ember);
+  --primary-foreground: var(--night-deep);
+  --secondary: var(--panel);
+  --secondary-foreground: var(--muted-ink);
+  --muted: var(--panel);
+  --muted-foreground: var(--muted-ink);
+  --accent: oklch(94% 0.01 85 / 0.08);
+  --accent-foreground: var(--starlight);
+  --destructive: oklch(64% 0.19 25);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--ember-bright);
+  --chart-1: var(--ember);
+  --chart-2: #46FEA5D4;
+  --chart-3: #FFCA16;
+  --chart-4: #FF9592;
+  --chart-5: var(--muted-ink);
+  --sidebar: var(--night-deep);
+  --sidebar-foreground: var(--starlight);
+  --sidebar-primary: var(--ember);
+  --sidebar-primary-foreground: var(--night-deep);
+  --sidebar-accent: oklch(94% 0.01 85 / 0.05);
+  --sidebar-accent-foreground: var(--starlight);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--ember-bright);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html.dark {
+    background: var(--night-deep);
+  }
   body {
     @apply bg-background text-foreground;
   }
+  .dark body {
+    background: linear-gradient(180deg, var(--night) 0%, var(--night-deep) 100%) fixed;
+  }
+  ::selection {
+    background: var(--ember);
+    color: var(--night-deep);
+  }
 }
 
-/* Custom scrollbar for dark mode - Resend style */
+/* Fragment Mono ships one weight; never let the browser smear a fake bold. */
+.font-mono,
+kbd {
+  font-synthesis: none;
+}
+
 .dark ::-webkit-scrollbar {
   width: 8px;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: var(--night-deep);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #FDFDFD1A;
+  background: var(--line);
   border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #FDFDFD33;
+  background: var(--line-strong);
 }
 
-/* Grid pattern background for Nonogram theme - Resend style */
+/* Nonogram paper: square cells with a heavier rule every fifth line, the way a
+   printed nonogram groups its grid. It fades out from the top-left corner so
+   the chart and table sit on clean ground. */
 .grid-pattern {
-  background-image: radial-gradient(
-    circle,
-    rgba(0, 0, 0, 0.04) 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
+  --grid-minor: oklch(94% 0.01 85 / 0.035);
+  --grid-major: oklch(94% 0.01 85 / 0.075);
+  background-image:
+    linear-gradient(to right, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-minor) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  background-position: -1px -1px;
+  mask-image: radial-gradient(ellipse 90% 70% at 0% 0%, black 0%, transparent 70%);
 }
 
-.dark .grid-pattern {
-  background-image: radial-gradient(
-    circle,
-    rgba(253, 253, 253, 0.04) 1px,
-    transparent 1px
-  );
+/* The room is lit by the thread: one faint ember glow behind the header. */
+.atmosphere {
+  background: radial-gradient(60% 45% at 10% 0%, oklch(75% 0.13 55 / 0.07), transparent 70%);
 }
 
-/* Resend noise texture overlay */
+/* Film grain, Superthread recipe (mauricekleine.com style.css). Static: this is
+   an instrument, so the grain does not animate. */
 .noise-overlay {
   position: fixed;
   inset: 0;
+  z-index: 50;
   pointer-events: none;
-  opacity: 0.03;
-  background-image: url('https://resend.com/static/product-pages/noise.png');
-  background-repeat: repeat;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Resend glass blur effect */
-.glass {
-  backdrop-filter: blur(25px);
-  background: linear-gradient(96deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.10) 100%);
+/* The header mark finishes its own puzzle when you hover the wordmark: the
+   solver crosses out the empty cells, one after another. */
+.nono-mark .nono-cross {
+  opacity: 0;
+  transform: scale(0.6);
 }
 
-/* Resend gradient text */
-.gradient-text {
-  background: linear-gradient(97deg, #ffffff 30%, rgba(255,255,255,0.50) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+@media (hover: hover) {
+  :is(.nono-mark, .nono-trigger):hover .nono-cross {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-/* Resend border gradient */
-.border-gradient {
-  border-image: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 100%) 1;
+@media (prefers-reduced-motion: no-preference) {
+  .nono-mark .nono-cross {
+    transition:
+      opacity 0.18s var(--ease-snap),
+      transform 0.18s var(--ease-snap);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
 }

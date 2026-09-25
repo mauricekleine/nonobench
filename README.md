@@ -47,9 +47,20 @@ bun install
 bun run bench                       # prints the plan and exits, no API calls
 bun run bench --model <name>        # run one model (repeat --model for more)
 bun run bench --all-missing         # run every configured model with missing work
+bun run bench --model <name> --sizes 20x20  # opt in to the extended tier
 ```
 
 Runs are incremental and append-only: a model/puzzle pair that already has a successful result is never run again, and the database refuses to overwrite it. Failed runs are retried on the next invocation. Results are stored in `bench/results.db` (SQLite).
+
+Useful flags:
+
+- `--max-cost <usd>` stops launching new puzzles once this session's spend reaches the amount. Requests already in flight still finish, so a session can overshoot by up to `--parallel` requests per selected model. Use the OpenRouter key's own limit as the hard ceiling.
+- `--parallel <n>` sets concurrent requests per model (default 10); lower it for rate-limited providers.
+- `--limit <n>` runs only the first n puzzles of each size, for pilots against a scratch database (`NONOBENCH_DB=/tmp/copy.db`).
+
+### Output modes
+
+New runs ask for the answer as strict structured output (a JSON schema, only routed to endpoints that enforce it), so models cannot wrap the grid in prose. For a few models the schema-enforcing endpoints measurably hurt answers; those run in text mode instead (`outputMode: "text"` in `bench/constants.ts`, chosen by a 5x5 A/B with the benchmark prompt). Every run records its mode, and grading is identical for both: the answer must satisfy every clue. The runner also stops a model that solves none of the 5x5 puzzles with structured output, and one whose early runs mostly report zero reasoning tokens, since both point at the harness rather than the model.
 
 After benchmarking, export results for the visualizer:
 
@@ -95,7 +106,13 @@ Ten of the 30 puzzles (one 5x5, four 10x10, five 15x15) have more than one valid
 
 ## Puzzle Data
 
-The benchmark uses 30 puzzles (10 each of 5x5, 10x10 and 15x15), defined in `visualizer/components/puzzles/` and shared by the runner and the dashboard. They were sourced from [nono-dataset](https://github.com/mauricekleine/nono-dataset). A puzzle's ID is a hash of its solution, so changing a puzzle's solution creates a new puzzle.
+The core tier has 30 puzzles (10 each of 5x5, 10x10 and 15x15), defined in `visualizer/components/puzzles/` and shared by the runner and the dashboard. They were sourced from [nono-dataset](https://github.com/mauricekleine/nono-dataset). The extended tier has 10 generated 20x20 puzzles. A puzzle's ID is a hash of its solution, so changing a puzzle's solution creates a new puzzle.
+
+## Tiers and generation
+
+Default benchmark runs cover the three core sizes. Use `--sizes 20x20` with a model selection to run the extended tier; comma-separated sizes also work. The runner's plan reports missing 20x20 work separately. Headline overall accuracy and best-variant selection use core runs only; 20x20 has its own size results.
+
+From `bench/`, `bun run generate-puzzles` recreates the 20x20 set with a fixed seed. It combines geometric shapes and symmetric motifs, filters for 45–65% filled cells and nonempty lines, then keeps only grids fully solved by repeated row and column placement propagation. The generator selects ten distinct puzzles across the measured first-pass difficulty range. `bun test` verifies their clues and line solvability; the original ambiguity list remains pinned.
 
 ## Configuration
 

@@ -2,6 +2,7 @@ import { expect } from "bun:test";
 import type { Puzzle } from "../visualizer/components/puzzles";
 const { PUZZLES } = await import("../visualizer/components/puzzles");
 import { getPuzzleId } from "./db";
+import { solveByLines } from "./line-solver";
 
 function clue(line: string): number[] {
   return (line.match(/1+/g) ?? []).map((run) => run.length);
@@ -25,7 +26,7 @@ function patterns(length: number, runs: number[]): number[] {
   return output;
 }
 
-function countSolutions(puzzle: Puzzle): number {
+function checkPuzzle(puzzle: Puzzle): void {
   const lines = puzzle.clues.canonical.split("\n");
   const rowClues = lines.filter((line) => /^Row \d+:/.test(line.trim())).map((line) => line.split(":")[1]!.trim().split(/\s+/).map(Number));
   const columnClues = lines.filter((line) => /^Column \d+:/.test(line.trim())).map((line) => line.split(":")[1]!.trim().split(/\s+/).map(Number));
@@ -33,11 +34,19 @@ function countSolutions(puzzle: Puzzle): number {
   expect(columnClues).toHaveLength(puzzle.width);
   const solution = puzzle.solution.replace(/\s+/g, "");
   expect(solution).toHaveLength(puzzle.width * puzzle.height);
+  expect(solution).toMatch(/^[01]+$/);
   for (let row = 0; row < puzzle.height; row++) {
     expect(clue(solution.slice(row * puzzle.width, (row + 1) * puzzle.width))).toEqual(rowClues[row]!);
   }
   for (let col = 0; col < puzzle.width; col++) {
     expect(clue(Array.from({ length: puzzle.height }, (_, row) => solution[row * puzzle.width + col]).join(""))).toEqual(columnClues[col]!);
+  }
+  if (puzzle.width === 20 && puzzle.height === 20) {
+    const result = solveByLines(puzzle.width, puzzle.height, rowClues, columnClues);
+    expect(result.solved).toBe(true);
+    expect(result.grid).toBe(solution);
+    console.log(`20x20 puzzle ${index + 1} (${getPuzzleId(puzzle)}): line-solvable in ${result.sweeps} sweeps`);
+    return;
   }
   const rowOptions = rowClues.map((runs) => patterns(puzzle.width, runs));
   const columnOptions = columnClues.map((runs) => patterns(puzzle.height, runs));
@@ -55,15 +64,13 @@ function countSolutions(puzzle: Puzzle): number {
     }
   }
   search(0, columnOptions);
-  return count;
+  console.log(`${puzzle.width}x${puzzle.height} puzzle ${index + 1} (${getPuzzleId(puzzle)}): ${count === 1 ? "unique" : `${count} solutions (capped at 2)`}`);
+  const ambiguous = new Set([9, 11, 12, 15, 19, 22, 23, 25, 27, 30]);
+  expect(count).toBe(ambiguous.has(index + 1) ? 2 : 1);
 }
 
-expect(PUZZLES).toHaveLength(30);
+expect(PUZZLES).toHaveLength(40);
 const index = Number(process.argv[2]);
 const puzzle = PUZZLES[index];
 if (!puzzle) throw new Error(`Unknown puzzle index: ${index}`);
-const count = countSolutions(puzzle);
-console.log(`${puzzle.width}x${puzzle.height} puzzle ${index + 1} (${getPuzzleId(puzzle)}): ${count === 1 ? "unique" : `${count} solutions (capped at 2)`}`);
-// Known ambiguous puzzles are reported and pinned until the source puzzle set changes.
-const ambiguous = new Set([9, 11, 12, 15, 19, 22, 23, 25, 27, 30]);
-expect(count).toBe(ambiguous.has(index + 1) ? 2 : 1);
+checkPuzzle(puzzle);

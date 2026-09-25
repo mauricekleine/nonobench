@@ -29,6 +29,13 @@ type SizeData = {
 
 type ModelData = {
 	model: string;
+	family?: string;
+	effort?: string;
+	provider?: string;
+	legacy?: boolean;
+	complete?: boolean;
+	timeouts?: number;
+	timeoutNote?: string | null;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -40,12 +47,26 @@ type ModelData = {
 
 const results = resultsData as unknown as {
 	timestamp: string;
-	summary: { models: string[]; sizes: string[] };
+	summary: { models: string[]; sizes: string[]; coreSizes?: string[] };
 	byModel: ModelData[];
 };
 
 export const RESULTS_TIMESTAMP = results.timestamp;
 export const SIZES = results.summary.sizes;
+// Overall figures cover the core tier only, so old and new models compare fairly.
+const CORE_SIZES = new Set(results.summary.coreSizes ?? results.summary.sizes);
+
+// Descriptive fields shared by the leaderboard and model endpoints.
+function variantInfo(model: ModelData) {
+	return {
+		family: model.family ?? model.model,
+		effort: model.effort ?? null,
+		provider: model.provider ?? null,
+		earlierBatch: model.legacy ?? true,
+		complete: model.complete ?? true,
+		...(model.timeouts ? { providerTimeouts: model.timeouts, providerTimeoutNote: model.timeoutNote ?? null } : {}),
+	};
+}
 
 const round = (value: number, digits: number) => Number(value.toFixed(digits));
 
@@ -64,16 +85,23 @@ function sizeSummary(size: SizeData) {
 }
 
 export function getLeaderboard(size?: string) {
-	const rows = results.byModel.map((model) => {
+	// A size-specific board only includes models that actually ran that size.
+	const models = size
+		? results.byModel.filter((model) => model.bySize.some((entry) => entry.size === size && entry.runs > 0))
+		: results.byModel;
+	const rows = models.map((model) => {
 		const bySize = model.bySize.find((entry) => entry.size === size);
 		return {
 			model: model.model,
+			...variantInfo(model),
 			reasoning: model.reasoning,
 			accuracy: round(size ? (bySize?.accuracy ?? 0) : model.overallAccuracy, 1),
 			correct: size ? (bySize?.correct ?? 0) : model.overallCorrect,
 			total: size ? (bySize?.total ?? 0) : model.overallTotal,
 			totalCostUsd: round(
-				size ? (bySize?.totalCost ?? 0) : model.bySize.reduce((sum, entry) => sum + entry.totalCost, 0),
+				size
+					? (bySize?.totalCost ?? 0)
+					: model.bySize.filter((entry) => CORE_SIZES.has(entry.size)).reduce((sum, entry) => sum + entry.totalCost, 0),
 				6,
 			),
 		};
@@ -87,6 +115,7 @@ export function getModel(name: string) {
 	if (!model) return null;
 	return {
 		model: model.model,
+		...variantInfo(model),
 		reasoning: model.reasoning,
 		accuracy: round(model.overallAccuracy, 1),
 		correct: model.overallCorrect,

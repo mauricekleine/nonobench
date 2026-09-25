@@ -5,3 +5,5 @@ export function sortSizes(sizes: string[]): string[] {
     return aNum - bNum;
   });
 }
+export const CORE_SIZES = ["5x5", "10x10", "15x15"] as const;
+export const EXTENDED_SIZES = ["20x20"] as const;

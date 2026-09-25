@@ -42,7 +42,11 @@ const ROWS = 6;
 const TRACK_WIDTH = 524;
 
 export default function Image() {
-	const top = getLeaderboard().slice(0, ROWS);
+	// One row per model family (its best-ranked variant), like the site's default view.
+	const seen = new Set<string>();
+	const top = getLeaderboard()
+		.filter((row) => row.complete && !seen.has(row.family) && seen.add(row.family))
+		.slice(0, ROWS);
 
 	return new ImageResponse(
 		<div

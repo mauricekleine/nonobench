@@ -30,6 +30,8 @@ function openWriteDb(): Database {
       raw_input TEXT,
       raw_output TEXT,
       reasoning INTEGER,
+      output_mode TEXT,
+      reasoning_tokens INTEGER,
       UNIQUE(model, puzzle_id)
     );
   `);
@@ -39,8 +41,10 @@ function openWriteDb(): Database {
     CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON runs(timestamp);
   `);
   const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((row) => row.name));
-  for (const column of ["raw_input", "raw_output", "reasoning"] as const) {
-    if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${column === "reasoning" ? "INTEGER" : "TEXT"}`);
+  // output_mode: NULL for legacy free-text runs, "json_schema" for strict structured output.
+  for (const column of ["raw_input", "raw_output", "reasoning", "output_mode", "reasoning_tokens"] as const) {
+    const type = column === "reasoning" || column === "reasoning_tokens" ? "INTEGER" : "TEXT";
+    if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${type}`);
   }
   writeDb = db;
   return db;
@@ -54,11 +58,16 @@ export type BenchmarkResult = {
   cost: number;
   tokens: number;
   durationMs: number;
-  status: "success" | "failed";
+  // "timeout": cut off by a documented provider time limit. Final (never
+  // retried) and counted as an unsolved attempt.
+  status: "success" | "failed" | "timeout";
   errorMessage?: string;
   rawInput: string;
   rawOutput: string;
   reasoning: boolean;
+  outputMode: "json_schema" | "text";
+  // Null when the provider does not report reasoning tokens.
+  reasoningTokens: number | null;
 };
 
 export function getPuzzleId(puzzle: Puzzle): string {
@@ -70,7 +79,7 @@ export function getPuzzleId(puzzle: Puzzle): string {
 export function getSuccessfulPuzzlesByModel(): Map<string, Set<string>> {
   const db = openReadDb();
   const results = db?.query<{ model: string; puzzle_id: string }, []>(
-    "SELECT model, puzzle_id FROM runs WHERE status = 'success'"
+    "SELECT model, puzzle_id FROM runs WHERE status IN ('success', 'timeout')"
   ).all() ?? [];
   db?.close();
   const successful = new Map<string, Set<string>>();
@@ -83,8 +92,8 @@ export function getSuccessfulPuzzlesByModel(): Map<string, Set<string>> {
 
 export function saveRunToDb(result: BenchmarkResult): void {
   openWriteDb().query(`
-    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning)
-    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning)
+    INSERT INTO runs (model, puzzle_id, size, timestamp, correct, status, duration_ms, tokens, cost, error_message, raw_input, raw_output, reasoning, output_mode, reasoning_tokens)
+    VALUES ($model, $puzzle_id, $size, $timestamp, $correct, $status, $duration_ms, $tokens, $cost, $error_message, $raw_input, $raw_output, $reasoning, $output_mode, $reasoning_tokens)
     ON CONFLICT(model, puzzle_id) DO UPDATE SET
       size = excluded.size,
       timestamp = excluded.timestamp,
@@ -96,8 +105,10 @@ export function saveRunToDb(result: BenchmarkResult): void {
       error_message = excluded.error_message,
       raw_input = excluded.raw_input,
       raw_output = excluded.raw_output,
-      reasoning = excluded.reasoning
-    WHERE runs.status = 'failed'
+      reasoning = excluded.reasoning,
+      output_mode = excluded.output_mode,
+      reasoning_tokens = excluded.reasoning_tokens
+    WHERE runs.status = 'failed' AND runs.output_mode IS NOT NULL
   `).run({
     $model: result.model,
     $puzzle_id: result.puzzleId,
@@ -112,5 +123,20 @@ export function saveRunToDb(result: BenchmarkResult): void {
     $raw_input: result.rawInput,
     $raw_output: result.rawOutput,
     $reasoning: result.reasoning ? 1 : 0,
+    $output_mode: result.outputMode,
+    $reasoning_tokens: result.reasoningTokens,
   });
+}
+
+// Answered and correct counts for one model at one size, including runs from
+// earlier invocations (so resumed runs are judged on the full set).
+export function getSizeTally(model: string, size: string): { answered: number; correct: number } {
+  const db = openReadDb();
+  const row = db
+    ?.query<{ answered: number; correct: number | null }, [string, string]>(
+      "SELECT COUNT(*) AS answered, SUM(correct) AS correct FROM runs WHERE model = ? AND size = ? AND status = 'success'"
+    )
+    .get(model, size);
+  db?.close();
+  return { answered: row?.answered ?? 0, correct: row?.correct ?? 0 };
 }

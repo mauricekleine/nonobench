@@ -1,21 +1,23 @@
-import { generateText } from "ai";
+import { generateText, jsonSchema, NoObjectGeneratedError, Output, streamText } from "ai";
 import { codeBlock } from "common-tags";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
   MAX_PARALLEL_RUNS_PER_MODEL,
   MODELS,
   REQUEST_TIMEOUT_MS,
+  outputModeFor,
   type Model,
 } from "./constants";
 import {
   dbPath,
   getPuzzleId,
+  getSizeTally,
   getSuccessfulPuzzlesByModel,
   saveRunToDb,
   type BenchmarkResult,
 } from "./db";
 import { gradeOutput } from "./grade";
-import { sortSizes } from "./sizes";
+import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
 
@@ -24,10 +26,32 @@ const successfulPuzzlesByModel = getSuccessfulPuzzlesByModel();
 const args = process.argv.slice(2);
 const selectedNames = new Set<string>();
 let allMissing = false;
+let limit = Infinity;
+let maxCost = Infinity;
+let maxParallel = MAX_PARALLEL_RUNS_PER_MODEL;
+let selectedSizes: string[] = [...CORE_SIZES];
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
   if (arg === "--all-missing") {
     allMissing = true;
+  } else if (arg === "--limit") {
+    limit = Number(args[++i]);
+    if (!Number.isInteger(limit) || limit < 1) {
+      console.error("--limit needs a positive integer (puzzles per size)");
+      process.exit(1);
+    }
+  } else if (arg === "--parallel") {
+    maxParallel = Number(args[++i]);
+    if (!Number.isInteger(maxParallel) || maxParallel < 1) {
+      console.error("--parallel needs a positive integer");
+      process.exit(1);
+    }
+  } else if (arg === "--max-cost") {
+    maxCost = Number(args[++i]);
+    if (!(maxCost > 0)) {
+      console.error("--max-cost needs a positive USD amount");
+      process.exit(1);
+    }
   } else if (arg === "--model") {
     const name = args[++i];
     if (!name || name.startsWith("--") || !MODELS.some((model) => model.name === name)) {
@@ -35,6 +59,15 @@ for (let i = 0; i < args.length; i++) {
       process.exit(1);
     }
     selectedNames.add(name);
+  } else if (arg === "--sizes") {
+    const value = args[++i];
+    const validSizes: readonly string[] = [...CORE_SIZES, ...EXTENDED_SIZES];
+    const parsed = value?.split(",") ?? [];
+    if (!parsed.length || parsed.some((size) => !validSizes.includes(size)) || new Set(parsed).size !== parsed.length) {
+      console.error(`--sizes needs comma-separated sizes from: ${validSizes.join(", ")}`);
+      process.exit(1);
+    }
+    selectedSizes = sortSizes(parsed);
   } else {
     console.error(`Unknown argument: ${arg}`);
     process.exit(1);
@@ -45,13 +78,16 @@ if (allMissing && selectedNames.size > 0) {
   process.exit(1);
 }
 const selectedModels = allMissing ? MODELS : MODELS.filter((model) => selectedNames.has(model.name));
+const plannedPuzzles = PUZZLES.filter((puzzle) => selectedSizes.includes(`${puzzle.width}x${puzzle.height}`));
+const extendedPuzzles = PUZZLES.filter((puzzle) => EXTENDED_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`));
 console.log(`Benchmark plan (${dbPath}):`);
 for (const model of MODELS) {
   const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
-  const missing = PUZZLES.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  console.log(`  ${model.name}: ${missing} missing/retryable of ${PUZZLES.length}`);
+  const missing = plannedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
+  const extendedMissing = extendedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
+  console.log(`  ${model.name}: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
 }
-if (args.length === 0) {
+if (selectedModels.length === 0) {
   console.log("Select --model <name> (repeatable) or --all-missing to run.");
   process.exit(0);
 }
@@ -109,6 +145,39 @@ function printTable<T extends Record<string, unknown>>(data: T[]): void {
   console.log(`└${"─".repeat(sep.length)}┘`);
 }
 
+// Streaming changes only the transport: OpenRouter sends keepalive comments
+// while the model thinks, so no idle timer (ours or upstream) cuts off long,
+// silent requests. Used for models whose endpoints drop responses that take
+// more than five minutes.
+async function callModel(model: Model, options: Parameters<typeof generateText>[0]) {
+  if (!model.stream) return generateText(options);
+  let streamError: unknown;
+  const result = streamText({ ...options, onError: ({ error }) => { streamError = error; } } as Parameters<typeof streamText>[0]);
+  const [text, usage, providerMetadata] = await Promise.all([result.text, result.totalUsage, result.providerMetadata]);
+  if (streamError) throw streamError;
+  return { text, usage, providerMetadata };
+}
+
+// OpenRouter records each generation's cost; stats can lag a few seconds.
+async function fetchGenerationCost(id: string | undefined): Promise<number | null> {
+  if (!id) return null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const response = await fetch(`https://openrouter.ai/api/v1/generation?id=${encodeURIComponent(id)}`, {
+        headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
+      });
+      if (response.ok) {
+        const body = (await response.json()) as { data?: { total_cost?: number } };
+        if (typeof body.data?.total_cost === "number") return body.data.total_cost;
+      }
+    } catch {
+      // Retry below.
+    }
+    await Bun.sleep(3000);
+  }
+  return null;
+}
+
 async function runBenchmark(
   puzzle: Puzzle,
   model: Model
@@ -120,9 +189,12 @@ async function runBenchmark(
   let cost = 0;
   let tokens = 0;
   let correct = false;
-  let status: "success" | "failed" = "success";
+  let status: BenchmarkResult["status"] = "success";
   let errorMessage: string | undefined;
   let rawOutput = "";
+  let reasoningTokens: number | null = null;
+  const cells = puzzle.width * puzzle.height;
+  const outputMode = outputModeFor(model);
 
   const systemPrompt = codeBlock`
 		You are solving a nonogram (also known as picross or griddlers).
@@ -160,11 +232,29 @@ async function runBenchmark(
   const rawInput = `${systemPrompt}\n\n${puzzle.clues.canonical}`;
 
   try {
-    const resp = await generateText({
+    // Strict structured output: the provider constrains the final answer to the
+    // schema, so models cannot wrap the grid in prose. require_parameters makes
+    // OpenRouter refuse endpoints that would silently ignore the schema.
+    const resp = await callModel(model, {
       model: model.llm,
       prompt: puzzle.clues.canonical,
       system: systemPrompt,
       timeout: REQUEST_TIMEOUT_MS,
+      ...(outputMode === "json_schema" ? { output: Output.object({
+        name: "nonogram_solution",
+        schema: jsonSchema<{ solution: string }>({
+          type: "object",
+          properties: {
+            solution: {
+              type: "string",
+              description: `The solved grid as exactly ${cells} characters of "1" (filled) and "0" (empty), row by row.`,
+            },
+          },
+          required: ["solution"],
+          additionalProperties: false,
+        }),
+      }),
+      providerOptions: { openrouter: { provider: { require_parameters: true } } } } : {}),
     });
 
     rawOutput = resp.text;
@@ -176,9 +266,26 @@ async function runBenchmark(
     const upstreamCost = openrouterMeta?.usage?.costDetails?.upstreamInferenceCost;
     cost = upstreamCost && upstreamCost > 0 ? upstreamCost : (openrouterMeta?.usage?.cost ?? 0);
     tokens = resp.usage.outputTokens ?? 0;
+    reasoningTokens = resp.usage.outputTokenDetails?.reasoningTokens ?? null;
 
+    // Every returned answer counts, including runs where the model chose not
+    // to reason: retrying those until it does would cherry-pick. Endpoints
+    // that systematically drop reasoning are caught per model below.
     status = "success";
   } catch (err: any) {
+    if (NoObjectGeneratedError.isInstance(err) && err.text) {
+      // The model answered but the SDK could not validate the JSON (e.g. a
+      // truncated response). Grade what it said; the error carries no cost, so
+      // look it up from OpenRouter's generation record.
+      rawOutput = err.text;
+      correct = gradeOutput(puzzle, err.text);
+      tokens = err.usage?.outputTokens ?? 0;
+      reasoningTokens = err.usage?.outputTokenDetails?.reasoningTokens ?? null;
+      const generationCost = await fetchGenerationCost(err.response?.id);
+      cost = generationCost ?? 0;
+      status = "success";
+      errorMessage = `Schema validation failed${generationCost === null ? " (cost unavailable)" : ""}: ${err.message}`;
+    } else {
     console.error(
       `[${model.name}] Error:`,
       err?.message ? JSON.stringify(err, null, 2) : String(err)
@@ -189,6 +296,14 @@ async function runBenchmark(
     correct = false;
     cost = 0;
     tokens = 0;
+    // A request that dies at a provider's documented time limit will die
+    // there again: record it as a final, unsolved attempt instead of retrying.
+    const limit = model.providerTimeLimit;
+    if (limit && performance.now() - start >= limit.seconds * 1000 - 5000) {
+      status = "timeout";
+      errorMessage = limit.note;
+    }
+    }
   }
 
   const end = performance.now();
@@ -206,6 +321,8 @@ async function runBenchmark(
     rawInput,
     rawOutput,
     reasoning: model.reasoning,
+    outputMode,
+    reasoningTokens,
     ...(errorMessage ? { errorMessage } : {}),
   };
 }
@@ -223,17 +340,46 @@ function groupPuzzlesBySize(puzzles: Puzzle[]): Map<string, Puzzle[]> {
   return groups;
 }
 
+let sessionCost = 0;
+let budgetExhausted = false;
+
+// Circuit breaker: some schema-enforcing endpoints silently disable reasoning
+// (MiniMax M3 did on every one). If most of a reasoning variant's first runs
+// report zero reasoning tokens, stop that model and flag it instead of
+// recording a misleading score.
+const BREAKER_SAMPLE = 8;
+const BREAKER_MAX_ZERO_SHARE = 0.5;
+function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean {
+  if (!model.reasoning) return false;
+  const answered = results.filter((result) => result.status === "success").slice(0, BREAKER_SAMPLE);
+  if (answered.length < BREAKER_SAMPLE) return false;
+  const zero = answered.filter((result) => result.reasoningTokens === 0).length;
+  return zero / answered.length > BREAKER_MAX_ZERO_SHARE;
+}
+
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
-  const puzzlesBySize = groupPuzzlesBySize(PUZZLES);
+  const puzzlesBySize = groupPuzzlesBySize(plannedPuzzles);
   const successfulPuzzles = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const allResults: BenchmarkResult[] = [];
 
   for (const [size, puzzles] of puzzlesBySize) {
+    // A model that answered every 5x5 but solved none with structured output
+    // almost certainly has an output-format problem, not a reasoning one:
+    // stop before spending on larger grids and flag it for a text-mode check.
+    // Counts come from the database, so earlier sessions are included.
+    if (size !== "5x5" && outputModeFor(model) === "json_schema") {
+      const tally = getSizeTally(model.name, "5x5");
+      const fiveByFive = PUZZLES.filter((puzzle) => puzzle.width === 5 && puzzle.height === 5).length;
+      if (tally.answered === fiveByFive && tally.correct === 0) {
+        console.log(`[${model.name}] Stopped: 0/${tally.answered} on 5x5 with structured output; likely a format issue. Check it in text mode.`);
+        return allResults;
+      }
+    }
     // Filter out successfully benchmarked puzzles
-    const puzzlesToRun = puzzles.filter(
-      (puzzle) => !successfulPuzzles.has(getPuzzleId(puzzle))
-    );
+    const puzzlesToRun = puzzles
+      .slice(0, limit)
+      .filter((puzzle) => !successfulPuzzles.has(getPuzzleId(puzzle)));
 
     if (puzzlesToRun.length === 0) {
       console.log(
@@ -245,11 +391,11 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
     const skippedCount = puzzles.length - puzzlesToRun.length;
     if (skippedCount > 0) {
       console.log(
-        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, ${skippedCount} skipped, max ${MAX_PARALLEL_RUNS_PER_MODEL} parallel)`
+        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, ${skippedCount} skipped, max ${maxParallel} parallel)`
       );
     } else {
       console.log(
-        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, max ${MAX_PARALLEL_RUNS_PER_MODEL} parallel)`
+        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, max ${maxParallel} parallel)`
       );
     }
 
@@ -260,12 +406,25 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
 
     for (const puzzle of puzzlesToRun) {
       // Wait if we've hit the concurrency limit
-      if (pending.size >= MAX_PARALLEL_RUNS_PER_MODEL) {
+      if (pending.size >= maxParallel) {
         await Promise.race(pending);
+      }
+      if (reasoningLooksBroken(model, allResults)) {
+        console.log(`[${model.name}] Stopped: most runs report zero reasoning tokens; check the endpoint.`);
+        await Promise.all(pending);
+        return allResults;
+      }
+      // Budget guard: stop launching once this session's spend reaches the cap.
+      // In-flight requests still finish, so overshoot is bounded by them.
+      if (sessionCost >= maxCost) {
+        if (!budgetExhausted) console.log(`Budget of $${maxCost} reached; not starting further puzzles.`);
+        budgetExhausted = true;
+        break;
       }
 
       const task = (async () => {
         const result = await runBenchmark(puzzle, model);
+        sessionCost += result.cost;
         allResults.push(result);
         sizeResults.push(result);
 
@@ -299,6 +458,7 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
     console.log(
       `[${model.name}] Completed ${size}: ${correctCount}/${sizeResults.length} correct, ${failedCount} failed`
     );
+
   }
 
   return allResults;
@@ -310,9 +470,9 @@ console.log("STARTING BENCHMARK");
 console.log("=".repeat(60));
 console.log(`Models: ${selectedModels.map((m) => m.name).join(", ")}`);
 console.log(
-  `Sizes: ${sortSizes([...groupPuzzlesBySize(PUZZLES).keys()]).join(", ")}`
+  `Sizes: ${selectedSizes.join(", ")}`
 );
-console.log(`Parallel runs per model: ${MAX_PARALLEL_RUNS_PER_MODEL}`);
+console.log(`Parallel runs per model: ${maxParallel}`);
 console.log(`Database: ${dbPath}`);
 console.log("=".repeat(60) + "\n");
 

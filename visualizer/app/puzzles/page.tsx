@@ -3,13 +3,14 @@
 import {
   CaretLeft,
   CaretRight,
+  
   House,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect } from "react";
 
-import { Logo } from "@/components/logo";
+import { NonobenchMark } from "@/components/nonobench-mark";
 import { Nonogram } from "@/components/nonogram/nonogram";
 import { PUZZLES } from "@/components/puzzles";
 import { Button } from "@/components/ui/button";
@@ -52,32 +53,30 @@ function PuzzlesContent() {
   // Get size label
   const getSizeLabel = () => `${puzzle.width}×${puzzle.height}`;
 
-  // Get size color - using Resend semantic colors
+  // Grid-size colours, shared with the results page
   const getSizeColor = () => {
     if (puzzle.width === 5) return "text-[#70B8FF]"; // Blue
     if (puzzle.width === 10) return "text-[#46FEA5]"; // Green
-    return "text-[#FFCA16]"; // Amber
+    if (puzzle.width === 15) return "text-[#FFCA16]"; // Amber
+    return "text-[#C69CFF]"; // Violet
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Resend noise texture overlay */}
+      {/* Film grain, nonogram paper and the ember glow */}
       <div className="noise-overlay" />
-      {/* Grid pattern background */}
       <div className="fixed inset-0 grid-pattern pointer-events-none" />
-      <div className="fixed inset-0 bg-linear-to-br from-chart-1/3 via-transparent to-chart-2/3 pointer-events-none" />
+      <div className="fixed inset-0 atmosphere pointer-events-none" />
 
-      {/* Header - Resend style */}
+      {/* Header */}
       <header className="relative border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-foreground/10 rounded-lg border border-border">
-                <Logo className="size-6 text-foreground" />
-              </div>
+            <div className="nono-trigger flex items-center gap-3">
+              <NonobenchMark size="sm" />
               <div>
-                <h1 className="text-lg font-semibold tracking-tight">
-                  Puzzle explorer
+                <h1 className="font-display text-lg font-semibold lowercase tracking-[-0.02em]">
+                  puzzle explorer
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   Browse all {PUZZLES.length} puzzles in the benchmark
@@ -94,12 +93,12 @@ function PuzzlesContent() {
       </header>
 
       {/* Main content */}
-      <main className="relative flex-1 flex items-center justify-center px-6 py-8">
+      <main className="relative flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
         {/* Navigation arrow - Left */}
         <button
           type="button"
           onClick={goToPrevious}
-          className="absolute left-4 sm:left-8 lg:left-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
+          className="absolute top-[17%] sm:top-auto left-2 sm:left-8 lg:left-16 p-2 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer z-10"
           aria-label="Previous puzzle"
         >
           <CaretLeft
@@ -109,7 +108,7 @@ function PuzzlesContent() {
         </button>
 
         {/* Nonogram container */}
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6 max-w-full">
           {/* Puzzle info */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -130,18 +129,20 @@ function PuzzlesContent() {
             </div>
           </div>
 
-          {/* Nonogram - Resend card style */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/30">
-            <Nonogram
-              key={safeIndex}
-              height={puzzle.height}
-              width={puzzle.width}
-              solution={cleanSolution}
-            />
+          {/* Nonogram */}
+          <div className="p-3 sm:p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border shadow-2xl shadow-black/30 max-w-full overflow-hidden">
+            <div className={puzzle.width === 20 ? "[zoom:0.54] sm:[zoom:1]" : ""}>
+              <Nonogram
+                key={safeIndex}
+                height={puzzle.height}
+                width={puzzle.width}
+                solution={cleanSolution}
+              />
+            </div>
           </div>
 
           {/* Keyboard hint */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
+          <div className="flex items-center gap-2 text-xs text-dim">
             <span className="hidden sm:flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 rounded bg-foreground/5 border border-border font-mono text-[10px]">
                 ←
@@ -158,7 +159,7 @@ function PuzzlesContent() {
         <button
           type="button"
           onClick={goToNext}
-          className="absolute right-4 sm:right-8 lg:right-16 p-3 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer"
+          className="absolute top-[17%] sm:top-auto right-2 sm:right-8 lg:right-16 p-2 sm:p-4 rounded-full bg-foreground/5 backdrop-blur-sm border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all group cursor-pointer z-10"
           aria-label="Next puzzle"
         >
           <CaretRight
@@ -168,19 +169,19 @@ function PuzzlesContent() {
         </button>
       </main>
 
-      {/* Bottom navigation dots - Resend semantic colors */}
+      {/* Bottom navigation dots, coloured by grid size */}
       <footer className="relative border-t border-border bg-card/50 backdrop-blur-sm py-4">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-center gap-1.5 flex-wrap">
             {PUZZLES.map((p, idx) => {
               const isActive = idx === safeIndex;
-              // Resend semantic colors
+              // Grid-size colours
               const dotColor =
                 p.width === 5
                   ? "bg-[#70B8FF]"  // Blue
                   : p.width === 10
                     ? "bg-[#46FEA5]"  // Green
-                    : "bg-[#FFCA16]"; // Amber
+                    : p.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]";
 
               return (
                 <button
@@ -209,6 +210,10 @@ function PuzzlesContent() {
               <span className="w-2 h-2 rounded-full bg-[#FFCA16]" />
               15×15
             </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#C69CFF]" />
+              20×20
+            </span>
           </div>
         </div>
       </footer>
@@ -221,11 +226,9 @@ function PuzzlesLoading() {
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="noise-overlay" />
       <div className="fixed inset-0 grid-pattern pointer-events-none" />
-      <div className="fixed inset-0 bg-linear-to-br from-chart-1/3 via-transparent to-chart-2/3 pointer-events-none" />
+      <div className="fixed inset-0 atmosphere pointer-events-none" />
       <div className="relative flex flex-col items-center gap-4">
-        <div className="p-3 bg-foreground/10 rounded-xl border border-border animate-pulse">
-          <Logo className="size-8 text-foreground" />
-        </div>
+        <NonobenchMark className="animate-pulse motion-reduce:animate-none" />
         <p className="text-sm text-muted-foreground">Loading puzzles...</p>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
+import { MODELS } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
 import { gradeOutput } from "./grade";
-import { sortSizes } from "./sizes";
+import { CORE_SIZES, sortSizes } from "./sizes";
 
 const db = openReadDb();
 if (!db) throw new Error("Database does not exist");
@@ -21,6 +22,39 @@ for (const row of db
 }
 const correctRunsJson = JSON.stringify([...correctRuns]);
 
+const timeoutNotes = new Map(
+	db
+		.query<{ model: string; error_message: string }, []>(
+			"SELECT model, MAX(error_message) AS error_message FROM runs WHERE status = 'timeout' GROUP BY model",
+		)
+		.all()
+		.map((row) => [row.model, row.error_message]),
+);
+const corePuzzleIds = PUZZLES.filter((puzzle) => CORE_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`)).map(getPuzzleId);
+const successfulRuns = new Set(
+	db
+		.query<{ model: string; puzzle_id: string }, []>("SELECT model, puzzle_id FROM runs WHERE status = 'success'")
+		.all()
+		.map((row) => `${row.model}\u0000${row.puzzle_id}`),
+);
+
+// Runs from the original benchmark have no output_mode (older databases lack
+// the column entirely). A variant is "legacy" when all of its runs are from
+// that earlier batch; the site fades those so new runs stand out. New runs
+// always record their mode, whether structured output or text.
+const hasOutputMode = db
+	.query<{ name: string }, []>("PRAGMA table_info(runs)")
+	.all()
+	.some((column) => column.name === "output_mode");
+const structuredModels = new Set(
+	hasOutputMode
+		? db
+				.query<{ model: string }, []>("SELECT DISTINCT model FROM runs WHERE output_mode IS NOT NULL")
+				.all()
+				.map((row) => row.model)
+		: [],
+);
+
 // Output paths
 const resultsPath = process.env.NONOBENCH_RESULTS_JSON ?? new URL("../visualizer/app/results.json", import.meta.url).pathname;
 const resultsRawPath = process.env.NONOBENCH_RESULTS_RAW_JSON ?? new URL("../visualizer/public/results-raw.json", import.meta.url).pathname;
@@ -32,6 +66,7 @@ type SizeData = {
 	accuracy: number;
 	correct: number;
 	failed: number;
+	timeouts: number;
 	total: number;
 	runs: number;
 	avgDurationMs: number;
@@ -44,6 +79,16 @@ type SizeData = {
 
 type ModelData = {
 	model: string;
+	provider: string;
+	family: string;
+	effort: string;
+	legacy: boolean;
+	// True when every core puzzle has a successful run; partial results must
+	// not be read as finished ones.
+	complete: boolean;
+	// Core puzzles cut off by a provider time limit (counted as unsolved).
+	timeouts: number;
+	timeoutNote: string | null;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -69,9 +114,10 @@ type BenchmarkResults = {
 	summary: {
 		models: string[];
 		sizes: string[];
+		coreSizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: Array<{ model: string } & SizeData>;
+	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
 
@@ -85,6 +131,7 @@ type AggregatedRow = {
 	runs: number;
 	correct: number;
 	failed: number;
+	timeouts: number;
 	avg_duration_ms: number;
 	total_duration_ms: number;
 	avg_tokens: number;
@@ -108,6 +155,7 @@ type RawRow = {
 	error_message: string | null;
 	raw_input: string | null;
 	raw_output: string | null;
+	output_mode: string | null;
 };
 
 // Output type for raw results JSON
@@ -125,6 +173,7 @@ type RawResult = {
 	errorMessage: string | null;
 	rawInput: string | null;
 	rawOutput: string | null;
+	outputMode: string;
 };
 
 type RawResults = {
@@ -133,7 +182,9 @@ type RawResults = {
 };
 
 // Aggregate stats from the runs table
-// All averages and totals EXCLUDE failed runs (status = 'failed')
+// All averages and totals EXCLUDE failed runs (status = 'failed', retryable).
+// Timeouts (a documented provider time limit) are final attempts: they count
+// as runs, never as correct, and their real duration and cost are included.
 const aggregatedResults = db
 	.query<AggregatedRow, { $correctRuns: string }>(
 		`
@@ -146,6 +197,7 @@ const aggregatedResults = db
       SUM(CASE WHEN status != 'failed' THEN 1 ELSE 0 END) as runs,
       SUM(CASE WHEN model || char(0) || puzzle_id IN (SELECT value FROM json_each($correctRuns)) THEN 1 ELSE 0 END) as correct,
       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+      SUM(CASE WHEN status = 'timeout' THEN 1 ELSE 0 END) as timeouts,
       AVG(CASE WHEN status != 'failed' THEN duration_ms ELSE NULL END) as avg_duration_ms,
       SUM(CASE WHEN status != 'failed' THEN duration_ms ELSE 0 END) as total_duration_ms,
       AVG(CASE WHEN status != 'failed' THEN tokens ELSE NULL END) as avg_tokens,
@@ -212,7 +264,7 @@ errorsByModel.sort((a, b) => b.totalErrors - a.totalErrors);
 // Build the results structure
 const modelMap = new Map<string, SizeData[]>();
 const modelReasoningMap = new Map<string, boolean>();
-const allSizes = new Set<string>();
+const allSizes = new Set(PUZZLES.map((puzzle) => `${puzzle.width}x${puzzle.height}`));
 
 for (const row of aggregatedResults) {
 	if (!modelMap.has(row.model)) {
@@ -230,6 +282,7 @@ for (const row of aggregatedResults) {
 		accuracy: row.runs > 0 ? (row.correct / row.runs) * 100 : 0,
 		correct: row.correct,
 		failed: row.failed,
+		timeouts: row.timeouts,
 		total: row.total,
 		runs: row.runs,
 		avgDurationMs: row.avg_duration_ms ?? 0,
@@ -247,8 +300,20 @@ for (const row of aggregatedResults) {
 // Build byModel array
 const byModel: ModelData[] = [];
 const chartData: BenchmarkResults["chartData"] = [];
+const knownProviders = new Set([
+	"openai", "anthropic", "google", "x-ai", "deepseek", "qwen", "z-ai",
+	"moonshotai", "xiaomi", "bytedance-seed", "minimax", "mistralai", "meta", "allenai",
+]);
+const modelsByName = new Map(MODELS.map((model) => {
+	const provider = model.llm.modelId.split("/")[0];
+	if (!provider || !knownProviders.has(provider)) throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
+	return [model.name, { ...model, provider }] as const;
+}));
 
 for (const [model, sizeDatas] of modelMap) {
+	const metadata = modelsByName.get(model);
+	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
+	const { provider } = metadata;
 	// Sort size data by size
 	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
 		(size) => sizeDatas.find((s) => s.size === size)!,
@@ -261,14 +326,20 @@ for (const [model, sizeDatas] of modelMap) {
 	let overallRuns = 0;
 
 	for (const sizeData of sortedSizeDatas) {
-		overallCorrect += sizeData.correct;
-		overallFailed += sizeData.failed;
-		overallTotal += sizeData.total;
-		overallRuns += sizeData.runs;
+		if (CORE_SIZES.some((size) => size === sizeData.size)) {
+			overallCorrect += sizeData.correct;
+			overallFailed += sizeData.failed;
+			overallTotal += sizeData.total;
+			overallRuns += sizeData.runs;
+		}
 
 		// Add to chartData
 		chartData.push({
 			model,
+			provider,
+			family: metadata.family,
+			effort: metadata.effort,
+			legacy: !structuredModels.has(model),
 			...sizeData,
 		});
 	}
@@ -276,6 +347,15 @@ for (const [model, sizeDatas] of modelMap) {
 	// Overall accuracy uses runs (excluding failed), not total
 	byModel.push({
 		model,
+		provider,
+		family: metadata.family,
+		effort: metadata.effort,
+		legacy: !structuredModels.has(model),
+		complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
+		timeouts: sortedSizeDatas
+			.filter((sizeData) => CORE_SIZES.some((size) => size === sizeData.size))
+			.reduce((sum, sizeData) => sum + sizeData.timeouts, 0),
+		timeoutNote: timeoutNotes.get(model) ?? null,
 		reasoning: modelReasoningMap.get(model) ?? false,
 		overallAccuracy: overallRuns > 0 ? (overallCorrect / overallRuns) * 100 : 0,
 		overallCorrect,
@@ -295,6 +375,7 @@ const results: BenchmarkResults = {
 	summary: {
 		models: byModel.map((m) => m.model),
 		sizes: sortSizes([...allSizes]),
+		coreSizes: [...CORE_SIZES],
 	},
 	byModel,
 	chartData,
@@ -341,7 +422,8 @@ const rawResults = db
       cost,
       error_message,
       raw_input,
-      raw_output
+      raw_output,
+      ${hasOutputMode ? "output_mode" : "NULL AS output_mode"}
     FROM runs
     ORDER BY model, size, timestamp
   `,
@@ -365,6 +447,7 @@ const rawResultsOutput: RawResults = {
 		errorMessage: row.error_message,
 		rawInput: row.raw_input,
 		rawOutput: row.raw_output,
+		outputMode: row.output_mode ?? "text",
 	})),
 };
 
