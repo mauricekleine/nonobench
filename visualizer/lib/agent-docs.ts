@@ -23,7 +23,8 @@ No authentication. Everything is read-only.
 - MCP server (Streamable HTTP, stateless): \`${SITE_URL}/mcp\`. Tools: get_leaderboard, list_providers, list_families, compare_models, get_model_results, get_model_puzzles, list_puzzles, get_puzzle, get_puzzle_results, check_solution, list_runs
 - Bulk downloads: ${SITE_URL}/results-raw.json (every run with prompt and output, ~4 MB)
 - Puzzle outcomes and parsed grids: ${SITE_URL}/puzzle-results.json
-- Source and benchmark runner: https://github.com/mauricekleine/nonobench`;
+- Source and benchmark runner: https://github.com/mauricekleine/nonobench
+- Made by [Maurice Kleine](https://www.mauricekleine.com/)`;
 
 const METHOD = `## Method
 

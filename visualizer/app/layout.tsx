@@ -74,6 +74,19 @@ export const metadata: Metadata = {
 	category: "Technology",
 };
 
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "WebSite",
+	name: "Nonobench",
+	url: "https://www.nonobench.com",
+	creator: {
+		"@type": "Person",
+		"@id": "https://www.mauricekleine.com/#maurice",
+		name: "Maurice Kleine",
+		url: "https://www.mauricekleine.com/",
+	},
+};
+
 export default function RootLayout({
 	children,
 }: Readonly<{
@@ -84,6 +97,7 @@ export default function RootLayout({
 			<body
 				className={`${display.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}
 			>
+				<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 				<NuqsAdapter>{children}</NuqsAdapter>
 				<WebMcp />
 

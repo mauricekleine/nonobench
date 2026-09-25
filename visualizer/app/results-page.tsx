@@ -873,10 +873,21 @@ export default function ResultsPage({
           </div>
         </section>
         <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground">
-          <span>Nonobench · Nonogram puzzle benchmark for LLMs</span>
+          <span className="flex flex-col gap-1">
+            <span>Nonobench · Nonogram puzzle benchmark for LLMs</span>
+            <span className="text-xs">
+              a side quest by{" "}
+              <a
+                href="https://www.mauricekleine.com/"
+                className="hover:text-foreground"
+              >
+                maurice kleine
+              </a>
+            </span>
+          </span>
           <span className="flex gap-5">
             <a
-              href="https://github.com/mauricekleine/nono-bench"
+              href="https://github.com/mauricekleine/nonobench"
               className="inline-flex items-center gap-1 hover:text-foreground"
             >
               <GithubLogo size={16} />
