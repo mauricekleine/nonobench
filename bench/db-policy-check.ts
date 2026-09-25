@@ -28,6 +28,9 @@ const fake: BenchmarkResult = {
   reasoning: false,
   outputMode: "json_schema",
   reasoningTokens: null,
+  providerName: "Test Provider",
+  quantization: "fp8",
+  generationId: "gen-test",
 };
 saveRunToDb(fake);
 let check = read();
@@ -38,7 +41,7 @@ saveRunToDb(retry);
 saveRunToDb({ ...retry, status: "success", correct: true, rawOutput: "retried" });
 saveRunToDb({ ...retry, status: "failed", rawOutput: "blocked" });
 check = read();
-const final = check.query<{ status: string; raw_output: string }, [string]>("SELECT status, raw_output FROM runs WHERE model = ?").get(retry.model);
-assert.deepEqual(final, { status: "success", raw_output: "retried" });
+const final = check.query<{ status: string; raw_output: string; provider_name: string; quantization: string; generation_id: string }, [string]>("SELECT status, raw_output, provider_name, quantization, generation_id FROM runs WHERE model = ?").get(retry.model);
+assert.deepEqual(final, { status: "success", raw_output: "retried", provider_name: "Test Provider", quantization: "fp8", generation_id: "gen-test" });
 check.close();
 console.log("Success rows preserved; failed rows retried; later writes blocked.");

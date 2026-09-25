@@ -14,6 +14,10 @@ type PuzzleRunRow = {
 	tokens: number;
 	cost: number;
 	duration_ms: number;
+	output_mode: string | null;
+	provider_name: string | null;
+	quantization: string | null;
+	generation_id: string | null;
 };
 
 type PuzzleResultRun = {
@@ -28,6 +32,10 @@ type PuzzleResultRun = {
 	tokens: number;
 	cost: number;
 	durationMs: number;
+	harness: "v1.0" | "v1.2";
+	providerName: string | null;
+	quantization: string | null;
+	generationId: string | null;
 };
 
 type PuzzleResult = {
@@ -73,9 +81,11 @@ export async function writePuzzleResultsExport(): Promise<void> {
 	if (!db) throw new Error("Database does not exist");
 
 	try {
+		const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((column) => column.name));
+		const optionalColumn = (name: string) => columns.has(name) ? name : `NULL AS ${name}`;
 		const rows = db
 			.query<PuzzleRunRow, []>(
-				"SELECT model, puzzle_id, status, raw_output, tokens, cost, duration_ms FROM runs WHERE status IN ('success', 'timeout') ORDER BY model, puzzle_id",
+				`SELECT model, puzzle_id, status, raw_output, tokens, cost, duration_ms, ${optionalColumn("output_mode")}, ${optionalColumn("provider_name")}, ${optionalColumn("quantization")}, ${optionalColumn("generation_id")} FROM runs WHERE status IN ('success', 'timeout') ORDER BY model, puzzle_id`,
 			)
 			.all();
 		const rowsByPuzzleId = new Map<string, PuzzleRunRow[]>();
@@ -106,6 +116,10 @@ export async function writePuzzleResultsExport(): Promise<void> {
 					tokens: row.tokens,
 					cost: row.cost,
 					durationMs: row.duration_ms,
+					harness: row.output_mode === null ? "v1.0" : "v1.2",
+					providerName: row.provider_name,
+					quantization: row.quantization,
+					generationId: row.generation_id,
 				};
 			});
 			const solved = runs.reduce((count, run) => count + Number(run.correct), 0);

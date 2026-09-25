@@ -1,0 +1,2331 @@
+{
+  "generatedAt": "2026-09-25T13:20:26.147Z",
+  "source": "https://openrouter.ai/api/v1/models/{author}/{slug}/endpoints",
+  "models": {
+    "allenai/olmo-3.1-32b-think": {
+      "pins": [
+        "allenai"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": []
+    },
+    "anthropic/claude-fable-5.1": {
+      "pins": [
+        "anthropic"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Anthropic",
+          "tag": "anthropic",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "anthropic/claude-opus-4.5": {
+      "pins": [
+        "anthropic"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Claude Platform on AWS",
+          "tag": "claude-on-aws",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Anthropic",
+          "tag": "anthropic",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/eu-west-1",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "anthropic/claude-opus-5.5": {
+      "pins": [
+        "anthropic"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Claude Platform on AWS",
+          "tag": "claude-on-aws",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Anthropic",
+          "tag": "anthropic",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/eu-west-1",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/us-east-1",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/europe",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Anthropic",
+          "tag": "anthropic/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "anthropic/claude-sonnet-4.5": {
+      "pins": [
+        "anthropic"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Claude Platform on AWS",
+          "tag": "claude-on-aws",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Anthropic",
+          "tag": "anthropic",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/eu-west-1",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/us-east5",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "bytedance-seed/seed-1.6": {
+      "pins": [
+        "seed"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "Seed",
+          "tag": "seed/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "bytedance-seed/seed-1.6-flash": {
+      "pins": [
+        "seed"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "Seed",
+          "tag": "seed/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "bytedance-seed/seed-2-1-turbo": {
+      "pins": [
+        "seed"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "Seed",
+          "tag": "seed/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "deepseek/deepseek-v3.2": {
+      "pins": [
+        "deepseek"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": [
+        {
+          "providerName": "GMICloud",
+          "tag": "gmicloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Baidu",
+          "tag": "baidu/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Friendli",
+          "tag": "friendli",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mara",
+          "tag": "mara",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SambaNova",
+          "tag": "sambanova",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "deepseek/deepseek-v3.2-speciale": {
+      "pins": [
+        "deepseek"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": []
+    },
+    "deepseek/deepseek-v4-pro-0813": {
+      "pins": [
+        "deepseek"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Ionstream",
+          "tag": "ionstream",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Baidu",
+          "tag": "baidu/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Wafer",
+          "tag": "wafer",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/us",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "StreamLake",
+          "tag": "streamlake",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "DeepSeek",
+          "tag": "deepseek",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "NextBit",
+          "tag": "nextbit/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "GMICloud",
+          "tag": "gmicloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "CoreWeave",
+          "tag": "coreweave/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Parasail",
+          "tag": "parasail/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Together",
+          "tag": "together",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Cloudflare",
+          "tag": "cloudflare",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Fireworks",
+          "tag": "fireworks",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "deepseek/deepseek-v4.1-flash": {
+      "pins": [
+        "deepseek"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "DekaLLM",
+          "tag": "dekallm",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Morph",
+          "tag": "morph",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenInference",
+          "tag": "open-inference/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Relace",
+          "tag": "relace",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepSeek",
+          "tag": "deepseek",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "StreamLake",
+          "tag": "streamlake/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Wafer",
+          "tag": "wafer",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "CoreWeave",
+          "tag": "coreweave/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Fireworks",
+          "tag": "fireworks",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Krea",
+          "tag": "krea/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "GMICloud",
+          "tag": "gmicloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "NextBit",
+          "tag": "nextbit/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Makora",
+          "tag": "makora/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Together",
+          "tag": "together",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Modal",
+          "tag": "modal",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Parasail",
+          "tag": "parasail/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "google/gemini-3-flash-preview": {
+      "pins": [
+        "google-ai-studio",
+        "google-vertex"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "google/gemini-3-pro-preview": {
+      "pins": [
+        "google-ai-studio",
+        "google-vertex"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": []
+    },
+    "google/gemini-3.1-pro-preview": {
+      "pins": [
+        "google-ai-studio",
+        "google-vertex"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "google/gemini-3.8-flash": {
+      "pins": [
+        "google-ai-studio"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "meta/muse-spark-1.3": {
+      "pins": [
+        "meta"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Meta",
+          "tag": "meta",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "minimax/minimax-m2.1": {
+      "pins": [
+        "minimax"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Minimax",
+          "tag": "minimax/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Minimax",
+          "tag": "minimax/highspeed",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "minimax/minimax-m2.5": {
+      "pins": [
+        "minimax"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "Venice",
+          "tag": "venice",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "StreamLake",
+          "tag": "streamlake",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Friendli",
+          "tag": "friendli",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Minimax",
+          "tag": "minimax/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Minimax",
+          "tag": "minimax/highspeed",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "mistralai/ministral-14b-2512": {
+      "pins": [
+        "mistral"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Mistral",
+          "tag": "mistral/zdr",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mistral",
+          "tag": "mistral",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mistral",
+          "tag": "mistral/eu",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "mistralai/mistral-large-2512": {
+      "pins": [
+        "mistral"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Mistral",
+          "tag": "mistral/zdr",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mistral",
+          "tag": "mistral/eu",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "mistralai/mistral-medium-3-5": {
+      "pins": [
+        "mistral"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Mistral",
+          "tag": "mistral/zdr",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mistral",
+          "tag": "mistral",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mistral",
+          "tag": "mistral/eu",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "moonshotai/kimi-k2-0905": {
+      "pins": [
+        "moonshotai"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": [
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "moonshotai/kimi-k2-thinking": {
+      "pins": [
+        "moonshotai"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": [
+        {
+          "providerName": "Google",
+          "tag": "google-vertex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/bf16",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "moonshotai/kimi-k2.5": {
+      "pins": [
+        "moonshotai"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": [
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/int4",
+          "quantization": "int4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/int4",
+          "quantization": "int4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/us-east-2",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "moonshotai/kimi-k3": {
+      "pins": [
+        "moonshotai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "mxfp4",
+      "endpoints": [
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "InferenceNet",
+          "tag": "inference-net/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Wafer",
+          "tag": "wafer",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Makora",
+          "tag": "makora",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Relace",
+          "tag": "relace/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Morph",
+          "tag": "morph",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/bf16",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Chutes",
+          "tag": "chutes/mxfp4",
+          "quantization": "mxfp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Parasail",
+          "tag": "parasail/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Modal",
+          "tag": "modal/mxfp4",
+          "quantization": "mxfp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Together",
+          "tag": "together",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Fireworks",
+          "tag": "fireworks",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Moonshot AI",
+          "tag": "moonshotai/mxfp4",
+          "quantization": "mxfp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Fireworks",
+          "tag": "fireworks/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Fireworks",
+          "tag": "fireworks/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "openai/gpt-5.2": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "openai/gpt-5.4": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/eu",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/us-east-1",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "openai/gpt-6-astra": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/us-west-2",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "openai/gpt-6-luna": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/eu",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/us-east-1",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "openai/gpt-6-sol": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/eu",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/us-east-1",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "openai/gpt-oss-120b": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": [
+        {
+          "providerName": "AkashML",
+          "tag": "akashml/bf16",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "CoreWeave",
+          "tag": "coreweave/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DekaLLM",
+          "tag": "dekallm/bf16",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/bf16",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Crusoe",
+          "tag": "crusoe/bf16",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Mancer 2",
+          "tag": "mancer/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Parasail",
+          "tag": "parasail/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SambaNova",
+          "tag": "sambanova",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock/eu-west-1",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Nebius",
+          "tag": "nebius/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/turbo",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Together",
+          "tag": "together",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Groq",
+          "tag": "groq",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mara",
+          "tag": "mara",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Cerebras",
+          "tag": "cerebras/fp16",
+          "quantization": "fp16",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "qwen/qwen3-next-80b-a3b-thinking": {
+      "pins": [
+        "alibaba"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "qwen/qwen3.8-flash": {
+      "pins": [
+        "alibaba"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "qwen/qwen3.8-max-0902": {
+      "pins": [
+        "alibaba"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "x-ai/grok-4": {
+      "pins": [
+        "xai"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": []
+    },
+    "x-ai/grok-4.1-fast": {
+      "pins": [
+        "xai"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": []
+    },
+    "x-ai/grok-4.7": {
+      "pins": [
+        "xai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "xAI",
+          "tag": "xai/zdr",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "xAI",
+          "tag": "xai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "xAI",
+          "tag": "xai/zdr/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "xAI",
+          "tag": "xai/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "xiaomi/mimo-v2-flash:free": {
+      "pins": [
+        "xiaomi"
+      ],
+      "firstPartyAvailable": false,
+      "firstPartyStructuredOutputs": null,
+      "firstPartyQuantization": null,
+      "endpoints": []
+    },
+    "xiaomi/mimo-v2.6-flash": {
+      "pins": [
+        "xiaomi"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Xiaomi",
+          "tag": "xiaomi/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "xiaomi/mimo-v2.6-pro": {
+      "pins": [
+        "xiaomi"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Xiaomi",
+          "tag": "xiaomi/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
+    "z-ai/glm-4.7": {
+      "pins": [
+        "z-ai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "fp4",
+      "endpoints": [
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Z.AI",
+          "tag": "z-ai/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Mancer 2",
+          "tag": "mancer/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "z-ai/glm-5": {
+      "pins": [
+        "z-ai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "StreamLake",
+          "tag": "streamlake/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "GMICloud",
+          "tag": "gmicloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Baidu",
+          "tag": "baidu/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Z.AI",
+          "tag": "z-ai/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "z-ai/glm-5.3": {
+      "pins": [
+        "z-ai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "Baidu",
+          "tag": "baidu/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Morph",
+          "tag": "morph",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "InferenceNet",
+          "tag": "inference-net",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Reka",
+          "tag": "reka",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Inceptron",
+          "tag": "inceptron/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Io Net",
+          "tag": "io-net/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/us",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "GMICloud",
+          "tag": "gmicloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Makora",
+          "tag": "makora/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Decart",
+          "tag": "decart/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Friendli",
+          "tag": "friendli",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AkashML",
+          "tag": "akashml/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Wafer",
+          "tag": "wafer/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mistral",
+          "tag": "mistral/nvfp4",
+          "quantization": "nvfp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Crusoe",
+          "tag": "crusoe/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "PrimeIntellect",
+          "tag": "primeintellect",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Wafer",
+          "tag": "wafer",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Together",
+          "tag": "together",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Parasail",
+          "tag": "parasail/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Modal",
+          "tag": "modal",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Fireworks",
+          "tag": "fireworks",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Cloudflare",
+          "tag": "cloudflare",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Z.AI",
+          "tag": "z-ai/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fast",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fast",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba/fast",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        }
+      ]
+    },
+    "z-ai/glm-5.3-flash": {
+      "pins": [
+        "z-ai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "fp8",
+      "endpoints": [
+        {
+          "providerName": "InferenceNet",
+          "tag": "inference-net/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/us",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Sail Research",
+          "tag": "sail-research/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenInference",
+          "tag": "open-inference/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Relace",
+          "tag": "relace",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Wafer",
+          "tag": "wafer",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "GMICloud",
+          "tag": "gmicloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Morph",
+          "tag": "morph",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Inceptron",
+          "tag": "inceptron/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Decart",
+          "tag": "decart/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "StreamLake",
+          "tag": "streamlake/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Modal",
+          "tag": "modal/nvfp4",
+          "quantization": "nvfp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Near AI",
+          "tag": "near-ai/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Crusoe",
+          "tag": "crusoe/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "CoreWeave",
+          "tag": "coreweave/nvfp4",
+          "quantization": "nvfp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AtlasCloud",
+          "tag": "atlas-cloud/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Fireworks",
+          "tag": "fireworks",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Friendli",
+          "tag": "friendli",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "SiliconFlow",
+          "tag": "siliconflow/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "DigitalOcean",
+          "tag": "digitalocean",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Together",
+          "tag": "together",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Reka",
+          "tag": "reka",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Parasail",
+          "tag": "parasail/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "BaseTen",
+          "tag": "baseten/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Io Net",
+          "tag": "io-net/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Z.AI",
+          "tag": "z-ai/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "NextBit",
+          "tag": "nextbit/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Cloudflare",
+          "tag": "cloudflare",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    }
+  }
+}
