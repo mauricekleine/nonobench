@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Figtree, Fragment_Mono, Unbounded } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { WebMcp } from "@/components/webmcp";
+
 import "./globals.css";
 import Script from "next/script";
 
@@ -25,12 +27,12 @@ const mono = Fragment_Mono({
 });
 
 export const metadata: Metadata = {
-	metadataBase: new URL("https://nonobench.com"),
-	title: "NonoBench – LLM Nonogram Puzzle Solving Benchmark",
+	metadataBase: new URL("https://www.nonobench.com"),
+	title: "Nonobench – LLM Nonogram Puzzle Solving Benchmark",
 	description:
 		"Evaluate and compare how well large language models solve Nonogram (Picross) puzzles. Interactive benchmark results, visualizations, and leaderboards for AI reasoning capabilities.",
 	keywords: [
-		"NonoBench",
+		"Nonobench",
 		"Nonogram",
 		"Picross",
 		"LLM benchmark",
@@ -58,14 +60,14 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "en_US",
-		title: "NonoBench – LLM Nonogram Puzzle Solving Benchmark",
+		title: "Nonobench – LLM Nonogram Puzzle Solving Benchmark",
 		description:
 			"Evaluate and compare how well large language models solve Nonogram puzzles. Interactive benchmark results and AI reasoning leaderboards.",
-		siteName: "NonoBench",
+		siteName: "Nonobench",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "NonoBench – LLM Nonogram Puzzle Solving Benchmark",
+		title: "Nonobench – LLM Nonogram Puzzle Solving Benchmark",
 		description:
 			"Evaluate and compare how well large language models solve Nonogram puzzles. Interactive benchmark results and AI reasoning leaderboards.",
 	},
@@ -83,6 +85,7 @@ export default function RootLayout({
 				className={`${display.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}
 			>
 				<NuqsAdapter>{children}</NuqsAdapter>
+				<WebMcp />
 
 				{process.env.NODE_ENV === "production" && <Script async src="https://api.nonobench.com/latest.js" />}
 			</body>

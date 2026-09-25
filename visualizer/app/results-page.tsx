@@ -1035,7 +1035,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 				<footer className="mt-12 pt-8 border-t border-border">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<p className="text-sm text-muted-foreground">
-							NonoBench - Nonogram puzzle benchmark for LLMs
+							Nonobench - Nonogram puzzle benchmark for LLMs
 						</p>
 						<div className="flex items-center gap-5">
 							<a
