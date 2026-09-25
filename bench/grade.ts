@@ -19,6 +19,12 @@ function answerText(rawOutput: string): string {
 }
 
 export function gradeOutput(puzzle: Puzzle, rawOutput: string | null): boolean {
-  const grid = parseSolution(answerText(rawOutput ?? ""), puzzle.width * puzzle.height);
+  const grid = extractOutputSolution(puzzle, rawOutput);
   return !!grid && satisfiesClues(puzzle, grid);
+}
+
+// Keep answer extraction shared between grading and the puzzle-results export.
+// Structured-output JSON is decoded before parseSolution, just as it is for grading.
+export function extractOutputSolution(puzzle: Puzzle, rawOutput: string | null): string | null {
+  return parseSolution(answerText(rawOutput ?? ""), puzzle.width * puzzle.height);
 }

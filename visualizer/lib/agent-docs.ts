@@ -14,17 +14,20 @@ No authentication. Everything is read-only.
   - \`GET /api/v1/families\`: family ids, display names, efforts and best variants
   - \`POST /api/v1/compare\` with \`{"models":["Claude Sonnet 4.5","GLM 5"]}\`: compare family-best variants or exact variant ids
   - \`GET /api/v1/models/{model}\`: one model, per grid size (accuracy, cost, latency, tokens)
+  - \`GET /api/v1/models/{model}/puzzles\`: outcomes for all 40 puzzles, including which were solved
   - \`GET /api/v1/puzzles?size=5x5\`: the puzzles with ids and clues
   - \`GET /api/v1/puzzles/{id}?include_solution=true\`: one puzzle and the exact prompt text
+  - \`GET /api/v1/puzzles/{id}/results?family=gpt-6-sol&effort=best&include_answers=true\`: per-model outcomes; filters match the leaderboard and answers are opt-in
   - \`POST /api/v1/puzzles/{id}/check\` with \`{"grid": "0110..."}\`: check a grid against the clues
   - \`GET /api/v1/runs?model=&puzzle=&size=&include_output=true&limit=100&offset=0\`: individual runs
-- MCP server (Streamable HTTP, stateless): \`${SITE_URL}/mcp\`. Tools: get_leaderboard, list_providers, list_families, compare_models, get_model_results, list_puzzles, get_puzzle, check_solution, list_runs
+- MCP server (Streamable HTTP, stateless): \`${SITE_URL}/mcp\`. Tools: get_leaderboard, list_providers, list_families, compare_models, get_model_results, get_model_puzzles, list_puzzles, get_puzzle, get_puzzle_results, check_solution, list_runs
 - Bulk downloads: ${SITE_URL}/results-raw.json (every run with prompt and output, ~4 MB)
+- Puzzle outcomes and parsed grids: ${SITE_URL}/puzzle-results.json
 - Source and benchmark runner: https://github.com/mauricekleine/nonobench`;
 
 const METHOD = `## Method
 
-Each model gets the same system prompt and a puzzle's row and column clues, and must answer with the grid as a string of \`1\` (filled) and \`0\` (empty), row by row. An answer is correct when it satisfies every row and column clue; some puzzles have more than one valid solution. There are 30 puzzles: 10 each of ${SIZES.join(", ")}.`;
+Each model gets the same system prompt and a puzzle's row and column clues, and must answer with the grid as a string of \`1\` (filled) and \`0\` (empty), row by row. An answer is correct when it satisfies every row and column clue; some puzzles have more than one valid solution. There are 40 puzzles: 10 each of ${SIZES.join(", ")}. The 20x20 tier has not been run yet.`;
 
 export function llmsTxt() {
 	return `# Nonobench
@@ -39,6 +42,7 @@ ${ACCESS}
 
 - [Leaderboard](${SITE_URL}/): results by model and grid size. Also available as markdown at ${SITE_URL}/index.md
 - [Puzzle explorer](${SITE_URL}/puzzles): browse the puzzles. Markdown: ${SITE_URL}/puzzles.md
+- [Puzzle insights](${SITE_URL}/puzzles/overview): difficulty ranking, model heatmap, and links to answer overlays
 `;
 }
 

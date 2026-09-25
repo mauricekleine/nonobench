@@ -478,3 +478,8 @@ console.log(`\nExported ${rawResults.length} raw runs to:`);
 console.log(`  ${resultsRawPath}`);
 
 db.close();
+
+// --- Per-puzzle explorer export ---
+const { writePuzzleResultsExport } = await import("./puzzle-results-export");
+await writePuzzleResultsExport();
+// --- End per-puzzle explorer export ---

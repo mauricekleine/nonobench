@@ -7,17 +7,24 @@ import { NonogramColumnClues } from "./nonogram-column-clues";
 import { NonogramsGrid } from "./nonogram-grid";
 import { NonogramRowClues } from "./nonogram-row-clues";
 import { useNonogramStore } from "./store";
+import type { CellState } from "@/lib/puzzle-insights";
 
 type Props = {
   height: number;
   solution: string;
   width: number;
+  overlay?: CellState[];
+  violatedRows?: number[];
+  violatedColumns?: number[];
 };
 
 export function Nonogram({
   height,
   solution,
   width,
+  overlay,
+  violatedRows,
+  violatedColumns,
 }: Props) {
   const initialize = useNonogramStore((state) => state.initialize);
 
@@ -55,12 +62,12 @@ export function Nonogram({
   return (
     <div className="grid w-fit relative">
       <div className="col-start-2">
-        <NonogramColumnClues />
+        <NonogramColumnClues violatedColumns={violatedColumns} />
       </div>
 
-      <NonogramRowClues />
+      <NonogramRowClues violatedRows={violatedRows} />
 
-      <NonogramsGrid onDragMove={handleDragMove} />
+      <NonogramsGrid onDragMove={handleDragMove} overlay={overlay} violatedRows={violatedRows} violatedColumns={violatedColumns} />
 
       <DragTooltip ref={tooltipReference} />
     </div>
