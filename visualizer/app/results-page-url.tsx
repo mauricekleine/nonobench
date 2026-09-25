@@ -7,6 +7,7 @@ import {
   sanitizeUrlFilters,
   type Filters,
 } from "@/lib/leaderboard";
+import { type XMetric } from "@/lib/chart-data";
 import ResultsPage from "./results-page";
 import resultsData from "./results.json";
 
@@ -19,6 +20,7 @@ const parsers = {
   w: parseAsString,
   s: parseAsString,
   levels: parseAsString,
+  x: parseAsString,
 };
 export function UrlResultsPage() {
   const [query, setQuery] = useQueryStates(parsers);
@@ -69,11 +71,27 @@ export function UrlResultsPage() {
       ...(Object.hasOwn(patch, "size") ? { s: patch.size ?? null } : {}),
     });
   };
-  return <ResultsPage filters={filters} onFiltersChange={change} />;
+  const metric: XMetric =
+    query.x === "time" || query.x === "tokens" ? query.x : "cost";
+  return (
+    <ResultsPage
+      filters={filters}
+      onFiltersChange={change}
+      metric={metric}
+      onMetricChange={(x) => {
+        void setQuery({ x: x === "cost" ? null : x });
+      }}
+    />
+  );
 }
 
 export function DefaultResultsPage() {
   return (
-    <ResultsPage filters={{ effort: "best" }} onFiltersChange={() => {}} />
+    <ResultsPage
+      filters={{ effort: "best" }}
+      onFiltersChange={() => {}}
+      metric="cost"
+      onMetricChange={() => {}}
+    />
   );
 }

@@ -27,10 +27,12 @@ import { NonobenchMark } from "@/components/nonobench-mark";
 import {
   applyFilters,
   availableSizes,
-  scoreForSize,
   type Filters,
 } from "@/lib/leaderboard";
+import { chartStats, type XMetric } from "@/lib/chart-data";
+import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
+import { AccuracyScatter, EffortLadder, SizeBreakdown } from "./insight-charts";
 import resultsData from "./results.json";
 
 type SizeData = {
@@ -42,6 +44,7 @@ type SizeData = {
   totalDurationMs: number;
   avgCost: number;
   totalCost: number;
+  totalTokens: number;
 };
 type Model = {
   model: string;
@@ -68,7 +71,6 @@ type Results = {
   byModel: Model[];
 };
 const results = resultsData as Results;
-const coreSizes = new Set(results.summary.coreSizes);
 const allFamilies = [...new Set(results.byModel.map((model) => model.family))];
 const providerGroups = [
   ...new Set(results.byModel.map((model) => model.provider)),
@@ -146,26 +148,16 @@ function ModelName({ model }: { model: Model }) {
   );
 }
 
-function stats(model: Model, size?: string) {
-  const rows = size
-    ? model.bySize.filter((row) => row.size === size)
-    : model.bySize.filter((row) => coreSizes.has(row.size));
-  const runs = size ? (rows[0]?.runs ?? 0) : model.overallRuns;
-  return {
-    accuracy: scoreForSize(model, size),
-    correct: size ? (rows[0]?.correct ?? 0) : model.overallCorrect,
-    runs,
-    cost: rows.reduce((sum, row) => sum + row.totalCost, 0),
-    time: rows.reduce((sum, row) => sum + row.totalDurationMs, 0),
-  };
-}
-
 export default function ResultsPage({
   filters,
   onFiltersChange,
+  metric,
+  onMetricChange,
 }: {
   filters: Filters;
   onFiltersChange: (patch: Partial<Filters>) => void;
+  metric: XMetric;
+  onMetricChange: (metric: XMetric) => void;
 }) {
   const [search, setSearch] = useState("");
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -200,8 +192,8 @@ export default function ResultsPage({
   const rows = useMemo(
     () =>
       [...chosen].sort((a, b) => {
-        const aStats = stats(a, size),
-          bStats = stats(b, size);
+        const aStats = chartStats(a, size),
+          bStats = chartStats(b, size);
         const aValue =
           sort.key === "accuracy"
             ? aStats.accuracy
@@ -564,6 +556,19 @@ export default function ResultsPage({
                     {size ?? "core overall"}
                   </span>
                 </div>
+                <Popover>
+                  <PopoverTrigger
+                    type="button"
+                    className="mt-2 text-left text-xs text-muted-foreground underline decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright"
+                  >
+                    What do the thin ranges mean?
+                  </PopoverTrigger>
+                  <PopoverContent side="bottom">
+                    The thin whiskers show 95% Wilson intervals. With 30
+                    puzzles, one puzzle is 3.3 points; overlapping ranges are
+                    statistically close.
+                  </PopoverContent>
+                </Popover>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1 pb-6">
@@ -574,11 +579,12 @@ export default function ResultsPage({
                     </p>
                   )}
                   {chosen.map((model) => {
-                    const value = stats(model, size);
+                    const value = chartStats(model, size);
+                    const interval = wilsonInterval(value.correct, value.runs);
                     return (
                       <div
                         key={model.model}
-                        className="grid min-w-0 grid-cols-[minmax(0,1fr)_3rem] items-center gap-x-2 gap-y-1 border-b border-border/40 py-2 sm:grid-cols-[minmax(12rem,19rem)_minmax(0,1fr)_3rem]"
+                        className="grid min-w-0 grid-cols-[minmax(0,1fr)_7.5rem] items-center gap-x-2 gap-y-1 border-b border-border/40 py-2 sm:grid-cols-[minmax(12rem,19rem)_minmax(0,1fr)_7.5rem]"
                       >
                         <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-1.5 text-xs sm:text-sm">
                           <ModelName model={model} />
@@ -587,8 +593,8 @@ export default function ResultsPage({
                         <Tooltip>
                           <TooltipTrigger
                             type="button"
-                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy; ${value.correct} of ${value.runs} correct; ${formatCost(value.cost)} cost; ${formatTime(value.time)} total time`}
-                            className="col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ember-bright sm:col-span-1 sm:col-start-2 sm:row-start-1"
+                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(value.cost)} cost; ${formatTime(value.time)} total time`}
+                            className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ember-bright sm:col-span-1 sm:col-start-2 sm:row-start-1"
                           >
                             <span
                               className="block h-full rounded-sm"
@@ -598,12 +604,29 @@ export default function ResultsPage({
                                   PROVIDERS[model.provider]?.color ?? "#D8A46B",
                               }}
                             />
+                            <span
+                              className="absolute top-1/2 h-px -translate-y-1/2 bg-foreground"
+                              style={{
+                                left: `${interval.low * 100}%`,
+                                width: `${(interval.high - interval.low) * 100}%`,
+                              }}
+                            />
+                            <span
+                              className="absolute top-1/2 h-2 -translate-y-1/2 border-l border-foreground"
+                              style={{ left: `${interval.low * 100}%` }}
+                            />
+                            <span
+                              className="absolute top-1/2 h-2 -translate-y-1/2 border-l border-foreground"
+                              style={{ left: `${interval.high * 100}%` }}
+                            />
                           </TooltipTrigger>
                           <TooltipContent side="top">
                             <strong>{model.displayName}</strong>
                             <p>
                               {value.correct}/{value.runs} solved ·{" "}
-                              {value.accuracy.toFixed(1)}%
+                              {value.accuracy.toFixed(1)}% · 95% interval{" "}
+                              {(interval.low * 100).toFixed(0)}–
+                              {(interval.high * 100).toFixed(0)}%
                             </p>
                             <p>
                               Cost {formatCost(value.cost)} · Time{" "}
@@ -611,8 +634,12 @@ export default function ResultsPage({
                             </p>
                           </TooltipContent>
                         </Tooltip>
-                        <span className="col-start-2 row-start-1 text-right font-mono text-xs font-medium tabular-nums sm:col-start-3">
-                          {value.accuracy.toFixed(1)}%
+                        <span className="col-start-2 row-start-1 text-right font-mono text-[10px] font-medium tabular-nums sm:col-start-3 sm:text-xs">
+                          {value.accuracy.toFixed(1)}%{" "}
+                          <span className="text-muted-foreground">
+                            ({(interval.low * 100).toFixed(0)}–
+                            {(interval.high * 100).toFixed(0)}%)
+                          </span>
                         </span>
                       </div>
                     );
@@ -632,6 +659,14 @@ export default function ResultsPage({
             </div>
           </Card>
         </section>
+        <AccuracyScatter
+          models={chosen}
+          size={size}
+          metric={metric}
+          onMetricChange={onMetricChange}
+        />
+        <EffortLadder models={results.byModel} filters={filters} />
+        <SizeBreakdown models={chosen} size={size} />
         <section>
           <h2 className="mb-4 font-display text-base font-medium lowercase">
             detailed model statistics
@@ -655,6 +690,9 @@ export default function ResultsPage({
                       size ? `${size} accuracy` : "Core accuracy",
                       "accuracy",
                     )}
+                    <span className="block text-[10px] font-normal text-muted-foreground">
+                      95% interval
+                    </span>
                   </th>
                   {results.summary.sizes.map((value) => (
                     <th key={value} className="px-3 py-3">
@@ -689,7 +727,8 @@ export default function ResultsPage({
               </thead>
               <tbody>
                 {rows.map((model) => {
-                  const value = stats(model, size);
+                  const value = chartStats(model, size);
+                  const interval = wilsonInterval(value.correct, value.runs);
                   return (
                     <tr
                       key={model.model}
@@ -702,7 +741,11 @@ export default function ResultsPage({
                         </div>
                       </td>
                       <td className="px-3 py-3 font-mono text-ember">
-                        {value.accuracy.toFixed(1)}%
+                        {value.accuracy.toFixed(1)}%{" "}
+                        <span className="text-xs text-muted-foreground">
+                          ({(interval.low * 100).toFixed(0)}–
+                          {(interval.high * 100).toFixed(0)}%)
+                        </span>
                       </td>
                       {results.summary.sizes.map((grid) => {
                         const entry = model.bySize.find(
