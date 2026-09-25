@@ -41,7 +41,7 @@ describe("paretoFrontier", () => {
 
 describe("effortRank", () => {
 	test("orders known levels and puts unknown ones last", () => {
-		const efforts = ["high", "default", "low", "xhigh", "none", "medium"];
-		expect([...efforts].sort((a, b) => effortRank(a) - effortRank(b))).toEqual(["none", "low", "medium", "high", "xhigh", "default"]);
+		const efforts = ["high", "default", "max", "low", "xhigh", "none", "medium"];
+		expect([...efforts].sort((a, b) => effortRank(a) - effortRank(b))).toEqual(["none", "low", "medium", "high", "xhigh", "max", "default"]);
 	});
 });

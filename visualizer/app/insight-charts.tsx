@@ -400,6 +400,9 @@ export function AccuracyScatter({
   );
 }
 
+// Spread every effort level evenly between 8% and 92% of the row.
+const ladderX = (rank: number) => 8 + rank * (84 / (EFFORT_ORDER.length - 1));
+
 function LadderRow({ group, size }: { group: EffortGroup<ChartVariant>; size?: string }) {
   const first = group.variants[0];
   const color = colorFor(first.provider);
@@ -407,14 +410,14 @@ function LadderRow({ group, size }: { group: EffortGroup<ChartVariant>; size?: s
   const levels = group.kind === "reasoning" ? ["off", "on"] : [...EFFORT_ORDER.map(effortLabel)];
   const xPosition = (model: ChartVariant) => group.kind === "reasoning"
     ? model.effort === "none" ? 12 : 88
-    : 8 + effortRank(model.effort) * 16.8;
+    : ladderX(effortRank(model.effort));
   const yPosition = (accuracy: number) => 70 - 35 * (accuracy - domain.low) / (domain.high - domain.low);
   const line = group.variants.map((model, index) => `${index ? "L" : "M"} ${xPosition(model)} ${yPosition(chartStats(model, size).accuracy)}`).join(" ");
   return <div className="relative h-44 min-w-0 rounded-lg border border-border/70 bg-background/35 p-3" role="group" aria-label={`${first.familyDisplayName} ${group.kind === "reasoning" ? "reasoning off to on" : "effort ladder"}`}>
     <div className="flex min-w-0 items-center gap-2 text-sm font-medium"><ProviderLogo provider={first.provider} size={15} className="shrink-0" /><span className="truncate" title={first.familyDisplayName}>{first.familyDisplayName}</span></div>
     <div className="relative mt-1 h-[116px]">
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        {levels.map((_, index) => { const x = group.kind === "reasoning" ? index ? 88 : 12 : 8 + index * 16.8; return <line key={index} x1={x} x2={x} y1="15" y2="84" stroke="var(--border)" strokeWidth="0.12" vectorEffect="non-scaling-stroke" />; })}
+        {levels.map((_, index) => { const x = group.kind === "reasoning" ? index ? 88 : 12 : ladderX(index); return <line key={index} x1={x} x2={x} y1="15" y2="84" stroke="var(--border)" strokeWidth="0.12" vectorEffect="non-scaling-stroke" />; })}
         <path d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
       </svg>
       {group.variants.map((model) => {
@@ -431,7 +434,7 @@ function LadderRow({ group, size }: { group: EffortGroup<ChartVariant>; size?: s
         const y = (yPosition(chartStats(previous, size).accuracy) + yPosition(chartStats(model, size).accuracy)) / 2;
         return <span key={model.model} aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded border border-border bg-card px-1 font-mono text-[10px] tabular-nums" style={{ left: `${x}%`, top: `${y}%` }}>{delta > 0 ? `+${delta}` : delta < 0 ? `−${-delta}` : "0"}</span>;
       })}
-      {levels.map((level, index) => <span key={level} className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] text-muted-foreground" style={{ left: `${group.kind === "reasoning" ? index ? 88 : 12 : 8 + index * 16.8}%` }}>{level}</span>)}
+      {levels.map((level, index) => <span key={level} className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] text-muted-foreground" style={{ left: `${group.kind === "reasoning" ? index ? 88 : 12 : ladderX(index)}%` }}>{level}</span>)}
     </div>
   </div>;
 }
