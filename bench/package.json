@@ -8,6 +8,7 @@
     "export": "bun run export.ts",
     "refresh-metadata": "bun run refresh-metadata.ts",
     "refresh-provider-pins": "bun run refresh-provider-pins.ts",
+    "refresh-effort-levels": "bun run refresh-effort-levels.ts",
     "backfill-providers": "bun run backfill-providers.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",

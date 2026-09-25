@@ -52,6 +52,15 @@ const hasOutputMode = db
 	.some((column) => column.name === "output_mode");
 const runColumns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((column) => column.name));
 const optionalColumn = (name: string) => runColumns.has(name) ? name : `NULL AS ${name}`;
+const firstRunByModel = new Map(
+	db.query<{ model: string; first_run: string }, []>("SELECT model, MIN(timestamp) AS first_run FROM runs GROUP BY model")
+		.all().map((row) => [row.model, row.first_run]),
+);
+function versionFor(model: string): "1.0" | "1.1" | "1.2" {
+	const first = firstRunByModel.get(model);
+	if (!first) throw new Error(`Missing first run for ${model}`);
+	return first < "2026-02-01" ? "1.0" : first < "2026-09-01" ? "1.1" : "1.2";
+}
 const structuredModels = new Set(
 	hasOutputMode
 		? db
@@ -95,6 +104,7 @@ type ModelData = {
 	effort: string;
 	legacy: boolean;
 	harness: "v1.0" | "v1.2";
+	version: "1.0" | "1.1" | "1.2";
 	// True when every core puzzle has a successful run; partial results must
 	// not be read as finished ones.
 	complete: boolean;
@@ -129,7 +139,7 @@ type BenchmarkResults = {
 		coreSizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean; harness: "v1.0" | "v1.2" } & SizeData>;
+	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean; harness: "v1.0" | "v1.2"; version: "1.0" | "1.1" | "1.2" } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
 
@@ -171,6 +181,8 @@ type RawRow = {
 	provider_name: string | null;
 	quantization: string | null;
 	generation_id: string | null;
+	reasoning_tokens: number | null;
+	finish_reason: string | null;
 };
 
 // Output type for raw results JSON
@@ -190,6 +202,9 @@ type RawResult = {
 	rawOutput: string | null;
 	outputMode: string;
 	harness: "v1.0" | "v1.2";
+	version: "1.0" | "1.1" | "1.2";
+	reasoningTokens: number | null;
+	finishReason: string | null;
 	providerName: string | null;
 	quantization: string | null;
 	generationId: string | null;
@@ -366,6 +381,7 @@ for (const [model, sizeDatas] of modelMap) {
 			effort: metadata.effort,
 			legacy: !structuredModels.has(model),
 			harness: structuredModels.has(model) ? "v1.2" : "v1.0",
+			version: versionFor(model),
 			...sizeData,
 		});
 	}
@@ -383,6 +399,7 @@ for (const [model, sizeDatas] of modelMap) {
 		effort: metadata.effort,
 		legacy: !structuredModels.has(model),
 		harness: structuredModels.has(model) ? "v1.2" : "v1.0",
+		version: versionFor(model),
 		complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
 		timeouts: sortedSizeDatas
 			.filter((sizeData) => CORE_SIZES.some((size) => size === sizeData.size))
@@ -459,6 +476,8 @@ const rawResults = db
       ${optionalColumn("provider_name")},
       ${optionalColumn("quantization")},
       ${optionalColumn("generation_id")}
+      , ${optionalColumn("reasoning_tokens")}
+      , ${optionalColumn("finish_reason")}
     FROM runs
     ORDER BY model, size, timestamp
   `,
@@ -484,6 +503,9 @@ const rawResultsOutput: RawResults = {
 		rawOutput: row.raw_output,
 		outputMode: row.output_mode ?? "text",
 		harness: row.output_mode === null ? "v1.0" : "v1.2",
+		version: versionFor(row.model),
+		reasoningTokens: row.reasoning_tokens,
+		finishReason: row.finish_reason,
 		providerName: row.provider_name,
 		quantization: row.quantization,
 		generationId: row.generation_id,

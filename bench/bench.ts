@@ -4,6 +4,7 @@ import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
   MAX_PARALLEL_RUNS_PER_MODEL,
   MODELS,
+  NEW_VARIANT_NAMES,
   REQUEST_TIMEOUT_MS,
   outputModeFor,
   pinnedProviderFor,
@@ -16,15 +17,18 @@ import {
   getSizeTally,
   getSuccessfulPuzzlesByModel,
   saveRunToDb,
+  codeRevision,
   type BenchmarkResult,
 } from "./db";
 import { gradeOutput } from "./grade";
 import { firstPartyAvailableFor, quantizationFor } from "./provider-pins";
 import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
+import { isProviderTimeout } from "./timeout";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
 
 const successfulPuzzlesByModel = getSuccessfulPuzzlesByModel();
+const runCodeRevision = codeRevision();
 
 const args = process.argv.slice(2);
 const selectedNames = new Set<string>();
@@ -88,7 +92,7 @@ for (const model of MODELS) {
   const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const missing = plannedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
   const extendedMissing = extendedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  console.log(`  ${model.name} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable"}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
+  console.log(`  ${model.name}${NEW_VARIANT_NAMES.has(model.name) ? " [new variant]" : ""} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable"}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
 }
 if (selectedModels.length === 0) {
   console.log("Select --model <name> (repeatable) or --all-missing to run.");
@@ -156,9 +160,9 @@ async function callModel(model: Model, options: Parameters<typeof generateText>[
   if (!model.stream) return generateText(options);
   let streamError: unknown;
   const result = streamText({ ...options, onError: ({ error }) => { streamError = error; } } as Parameters<typeof streamText>[0]);
-  const [text, usage, providerMetadata, response] = await Promise.all([result.text, result.totalUsage, result.providerMetadata, result.response]);
+  const [text, usage, providerMetadata, response, finishReason] = await Promise.all([result.text, result.totalUsage, result.providerMetadata, result.response, result.finishReason]);
   if (streamError) throw streamError;
-  return { text, usage, providerMetadata, response };
+  return { text, usage, providerMetadata, response, finishReason };
 }
 
 // OpenRouter records each generation's cost; stats can lag a few seconds.
@@ -202,6 +206,7 @@ async function runBenchmark(
   let providerName: string | null = null;
   let quantization: string | null = null;
   let generationId: string | null = null;
+  let finishReason: string | null = null;
   const cells = puzzle.width * puzzle.height;
   const outputMode = outputModeFor(model);
 
@@ -239,6 +244,9 @@ async function runBenchmark(
 	`;
 
   const rawInput = `${systemPrompt}\n\n${puzzle.clues.canonical}`;
+  const startedAt = new Date().toISOString();
+  const requestStart = performance.now();
+  let attemptDurationMs = 0;
 
   try {
     // Strict structured output: the provider constrains the final answer to the
@@ -266,6 +274,7 @@ async function runBenchmark(
       }),
       } : {}),
     });
+    attemptDurationMs = performance.now() - requestStart;
 
     rawOutput = resp.text;
     correct = gradeOutput(puzzle, resp.text);
@@ -276,6 +285,7 @@ async function runBenchmark(
     providerName = openrouterMeta?.provider || null;
     quantization = openrouterMeta?.quantization ?? quantizationFor(model.llm.modelId, providerName);
     generationId = resp.response?.id ?? null;
+    finishReason = resp.finishReason ?? null;
     const upstreamCost = openrouterMeta?.usage?.costDetails?.upstreamInferenceCost;
     cost = upstreamCost && upstreamCost > 0 ? upstreamCost : (openrouterMeta?.usage?.cost ?? 0);
     tokens = resp.usage.outputTokens ?? 0;
@@ -286,6 +296,7 @@ async function runBenchmark(
     // that systematically drop reasoning are caught per model below.
     status = "success";
   } catch (err: any) {
+    attemptDurationMs = performance.now() - requestStart;
     if (NoObjectGeneratedError.isInstance(err) && err.text) {
       // The model answered but the SDK could not validate the JSON (e.g. a
       // truncated response). Grade what it said; the error carries no cost, so
@@ -296,6 +307,7 @@ async function runBenchmark(
       reasoningTokens = err.usage?.outputTokenDetails?.reasoningTokens ?? null;
       const generation = await fetchGenerationDetails(err.response?.id);
       generationId = err.response?.id ?? null;
+      finishReason = err.finishReason ?? null;
       providerName = generation?.providerName ?? null;
       quantization = quantizationFor(model.llm.modelId, providerName);
       cost = generation?.cost ?? 0;
@@ -308,16 +320,17 @@ async function runBenchmark(
     );
 
     status = "failed";
-    errorMessage = err?.message ?? String(err);
+    const httpStatus = err?.statusCode ?? err?.status ?? err?.response?.status;
+    errorMessage = err?.message ?? (httpStatus ? `HTTP ${httpStatus}` : String(err));
     correct = false;
     cost = 0;
     tokens = 0;
     // A request that dies at a provider's documented time limit will die
     // there again: record it as a final, unsolved attempt instead of retrying.
     const limit = model.providerTimeLimit;
-    if (limit && performance.now() - start >= limit.seconds * 1000 - 5000) {
+    if (limit && isProviderTimeout(err, attemptDurationMs, limit.seconds)) {
       status = "timeout";
-      errorMessage = limit.note;
+      errorMessage = `${limit.note}: ${errorMessage}`;
     }
     }
   }
@@ -333,6 +346,7 @@ async function runBenchmark(
     cost,
     tokens,
     durationMs,
+    attemptDurationMs,
     status,
     rawInput,
     rawOutput,
@@ -342,6 +356,9 @@ async function runBenchmark(
     providerName,
     quantization,
     generationId,
+    finishReason,
+    codeRevision: runCodeRevision,
+    startedAt,
     ...(errorMessage ? { errorMessage } : {}),
   };
 }

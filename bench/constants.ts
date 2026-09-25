@@ -3,6 +3,7 @@ import {
   type OpenRouterChatSettings,
 } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
+import effortEvidence from "./effort-levels.json";
 
 // Bun's fetch aborts after 300s without the response headers arriving, and some
 // providers stay silent while a model thinks, which failed every Muse Spark run
@@ -123,7 +124,7 @@ function defaultReasoningModel(id: string, family: string): Model {
   };
 }
 
-export const MODELS: Model[] = ([
+const configuredModels: Model[] = ([
   {
     llm: pinnedModel("allenai/olmo-3.1-32b-think", defaultProviderOptions),
     name: "olmo-3.1-32b-think",
@@ -724,3 +725,30 @@ export const MODELS: Model[] = ([
   || model.llm.modelId.startsWith("minimax/") || model.llm.modelId === "qwen/qwen3-next-80b-a3b-thinking"
   ? { ...model, outputMode: "text" as const }
   : model);
+
+const effortFamilies = effortEvidence.families as Record<string, { modelId: string; levels: string[] }>;
+const configuredNames = new Set(configuredModels.map((model) => model.name));
+const addedModels: Model[] = [];
+for (const [family, evidence] of Object.entries(effortFamilies)) {
+  const representative = configuredModels.find((model) => model.family === family && model.llm.modelId === evidence.modelId);
+  if (!representative) throw new Error(`No configured model for effort evidence: ${family}`);
+  const settings = (representative.llm as { settings?: OpenRouterChatSettings }).settings;
+  if (!settings) throw new Error(`Missing provider settings for ${family}`);
+  for (const effort of evidence.levels) {
+    const name = `${family}-${effort}`;
+    if (configuredNames.has(name)) continue;
+    addedModels.push({
+      ...representative,
+      llm: pinnedModel(evidence.modelId, {
+        ...settings,
+        extraBody: { ...settings.extraBody, reasoning: { effort, exclude: true } },
+      }),
+      name,
+      effort,
+      reasoning: true,
+    });
+    configuredNames.add(name);
+  }
+}
+export const NEW_VARIANT_NAMES = new Set(addedModels.map((model) => model.name));
+export const MODELS: Model[] = [...configuredModels, ...addedModels];
