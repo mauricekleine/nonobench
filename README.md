@@ -1,4 +1,4 @@
-# NonoBench
+# Nonobench
 
 A benchmark suite for evaluating LLM reasoning capabilities on Nonogram (Picross) puzzle solving across different grid sizes. Results are published at [nonobench.com](https://nonobench.com).
 
@@ -85,6 +85,18 @@ bun run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) to view the interactive dashboard.
+
+## Agent Access
+
+nonobench.com exposes the benchmark data to agents, with no authentication:
+
+- **REST API** under `/api/v1` (leaderboard, models, puzzles, a solution checker, individual runs). The spec is at `/api/openapi.json`, and `/.well-known/api-catalog` (RFC 9727) points to it.
+- **MCP server** at `/mcp` (stateless Streamable HTTP), described by `/.well-known/mcp/server-card.json`. Add it to a client with `claude mcp add --transport http nonobench https://www.nonobench.com/mcp`.
+- **WebMCP** tools registered in the browser via `navigator.modelContext`.
+- **Markdown**: `/` and `/puzzles` return markdown when requested with `Accept: text/markdown`. `/llms.txt` gives an overview.
+- **Discovery**: `robots.txt` (with Content Signals), `sitemap.xml`, `Link` headers on the homepage, an agent skill at `/.well-known/agent-skills/index.json`, and an ARD manifest at `/.well-known/ai-catalog.json`.
+
+All of it is read from the same exported files as the dashboard (`visualizer/app/results.json` and `visualizer/public/results-raw.json`), so `bun run export` updates it too.
 
 ## Grading
 

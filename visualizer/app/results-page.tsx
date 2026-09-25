@@ -60,6 +60,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
+import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { selectBestVariants } from "@/lib/select-best-variants";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
@@ -459,11 +460,11 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 				{/* Header - Resend style with clean typography */}
 				<header className="mb-4">
 					<div className="flex items-center gap-3 mb-3">
-						<div className="p-2.5 bg-foreground/10 rounded-lg border border-border">
-							<GridFour className="size-6 text-foreground" weight="duotone" />
+						<div className="p-2 bg-foreground/10 rounded-lg border border-border">
+							<Logo className="size-7 text-foreground" />
 						</div>
 						<h1 className="text-3xl font-semibold tracking-tight">
-							NonoBench Results
+							Nonobench Results
 						</h1>
 					</div>
 					<p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
@@ -1034,7 +1035,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 				<footer className="mt-12 pt-8 border-t border-border">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<p className="text-sm text-muted-foreground">
-							NonoBench - Nonogram puzzle benchmark for LLMs
+							Nonobench - Nonogram puzzle benchmark for LLMs
 						</p>
 						<div className="flex items-center gap-5">
 							<a
