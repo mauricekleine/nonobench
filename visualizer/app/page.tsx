@@ -1,11 +1,12 @@
 import { Suspense } from "react";
-import ResultsPage from "./results-page";
+import { DefaultResultsPage, UrlResultsPage } from "./results-page-url";
 
-// nuqs reads search params on the client, so the static shell needs a Suspense boundary.
+// nuqs reads search params on the client, so the URL-bound page sits in a
+// Suspense boundary whose fallback is the fully rendered default view.
 export default function Page() {
 	return (
-		<Suspense fallback={<div className="min-h-screen bg-background" />}>
-			<ResultsPage />
+		<Suspense fallback={<DefaultResultsPage />}>
+			<UrlResultsPage />
 		</Suspense>
 	);
 }

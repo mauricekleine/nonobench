@@ -17,7 +17,6 @@ import {
 	XLogo,
 } from "@phosphor-icons/react";
 import Link from "next/link";
-import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import {
 	Bar,
@@ -242,9 +241,12 @@ function getModelStats(modelData: ModelData) {
 // Earlier (free-text) runs are faded once newer runs exist, so new models stand out.
 const hasNewRuns = results.byModel.some((model) => !model.legacy);
 
-export default function ResultsPage() {
+export type Levels = "best" | "all";
+
+// Levels come in as a prop so the default view can be server-rendered; the
+// URL-bound wrapper in results-page-url.tsx takes over after hydration.
+export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels; onLevelsChange: (levels: Levels) => void }) {
 	const [selectedSize, setSelectedSize] = useState<string>("all");
-	const [levels, setLevels] = useQueryState("levels", parseAsStringLiteral(["best", "all"]).withDefault("best"));
 	const showAllLevels = levels === "all";
 	const [aboutOpen, setAboutOpen] = useState(false);
 	const [sortColumn, setSortColumn] = useState<SortColumn>("accuracy");
@@ -580,7 +582,7 @@ export default function ResultsPage() {
 						<Checkbox
 							id="all-levels"
 							checked={showAllLevels}
-							onCheckedChange={(checked) => void setLevels(checked === true ? "all" : "best")}
+							onCheckedChange={(checked) => onLevelsChange(checked === true ? "all" : "best")}
 						/>
 						<Label htmlFor="all-levels" className="text-sm cursor-pointer">Show all reasoning levels</Label>
 					</div>
@@ -921,6 +923,8 @@ export default function ResultsPage() {
 								(sum, s) => sum + getSizeRuns(s),
 								0,
 							);
+							// Skip tiers nobody has run yet (e.g. 20x20 before its first runs).
+							if (totalRuns === 0) return null;
 							const avgAccuracy = totalRuns > 0 ? (totalCorrect / totalRuns) * 100 : 0;
 							const totalDuration = sizeStats.reduce(
 								(sum, s) => sum + getSizeTotalDuration(s),

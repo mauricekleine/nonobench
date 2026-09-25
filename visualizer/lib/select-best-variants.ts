@@ -4,8 +4,13 @@ type Variant = {
 	effort: string;
 	overallAccuracy: number;
 	overallRuns: number;
-	bySize: { totalCost: number }[];
+	complete?: boolean;
+	bySize: { size: string; totalCost: number }[];
 };
+
+// Headline figures cover the core tier only; extended sizes (20x20) must not
+// skew cost comparisons between variants.
+const CORE_SIZES = new Set(["5x5", "10x10", "15x15"]);
 
 const effortOrder: Record<string, number> = {
 	none: 0,
@@ -19,11 +24,18 @@ const effortOrder: Record<string, number> = {
 };
 
 function averageCost(model: Variant): number {
-	const totalCost = model.bySize.reduce((sum, size) => sum + size.totalCost, 0);
+	const totalCost = model.bySize
+		.filter((size) => CORE_SIZES.has(size.size))
+		.reduce((sum, size) => sum + size.totalCost, 0);
 	return model.overallRuns > 0 ? totalCost / model.overallRuns : 0;
 }
 
 function isBetter(candidate: Variant, current: Variant): boolean {
+	// A finished variant always beats one still running: a few early (mostly
+	// 5x5) results would otherwise inflate its accuracy.
+	if ((candidate.complete !== false) !== (current.complete !== false)) {
+		return candidate.complete !== false;
+	}
 	if (candidate.overallAccuracy !== current.overallAccuracy) {
 		return candidate.overallAccuracy > current.overallAccuracy;
 	}
