@@ -8,13 +8,17 @@ const ACCESS = `## Access the data
 No authentication. Everything is read-only.
 
 - REST API: \`${SITE_URL}/api/v1\`. OpenAPI spec: ${SITE_URL}/api/openapi.json
-  - \`GET /api/v1/leaderboard?size=10x10\`: models ranked by accuracy
+  - \`GET /api/v1/leaderboard?size=10x10&provider=openai&effort=best\`: models ranked by accuracy. Filters: \`provider\` and \`family\` (comma-separated ids), \`effort\` (best, all, or a level), \`reasoning\` and \`open_weights\` (true/false), \`size\`. API default effort is all.
+  - Empty \`provider\` or \`family\` values mean no filter; spaces around comma-separated ids are ignored. Empty \`effort\` means all. Unknown open-weight status is excluded by both weights filters.
+  - \`GET /api/v1/providers\`: provider ids, names and families
+  - \`GET /api/v1/families\`: family ids, display names, efforts and best variants
+  - \`POST /api/v1/compare\` with \`{"models":["Claude Sonnet 4.5","GLM 5"]}\`: compare family-best variants or exact variant ids
   - \`GET /api/v1/models/{model}\`: one model, per grid size (accuracy, cost, latency, tokens)
   - \`GET /api/v1/puzzles?size=5x5\`: the puzzles with ids and clues
   - \`GET /api/v1/puzzles/{id}?include_solution=true\`: one puzzle and the exact prompt text
   - \`POST /api/v1/puzzles/{id}/check\` with \`{"grid": "0110..."}\`: check a grid against the clues
   - \`GET /api/v1/runs?model=&puzzle=&size=&include_output=true&limit=100&offset=0\`: individual runs
-- MCP server (Streamable HTTP, stateless): \`${SITE_URL}/mcp\`. Tools: get_leaderboard, get_model_results, list_puzzles, get_puzzle, check_solution, list_runs
+- MCP server (Streamable HTTP, stateless): \`${SITE_URL}/mcp\`. Tools: get_leaderboard, list_providers, list_families, compare_models, get_model_results, list_puzzles, get_puzzle, check_solution, list_runs
 - Bulk downloads: ${SITE_URL}/results-raw.json (every run with prompt and output, ~4 MB)
 - Source and benchmark runner: https://github.com/mauricekleine/nonobench`;
 
@@ -53,6 +57,7 @@ ${ACCESS}
 ## Tips
 
 - Prefer the MCP server when your client supports it; otherwise use the REST API.
+- The site defaults to each family's best effort; the REST and MCP leaderboard default to all variants for existing callers. Set \`effort=best\` to match the site.
 - Model names are ids such as \`gpt-5.4-xhigh\`; the suffix is the reasoning effort. Get the full list from the leaderboard.
 - Accuracy is a percentage (0-100). Costs are in USD, as billed through OpenRouter.
 - Don't request \`include_output\` unless you need raw model outputs; they are large.

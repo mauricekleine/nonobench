@@ -9,7 +9,7 @@ export function GET() {
 			{
 				identifier: "urn:air:nonobench.com:mcp:nonobench",
 				displayName: "Nonobench MCP server",
-				description: "Leaderboard, per-model results, puzzles and a solution checker for the Nonobench LLM nonogram benchmark.",
+				description: "Filtered leaderboard, provider and family discovery, model comparison, puzzles and a solution checker for the Nonobench LLM nonogram benchmark.",
 				type: "application/mcp-server-card+json",
 				url: `${SITE_URL}/.well-known/mcp/server-card.json`,
 				representativeQueries: [
@@ -21,7 +21,7 @@ export function GET() {
 			{
 				identifier: "urn:air:nonobench.com:api:nonobench",
 				displayName: "Nonobench REST API",
-				description: "Read-only JSON API over Nonobench results, puzzles and individual runs.",
+				description: "Read-only JSON API over filtered Nonobench results, provider and family discovery, puzzles and individual runs.",
 				type: "application/vnd.oai.openapi+json",
 				url: `${SITE_URL}/api/openapi.json`,
 				representativeQueries: [

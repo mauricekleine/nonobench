@@ -5,6 +5,8 @@ import path from "node:path";
 import resultsData from "@/app/results.json";
 import { PUZZLES, type Puzzle } from "@/components/puzzles";
 import { parseClues } from "@/lib/nonogram";
+import { applyFilters, resolveModel, type Filters } from "@/lib/leaderboard";
+import { PROVIDERS } from "@/lib/providers";
 
 // Read-only views over the exported benchmark data, shared by the REST API,
 // the MCP server and the markdown pages.
@@ -27,8 +29,13 @@ type SizeData = {
 	totalCost: number;
 };
 
-type ModelData = {
+export type ModelData = {
 	model: string;
+	displayName?: string;
+	familyDisplayName?: string;
+	providerName?: string;
+	openWeights?: boolean | null;
+	addedAt?: string | null;
 	family?: string;
 	effort?: string;
 	provider?: string;
@@ -59,6 +66,11 @@ const CORE_SIZES = new Set(results.summary.coreSizes ?? results.summary.sizes);
 // Descriptive fields shared by the leaderboard and model endpoints.
 function variantInfo(model: ModelData) {
 	return {
+		displayName: model.displayName ?? model.model,
+		familyDisplayName: model.familyDisplayName ?? model.family ?? model.model,
+		providerName: model.providerName ?? PROVIDERS[model.provider ?? ""]?.name ?? model.provider ?? null,
+		openWeights: model.openWeights ?? null,
+		addedAt: model.addedAt ?? null,
 		family: model.family ?? model.model,
 		effort: model.effort ?? null,
 		provider: model.provider ?? null,
@@ -84,11 +96,11 @@ function sizeSummary(size: SizeData) {
 	};
 }
 
-export function getLeaderboard(size?: string) {
+export function getVariants() { return results.byModel; }
+
+export function getLeaderboard(size?: string, filters: Filters = {}) {
 	// A size-specific board only includes models that actually ran that size.
-	const models = size
-		? results.byModel.filter((model) => model.bySize.some((entry) => entry.size === size && entry.runs > 0))
-		: results.byModel;
+  const models = applyFilters(results.byModel.map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), { effort: "all", ...filters, size });
 	const rows = models.map((model) => {
 		const bySize = model.bySize.find((entry) => entry.size === size);
 		return {
@@ -106,8 +118,40 @@ export function getLeaderboard(size?: string) {
 			),
 		};
 	});
-	rows.sort((a, b) => b.accuracy - a.accuracy || a.totalCostUsd - b.totalCostUsd);
+	// applyFilters has already ranked these rows by accuracy for the selected size.
 	return rows.map((row, index) => ({ rank: index + 1, ...row }));
+}
+
+export function listProviders() {
+	const byProvider = new Map<string, { id: string; name: string; families: Set<string>; variantCount: number }>();
+	for (const model of results.byModel) {
+		const id = model.provider ?? "";
+		let provider = byProvider.get(id);
+		if (!provider) { provider = { id, name: PROVIDERS[id]?.name ?? id, families: new Set(), variantCount: 0 }; byProvider.set(id, provider); }
+		provider.families.add(model.family ?? model.model);
+		provider.variantCount++;
+	}
+	return [...byProvider.values()].sort((a, b) => a.name.localeCompare(b.name)).map(({ families, ...provider }) => ({ ...provider, families: [...families].sort() }));
+}
+
+export function listFamilies() {
+	const best = new Map(applyFilters(results.byModel.map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), { effort: "best" }).map((model) => [model.family, model.model]));
+	const families = new Map<string, { family: string; displayName: string; provider: string | null; efforts: Set<string>; bestVariant: string }>();
+	for (const model of results.byModel) {
+		const family = model.family ?? model.model;
+		let row = families.get(family);
+		if (!row) { row = { family, displayName: model.familyDisplayName ?? family, provider: model.provider ?? null, efforts: new Set(), bestVariant: best.get(family) ?? model.model }; families.set(family, row); }
+		row.efforts.add(model.effort ?? "none");
+	}
+	return [...families.values()].sort((a, b) => a.displayName.localeCompare(b.displayName)).map(({ efforts, ...row }) => ({ ...row, efforts: [...efforts].sort() }));
+}
+
+export function compareModels(names: string[]) {
+	const variants = results.byModel.map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" }));
+	return names.map((name) => {
+		const selected = resolveModel(variants, name);
+		return selected ? getModel(selected.model) : null;
+	});
 }
 
 export function getModel(name: string) {

@@ -7,6 +7,14 @@ const sizeParam = {
 	description: "Only include this grid size.",
 	schema: { type: "string", enum: SIZES },
 };
+const leaderboardParams = [
+	sizeParam,
+	{ name: "provider", in: "query", description: "Comma-separated provider ids from /api/v1/providers. Empty values mean no filter; surrounding spaces are ignored.", schema: { type: "string" } },
+	{ name: "family", in: "query", description: "Comma-separated family ids from /api/v1/families. Empty values mean no filter; surrounding spaces are ignored.", schema: { type: "string" } },
+	{ name: "effort", in: "query", description: "best, all, or a specific effort level. Omitted or empty defaults to all for backwards compatibility.", schema: { type: "string", default: "all" } },
+	{ name: "reasoning", in: "query", description: "true includes only reasoning variants; false includes only non-reasoning variants.", schema: { type: "boolean" } },
+	{ name: "open_weights", in: "query", description: "true includes only verified open-weight models; false includes only proprietary models. Unknown weights are excluded by both.", schema: { type: "boolean" } },
+];
 
 const error = { description: "Error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } };
 
@@ -28,10 +36,13 @@ const spec = {
 			get: {
 				operationId: "getLeaderboard",
 				summary: "Models ranked by accuracy",
-				parameters: [sizeParam],
+				parameters: leaderboardParams,
 				responses: { "200": json("Leaderboard", { $ref: "#/components/schemas/Leaderboard" }), "400": error },
 			},
 		},
+		"/api/v1/providers": { get: { operationId: "listProviders", summary: "Discover providers, families and variant counts", responses: { "200": json("Providers", { type: "object", properties: { providers: { type: "array", items: { type: "object", properties: { id: { type: "string" }, name: { type: "string" }, families: { type: "array", items: { type: "string" } }, variantCount: { type: "integer" } } } } } }) } } },
+		"/api/v1/families": { get: { operationId: "listFamilies", summary: "Discover model families, efforts and best variants", responses: { "200": json("Families", { type: "object", properties: { families: { type: "array", items: { type: "object", properties: { family: { type: "string" }, displayName: { type: "string" }, provider: { type: "string" }, efforts: { type: "array", items: { type: "string" } }, bestVariant: { type: "string" } } } } } }) } } },
+		"/api/v1/compare": { post: { operationId: "compareModels", summary: "Compare model IDs or family names using each family's best variant", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["models"], properties: { models: { type: "array", minItems: 2, maxItems: 20, items: { type: "string" } } } } } } }, responses: { "200": json("Model comparison", { type: "object", properties: { models: { type: "array", items: { $ref: "#/components/schemas/Model" } } } }), "400": error } } },
 		"/api/v1/models/{model}": {
 			get: {
 				operationId: "getModel",
@@ -139,6 +150,11 @@ const spec = {
 							properties: {
 								rank: { type: "integer" },
 								model: { type: "string" },
+								displayName: { type: "string" },
+								familyDisplayName: { type: "string" },
+								providerName: { type: "string" },
+								openWeights: { type: ["boolean", "null"], description: "null means unknown; excluded by both open_weights=true and open_weights=false." },
+								addedAt: { type: ["string", "null"], format: "date-time" },
 								family: { type: "string", description: "Underlying model; variants differ only in reasoning effort." },
 								effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default)." },
 								provider: { type: ["string", "null"], description: "OpenRouter provider prefix, e.g. openai or anthropic." },
@@ -160,6 +176,11 @@ const spec = {
 				type: "object",
 				properties: {
 					model: { type: "string" },
+					displayName: { type: "string" },
+					familyDisplayName: { type: "string" },
+					providerName: { type: "string" },
+					openWeights: { type: ["boolean", "null"], description: "null means unknown; excluded by both open_weights=true and open_weights=false." },
+					addedAt: { type: ["string", "null"], format: "date-time" },
 					family: { type: "string", description: "Underlying model; variants differ only in reasoning effort." },
 					effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default)." },
 					provider: { type: ["string", "null"], description: "OpenRouter provider prefix, e.g. openai or anthropic." },
