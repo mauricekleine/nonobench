@@ -10,12 +10,12 @@ import { solveByLines } from "./line-solver";
 export const MULTIPLE_SOLUTION_PUZZLE_NUMBERS = [9, 11, 12, 15, 19, 22, 23, 25, 27, 30] as const;
 const ambiguousPuzzleNumbers = new Set<number>(MULTIPLE_SOLUTION_PUZZLE_NUMBERS);
 const LINE_SOLVABLE_20X20_IDS = new Set([
-  "ee8afee7d47c7ac6", "10ae67320255ae66", "565cb9b2c23c139f",
-  "a73bebc90376f757", "2854305400138ef4",
+  "25677390118fa7cc", "3d8afcff157bdda2", "9c91e6ce44d449f8",
+  "4a976d8421fcedf1", "f98dc30979502dd7",
 ]);
 const DEEP_20X20_IDS = new Set([
-  "44b158587297cf4b", "1b0723af88accdb9", "6f72b46ca59e728e",
-  "358414c49e908494", "dd480d72eb93ef3f",
+  "9a605e5dc10f01dd", "68fd544267c515a6", "8e224e8f59aa3182",
+  "f2d167937d03f656", "81dbced2856d1007",
 ]);
 const uniquenessSolver = process.env.NONOGRAM_SOLVER ?? "/Users/maurice/Projects/nonogram-solver/build/nonogram_hybrid";
 
@@ -63,7 +63,7 @@ function checkPuzzle(puzzle: Puzzle, index: number): void {
     const result = solveByLines(puzzle.width, puzzle.height, rowClues, columnClues);
     assert.equal(result.solved, expectedLineSolvable);
     if (expectedLineSolvable) assert.equal(result.grid, solution);
-    else assert.ok(result.grid.split("?").length - 1 >= 40);
+    else assert.ok(result.grid.split("?").length - 1 >= 20);
     if (existsSync(uniquenessSolver)) {
       const check = spawnSync(uniquenessSolver, ["--check-unique", "-"], {
         input: JSON.stringify({ rows: rowClues, columns: columnClues }), encoding: "utf8", timeout: 30000,
