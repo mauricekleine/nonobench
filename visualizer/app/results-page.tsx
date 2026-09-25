@@ -582,7 +582,7 @@ export default function ResultsPage({
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1 pb-6">
+                <div className="space-y-1 pb-6 pt-4">
                   {chosen.length === 0 && (
                     <p className="py-10 text-center text-sm text-muted-foreground">
                       No models match these filters. Select more models or
