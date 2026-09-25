@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { GET } from "./route";
-import { getVariants } from "@/lib/data";
+import { getVariants, rankLeaderboardRows } from "@/lib/data";
 
 test("defaults to all levels and adds discovery metadata", async () => {
   const body = await GET(
@@ -10,6 +10,25 @@ test("defaults to all levels and adds discovery metadata", async () => {
   expect(body.models.length).toBe(getVariants().length);
   expect(body.models[0]).toHaveProperty("displayName");
   expect(body.models[0]).toHaveProperty("openWeights");
+  expect(body.models[0]).toHaveProperty("version");
+});
+
+test("version filter returns matching rows and rejects unknown versions", async () => {
+  const root = "https://example.test/api/v1/leaderboard";
+  const response = GET(new Request(`${root}?version=1.0,1.2`));
+  expect(response.status).toBe(200);
+  const body = await response.json();
+  expect(body.models.every((model: { version: string }) => ["1.0", "1.2"].includes(model.version))).toBe(true);
+  expect(GET(new Request(`${root}?version=2.0`)).status).toBe(400);
+});
+
+test("equal displayed scores share competition ranks", () => {
+  expect(rankLeaderboardRows([
+    { accuracy: 90.04 },
+    { accuracy: 80.04 },
+    { accuracy: 80.03 },
+    { accuracy: 70 },
+  ]).map((row) => row.rank)).toEqual([1, 2, 2, 4]);
 });
 
 test("filters models and rejects unknown values", async () => {

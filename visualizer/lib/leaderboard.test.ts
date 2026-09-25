@@ -4,6 +4,7 @@ import {
   parseApiFilters,
   sanitizeUrlFilters,
   validateFilters,
+  variantVersion,
 } from "./leaderboard";
 
 const variants = [
@@ -85,6 +86,7 @@ test("URL filters drop invalid keys while keeping valid filters", () => {
   const query = {
     p: "one",
     f: null,
+    v: "bogus",
     e: "bogus",
     r: "maybe",
     w: "maybe",
@@ -92,9 +94,10 @@ test("URL filters drop invalid keys while keeping valid filters", () => {
     levels: null,
   };
   const parsed = sanitizeUrlFilters(variants, ["5x5"], query);
-  expect(parsed.invalidKeys).toEqual(["e", "s", "r", "w"]);
+  expect(parsed.invalidKeys).toEqual(["e", "v", "s", "r", "w"]);
   expect(parsed.filters).toMatchObject({
     providers: ["one"],
+    versions: undefined,
     effort: "best",
     reasoning: undefined,
     openWeights: undefined,
@@ -104,11 +107,25 @@ test("URL filters drop invalid keys while keeping valid filters", () => {
     sanitizeUrlFilters(variants, ["5x5"], {
       ...query,
       e: "high",
+      v: "1.0,1.2",
       s: "5x5",
       r: "false",
       w: "true",
     }).invalidKeys,
   ).toEqual([]);
+});
+
+test("version filter uses explicit export tags before the legacy fallback", () => {
+  const tagged = [
+    { ...variants[0], version: "1.1" as const, legacy: true },
+    { ...variants[1], legacy: false },
+    { ...variants[2], legacy: true },
+  ];
+  expect(tagged.map(variantVersion)).toEqual(["1.1", "1.2", "1.0"]);
+  expect(applyFilters(tagged, { versions: ["1.1"], effort: "all" }).map((model) => model.model)).toEqual(["a-low"]);
+  expect(applyFilters(tagged, { versions: ["1.0", "1.2"], effort: "all" })).toHaveLength(2);
+  expect(validateFilters(tagged, { versions: ["9.9" as "1.0"] }, ["5x5"])).toContain("Unknown version");
+  expect(parseApiFilters(new URLSearchParams("version=1.1,1.2")).filters.versions).toEqual(["1.1", "1.2"]);
 });
 
 test("REST comma parsing trims and ignores empty entries", () => {

@@ -8,8 +8,8 @@ const ACCESS = `## Access the data
 No authentication. Everything is read-only.
 
 - REST API: \`${SITE_URL}/api/v1\`. OpenAPI spec: ${SITE_URL}/api/openapi.json
-  - \`GET /api/v1/leaderboard?size=10x10&provider=openai&effort=best\`: models ranked by accuracy. Filters: \`provider\` and \`family\` (comma-separated ids), \`effort\` (best, all, or a level), \`reasoning\` and \`open_weights\` (true/false), \`size\`, \`min_correct\` (non-negative integer). API defaults: effort all, min_correct 0 (includes variants that solved none). Use \`min_correct=1\` to hide them.
-  - Empty \`provider\` or \`family\` values mean no filter; spaces around comma-separated ids are ignored. Empty \`effort\` means all. Unknown open-weight status is excluded by both weights filters.
+  - \`GET /api/v1/leaderboard?size=10x10&provider=openai&effort=best&version=1.2\`: models ranked by accuracy, with shared ranks for equal displayed scores. Filters: \`provider\`, \`family\` (comma-separated ids), \`version\` (comma-separated 1.0, 1.1, 1.2), \`effort\` (best, all, or a level), \`reasoning\` and \`open_weights\` (true/false), \`size\`, \`min_correct\` (non-negative integer). API defaults: effort all, min_correct 0 (includes variants that solved none). Use \`min_correct=1\` to hide them. Leaderboard and model responses include \`version\`.
+  - Empty \`provider\`, \`family\`, or \`version\` values mean no filter; spaces around comma-separated ids are ignored. Empty \`effort\` means all. Unknown open-weight status is excluded by both weights filters.
   - \`GET /api/v1/providers\`: provider ids, names and families
   - \`GET /api/v1/families\`: family ids, display names, efforts and best variants
   - \`POST /api/v1/compare\` with \`{"models":["Claude Sonnet 4.5","GLM 5"]}\`: compare family-best variants or exact variant ids
@@ -62,7 +62,8 @@ ${ACCESS}
 ## Tips
 
 - Prefer the MCP server when your client supports it; otherwise use the REST API.
-- The site defaults to each family's best effort; the REST and MCP leaderboard default to all variants for existing callers. Set \`effort=best\` to match the site.
+- The site defaults to each family's best observed level; the REST and MCP leaderboard default to all variants for existing callers. Set \`effort=best\` to match the site.
+- Versions mark when a variant was first measured: V1.0 January 2026, V1.1 February–March, V1.2 September. Older exports without \`version\` use \`legacy=false\` for V1.2 and otherwise V1.0; V1.1 becomes distinguishable when the export includes the field.
 - The site hides variants that solved no puzzles in the selected tier. REST and MCP include them by default; set \`min_correct=1\` to match the site.
 - An effort value of \`default\` means reasoning is on but the model has no adjustable reasoning levels.
 - Model names are ids such as \`gpt-5.4-xhigh\`; the suffix is the reasoning effort. Get the full list from the leaderboard.

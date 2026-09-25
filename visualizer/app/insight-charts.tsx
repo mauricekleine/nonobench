@@ -453,7 +453,7 @@ export function EffortLadder({
       </p>
       <Popover>
         <PopoverTrigger type="button" aria-label="About effort ladders" className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={14} /> How to read</PopoverTrigger>
-        <PopoverContent>Each card uses the same left-to-right effort axis and its own vertical score scale. Labels above points show puzzles solved; numbers between points show the change. All measured levels appear even when Best is selected. “On” uses the provider default.</PopoverContent>
+        <PopoverContent>Each card uses the same left-to-right effort axis and its own vertical score scale. Labels above points show puzzles solved; numbers between points show the change. All measured levels appear even when best observed level is selected. “On” uses the provider default.</PopoverContent>
       </Popover>
       {ordered.length > 0 && <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-2">{ordered.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div>}
       {reasoning.length > 0 && <div className="mt-7"><h3 className="mb-3 text-sm font-medium text-foreground">Reasoning off → on</h3><div className="grid min-w-0 gap-3 lg:grid-cols-2">{reasoning.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div></div>}
