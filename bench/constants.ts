@@ -612,8 +612,11 @@ export const MODELS: Model[] = [
 
   // --- September 2026 batch: strict structured output, effort ladder ---
   // Each family starts at its lowest effort and steps up while it pays off.
+  // outputMode "text": a 5x5 A/B (same prompt, 10 puzzles) showed structured
+  // output costing these models 3+ puzzles (Qwen 3.8 Max 0 vs 10, Qwen 3.8
+  // Flash 2 vs 10, Mistral Medium 3.5 6 vs 9, Claude Fable 5.1 6 vs 9).
   reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "low"),
-  reasoningModel("anthropic/claude-fable-5.1", "claude-fable-5.1", "low"),
+  { ...reasoningModel("anthropic/claude-fable-5.1", "claude-fable-5.1", "low"), outputMode: "text" },
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "low"),
   reasoningModel("openai/gpt-6-luna", "gpt-6-luna", "low"),
   reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "low"),
@@ -621,14 +624,14 @@ export const MODELS: Model[] = [
   reasoningModel("x-ai/grok-4.7", "grok-4.7", "low"),
   reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "low"),
   reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "low"),
-  reasoningModel("qwen/qwen3.8-max-0902", "qwen3.8-max", "low"),
+  { ...reasoningModel("qwen/qwen3.8-max-0902", "qwen3.8-max", "low"), outputMode: "text" },
   reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"),
   reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"),
   reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"),
   reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"),
-  reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"),
+  { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"), outputMode: "text" },
   // No effort control on OpenRouter: reasoning on at the provider default.
-  defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"),
+  { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
   defaultReasoningModel("xiaomi/mimo-v2.6-flash", "mimo-v2.6-flash"),
   defaultReasoningModel("bytedance-seed/seed-2-1-turbo", "seed-2.1-turbo"),
