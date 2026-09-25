@@ -8,7 +8,7 @@ export function GET() {
 		version: "1.0",
 		protocolVersion: "2025-06-18",
 		serverInfo: MCP_SERVER_INFO,
-		description: "Read-only access to NonoBench results, puzzles and a nonogram solution checker.",
+		description: "Read-only access to Nonobench results, puzzles and a nonogram solution checker.",
 		documentationUrl: `${SITE_URL}/llms.txt`,
 		transport: { type: "streamable-http", endpoint: `${SITE_URL}/mcp` },
 		capabilities: { tools: { listChanged: true } },

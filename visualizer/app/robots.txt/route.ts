@@ -22,7 +22,7 @@ const AI_CRAWLERS = [
 	"Bytespider",
 ];
 
-const body = `# NonoBench: LLM nonogram benchmark. Agents: see ${SITE_URL}/llms.txt
+const body = `# Nonobench: LLM nonogram benchmark. Agents: see ${SITE_URL}/llms.txt
 
 User-agent: *
 ${CONTENT_SIGNAL}

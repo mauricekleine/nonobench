@@ -23,9 +23,9 @@ const METHOD = `## Method
 Each model gets the same system prompt and a puzzle's row and column clues, and must answer with the grid as a string of \`1\` (filled) and \`0\` (empty), row by row. An answer is correct when it satisfies every row and column clue; some puzzles have more than one valid solution. There are 30 puzzles: 10 each of ${SIZES.join(", ")}.`;
 
 export function llmsTxt() {
-	return `# NonoBench
+	return `# Nonobench
 
-> NonoBench is a benchmark of how well large language models solve nonogram (picross) puzzles. Results last updated ${RESULTS_TIMESTAMP}.
+> Nonobench is a benchmark of how well large language models solve nonogram (picross) puzzles. Results last updated ${RESULTS_TIMESTAMP}.
 
 ${METHOD}
 
@@ -41,10 +41,10 @@ ${ACCESS}
 export function skillMd() {
 	return `---
 name: nonobench
-description: Look up NonoBench results (how well LLMs solve nonogram/picross puzzles), fetch the benchmark puzzles, and check nonogram solutions. Use when asked how a model performs on NonoBench or on logic puzzles, to compare models on it, or to verify a nonogram grid.
+description: Look up Nonobench results (how well LLMs solve nonogram/picross puzzles), fetch the benchmark puzzles, and check nonogram solutions. Use when asked how a model performs on Nonobench or on logic puzzles, to compare models on it, or to verify a nonogram grid.
 ---
 
-# NonoBench
+# Nonobench
 
 ${METHOD}
 
@@ -70,7 +70,7 @@ function markdownTable(headers: string[], rows: (string | number)[][]) {
 export function homeMarkdown() {
 	const leaderboard = getLeaderboard();
 	const bySize = new Map(SIZES.map((size) => [size, new Map(getLeaderboard(size).map((row) => [row.model, row]))]));
-	return `# NonoBench leaderboard
+	return `# Nonobench leaderboard
 
 How well large language models solve nonogram (picross) puzzles. Results last updated ${RESULTS_TIMESTAMP}.
 
@@ -97,9 +97,9 @@ ${ACCESS}
 
 export function puzzlesMarkdown() {
 	const puzzles = listPuzzles();
-	return `# NonoBench puzzles
+	return `# Nonobench puzzles
 
-${puzzles.length} puzzles used by NonoBench. Clues list the lengths of consecutive filled cells, left to right for rows and top to bottom for columns.
+${puzzles.length} puzzles used by Nonobench. Clues list the lengths of consecutive filled cells, left to right for rows and top to bottom for columns.
 
 ${puzzles
 	.map(

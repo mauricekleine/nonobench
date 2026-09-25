@@ -42,7 +42,7 @@ export function WebMcp() {
 		const tools: WebMcpTool[] = [
 			{
 				name: "get_leaderboard",
-				description: "NonoBench models ranked by accuracy at solving nonogram puzzles, overall or for one grid size.",
+				description: "Nonobench models ranked by accuracy at solving nonogram puzzles, overall or for one grid size.",
 				inputSchema: { type: "object", properties: { size: sizeSchema } },
 				annotations: { readOnlyHint: true },
 				execute: ({ size }) => api(`/api/v1/leaderboard${size ? `?size=${encodeURIComponent(String(size))}` : ""}`),

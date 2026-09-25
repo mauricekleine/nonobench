@@ -15,10 +15,10 @@ const json = (description: string, schema: object) => ({ description, content: {
 const spec = {
 	openapi: "3.1.0",
 	info: {
-		title: "NonoBench API",
+		title: "Nonobench API",
 		version: "1.0.0",
 		description:
-			"Read-only access to NonoBench, a benchmark of how well LLMs solve nonogram (picross) puzzles. No authentication; please cache responses, the data only changes when new models are benchmarked.",
+			"Read-only access to Nonobench, a benchmark of how well LLMs solve nonogram (picross) puzzles. No authentication; please cache responses, the data only changes when new models are benchmarked.",
 		license: { name: "See repository", url: "https://github.com/mauricekleine/nonobench" },
 	},
 	servers: [{ url: SITE_URL }],
