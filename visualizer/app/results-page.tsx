@@ -102,14 +102,23 @@ const effortLevels = [
 const control =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
 
-function IncompleteBadge({ model }: { model: Model }) {
+// Run progress per variant, for watching a benchmark wave locally. Shown in
+// `next dev`, or in a local production build with NEXT_PUBLIC_SHOW_PROGRESS=1.
+const showProgress =
+  process.env.NODE_ENV === "development" ||
+  process.env.NEXT_PUBLIC_SHOW_PROGRESS === "1";
+
+function IncompleteBadge({ model, size }: { model: Model; size?: string }) {
+  const progress = showProgress
+    ? ` ${chartStats(model, size).runs}/${size ? 10 : 30}`
+    : "";
   return (
     <Popover>
       <PopoverTrigger
         type="button"
         className="shrink-0 cursor-pointer rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember hover:bg-ember/20 focus-visible:outline-2 focus-visible:outline-ember-bright"
       >
-        incomplete
+        incomplete{progress}
       </PopoverTrigger>
       <PopoverContent side="bottom">
         {model.timeouts > 0 ? (
@@ -599,7 +608,7 @@ export default function ResultsPage({
                       >
                         <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-1.5 text-xs sm:text-sm">
                           <ModelName model={model} />
-                          {!model.complete && <IncompleteBadge model={model} />}
+                          {!model.complete && <IncompleteBadge model={model} size={size} />}
                         </div>
                         <Tooltip>
                           <TooltipTrigger
@@ -731,10 +740,6 @@ export default function ResultsPage({
                     }
                   >
                     {sortButton(perPuzzle ? "Time / puzzle" : "Total time", "time")}
-                    {/* Runs overlap in parallel, so this is summed solve time, not wall-clock. */}
-                    <span className="block text-[10px] font-normal text-dim">
-                      {perPuzzle ? "avg solve time" : "sum of solve times"}
-                    </span>
                   </th>
                 </tr>
               </thead>
@@ -750,7 +755,7 @@ export default function ResultsPage({
                       <td className="sticky left-0 z-10 w-32 max-w-32 bg-card px-2 py-3 sm:w-56 sm:max-w-56 sm:px-4">
                         <div className="flex items-center gap-1">
                           <ModelName model={model} />
-                          {!model.complete && <IncompleteBadge model={model} />}
+                          {!model.complete && <IncompleteBadge model={model} size={size} />}
                         </div>
                       </td>
                       <td className="px-3 py-3 font-mono text-ember">
