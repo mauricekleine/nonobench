@@ -1,8 +1,17 @@
 import {
-  openrouter,
+  createOpenRouter,
   type OpenRouterCompletionSettings,
 } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
+
+// Bun's fetch aborts after 300s without the response headers arriving, and some
+// providers stay silent while a model thinks, which failed every Muse Spark run
+// longer than 5 minutes. Disable that idle timer; REQUEST_TIMEOUT_MS remains the
+// safety net for hung requests.
+// `timeout` is a Bun-specific fetch option not present in the DOM types.
+const fetchWithoutIdleTimeout = ((input: RequestInfo | URL, init?: RequestInit) =>
+  fetch(input, { ...init, timeout: false } as unknown as RequestInit)) as typeof fetch;
+const openrouter = createOpenRouter({ fetch: fetchWithoutIdleTimeout });
 
 // Safety net for hung requests only: historical successful runs took up to ~60
 // minutes, and a timeout records a failed run that gets retried (and paid) again.
@@ -636,6 +645,13 @@ export const MODELS: Model[] = [
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "medium"),
   reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"),
   reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "medium"),
+  // Effort ladder, step 2: step 1 gained 2+ puzzles (Sol 17 to 21, Gemini
+  // 3.8 Flash 11 to 20), plus a first step for the pricier leaders.
+  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "high"),
+  reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "high"),
+  reasoningModel("moonshotai/kimi-k3", "kimi-k3", "medium"),
+  reasoningModel("x-ai/grok-4.7", "grok-4.7", "medium"),
+  reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "medium"),
   // No effort control on OpenRouter: reasoning on at the provider default.
   { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
