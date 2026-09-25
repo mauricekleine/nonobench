@@ -79,9 +79,26 @@ Astra mostly got it right. Some models also reasoned far less on 20x20 than
 on 15x15 (Claude Opus 5.5 about 1–2k reasoning tokens vs 8.5k), which
 suggests sketching the picture rather than solving it.
 
+**Why (literature).** This is the failure the tokenization literature
+predicts. Long runs of a repeated character are split into irregular
+multi-character tokens, and counting them breaks down within tens of
+characters. Separators between items improve counting by 13–40 points
+([Counting Ability of LLMs and Impact of Tokenization](https://arxiv.org/html/2410.19730v2)).
+Models can also hold the right count internally and still emit the wrong
+one ([Repeated-Token Counting](https://arxiv.org/html/2605.09239v1)).
+Common grid formats are row by row:
+- ARC-AGI stores every grid as a list of rows.
+- The webpbn nonogram format stores one string per row.
+- Rosetta Code's nonogram solver prints one row per line.
+
+We found no published nonogram benchmark that compares a flat string with
+rows directly. VGRP-Bench, which includes nonograms, reports format failures
+as a major problem even with 2D JSON arrays
+([VGRP-Bench](https://arxiv.org/html/2503.23064v2)).
+
 **Changed.** Hard mode was paused after about $14 of runs. Candidate fix:
-ask for the grid row by row (per-line or an array of row strings) so length
-errors can't pile up across rows. Being tested before rerunning.
+ask for the grid row by row, as an array of row strings or one row per line,
+so each row resets the count. Being tested before rerunning.
 
 **Open.** A wrong-length answer can be a counting failure or a model that is
 lost on the logic; the answer alone doesn't say which. Standard also carries
