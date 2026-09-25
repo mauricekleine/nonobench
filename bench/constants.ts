@@ -687,7 +687,8 @@ const configuredModels: Model[] = ([
   { ...reasoningModel("qwen/qwen3.8-max-0902", "qwen3.8-max", "low"), outputMode: "text" },
   { ...reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"), outputMode: "text" },
   { ...reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"), outputMode: "text" },
-  reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"),
+  // Moonshot's endpoint answered 0/30 with schema-forced output (short reasoning); text mode like DeepSeek/GLM.
+  { ...reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"), outputMode: "text" },
   { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
   { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"), outputMode: "text" },
   // Mistral Medium 3.5 only exposes "high" or "none" (bench/effort-levels.json);
