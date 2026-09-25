@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, IBM_Plex_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { WebMcp } from "@/components/webmcp";
+
 import "./globals.css";
 import Script from "next/script";
 
@@ -77,6 +79,7 @@ export default function RootLayout({
 				className={`${inter.variable} ${ibmPlexMono.variable} antialiased font-sans`}
 			>
 				<NuqsAdapter>{children}</NuqsAdapter>
+				<WebMcp />
 
 				{process.env.NODE_ENV === "production" && <Script async src="https://api.nonobench.com/latest.js" />}
 			</body>
