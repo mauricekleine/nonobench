@@ -4,8 +4,10 @@ export const VERSIONS = ["1.0", "1.1", "1.2"] as const;
 export type BenchmarkVersion = (typeof VERSIONS)[number];
 
 // Older exports only distinguish the original and September batches.
-export function variantVersion(model: { version?: BenchmarkVersion; legacy?: boolean }): BenchmarkVersion {
-  return model.version ?? (model.legacy === false ? "1.2" : "1.0");
+// JSON imports type `version` as a plain string, so validate it here.
+export function variantVersion(model: { version?: string; legacy?: boolean }): BenchmarkVersion {
+  const version = VERSIONS.find((known) => known === model.version);
+  return version ?? (model.legacy === false ? "1.2" : "1.0");
 }
 
 export type Filters = {
@@ -26,7 +28,7 @@ export type LeaderboardVariant = {
   provider: string;
   reasoning: boolean;
   openWeights?: boolean | null;
-  version?: BenchmarkVersion;
+  version?: string;
   legacy?: boolean;
   complete?: boolean;
   overallAccuracy: number;
