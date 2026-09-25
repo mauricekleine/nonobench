@@ -15,6 +15,7 @@ import resultsData from "./results.json";
 const parsers = {
   p: parseAsString,
   f: parseAsString,
+  v: parseAsString,
   e: parseAsString,
   r: parseAsString,
   w: parseAsString,
@@ -52,6 +53,9 @@ export function UrlResultsPage() {
                 : "~"
               : null,
           }
+        : {}),
+      ...(Object.hasOwn(patch, "versions")
+        ? { v: patch.versions ? (patch.versions.length ? patch.versions.join(",") : "~") : null }
         : {}),
       ...(Object.hasOwn(patch, "effort")
         ? {

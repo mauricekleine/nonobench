@@ -29,6 +29,8 @@ import { NonobenchMark } from "@/components/nonobench-mark";
 import {
   applyFilters,
   availableSizes,
+  VERSIONS,
+  type BenchmarkVersion,
   type Filters,
 } from "@/lib/leaderboard";
 import { chartStats, type XMetric } from "@/lib/chart-data";
@@ -57,6 +59,8 @@ type Model = {
   displayName: string;
   familyDisplayName: string;
   providerName: string;
+  version?: BenchmarkVersion;
+  legacy?: boolean;
   openWeights: boolean | null;
   addedAt: string | null;
   complete: boolean;
@@ -360,6 +364,7 @@ export default function ResultsPage({
                       onFiltersChange({
                         providers: undefined,
                         families: undefined,
+                        versions: undefined,
                         effort: "best",
                         reasoning: undefined,
                         openWeights: undefined,
@@ -430,7 +435,8 @@ export default function ResultsPage({
           <Popover>
             <PopoverTrigger type="button" className={control}>
               Filters
-              {(filters.reasoning !== undefined ||
+              {(filters.versions !== undefined ||
+                filters.reasoning !== undefined ||
                 filters.openWeights !== undefined) && (
                 <>
                   <span
@@ -443,6 +449,22 @@ export default function ResultsPage({
               <CaretDown size={13} />
             </PopoverTrigger>
             <PopoverContent side="bottom" className="w-56 space-y-3">
+              <fieldset>
+                <legend className="text-sm text-foreground">Version</legend>
+                <div className="mt-1 space-y-1">
+                  {VERSIONS.map((version) => (
+                    <label key={version} className="flex items-center gap-2 text-sm text-foreground">
+                      <input type="checkbox" checked={!filters.versions || filters.versions.includes(version)} onChange={() => {
+                        const selected = new Set(filters.versions ?? VERSIONS);
+                        if (selected.has(version)) selected.delete(version);
+                        else selected.add(version);
+                        onFiltersChange({ versions: selected.size === VERSIONS.length ? undefined : [...selected] });
+                      }} />
+                      V{version}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
               <label className="block text-sm text-foreground">
                 Reasoning
                 <select
@@ -500,7 +522,7 @@ export default function ResultsPage({
               }
               className={control + " appearance-none pr-8"}
             >
-              <option value="best">Best</option>
+              <option value="best">Best observed level</option>
               <option value="all">All levels</option>
               {effortLevels.map((level) => (
                 <option key={level} value={level}>
@@ -549,7 +571,7 @@ export default function ResultsPage({
                     <CardTitle><h2 className="font-display text-base font-medium lowercase">model accuracy</h2></CardTitle>
                     <Popover>
                       <PopoverTrigger type="button" aria-label="What do the thin ranges mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={17} /></PopoverTrigger>
-                      <PopoverContent side="bottom">The thin ranges show 95% Wilson intervals. On the 30 Standard puzzles, one puzzle changes the score by 3.3 points.</PopoverContent>
+                      <PopoverContent side="bottom">The thin ranges show 95% Wilson intervals: uncertainty from 30 Standard puzzles. Small score differences may not be meaningful.</PopoverContent>
                     </Popover>
                   </div>
                   <div className="flex items-center gap-2">

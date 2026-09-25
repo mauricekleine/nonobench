@@ -5,7 +5,7 @@ import path from "node:path";
 import resultsData from "@/app/results.json";
 import { PUZZLES, type Puzzle } from "@/components/puzzles";
 import { parseClues } from "@/lib/nonogram";
-import { applyFilters, resolveModel, type Filters } from "@/lib/leaderboard";
+import { applyFilters, resolveModel, variantVersion, type BenchmarkVersion, type Filters } from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
 
 // Read-only views over the exported benchmark data, shared by the REST API,
@@ -40,6 +40,7 @@ export type ModelData = {
 	effort?: string;
 	provider?: string;
 	legacy?: boolean;
+	version?: BenchmarkVersion;
 	complete?: boolean;
 	timeouts?: number;
 	timeoutNote?: string | null;
@@ -75,6 +76,7 @@ function variantInfo(model: ModelData) {
 		effort: model.effort ?? null,
 		provider: model.provider ?? null,
 		earlierBatch: model.legacy ?? true,
+		version: variantVersion(model),
 		complete: model.complete ?? true,
 		...(model.timeouts ? { providerTimeouts: model.timeouts, providerTimeoutNote: model.timeoutNote ?? null } : {}),
 	};
@@ -119,7 +121,15 @@ export function getLeaderboard(size?: string, filters: Filters = {}) {
 		};
 	});
 	// applyFilters has already ranked these rows by accuracy for the selected size.
-	return rows.map((row, index) => ({ rank: index + 1, ...row }));
+	return rankLeaderboardRows(rows);
+}
+
+export function rankLeaderboardRows<T extends { accuracy: number }>(rows: T[]) {
+	let rank = 0;
+	return rows.map((row, index) => {
+		if (index === 0 || round(row.accuracy, 1) !== round(rows[index - 1].accuracy, 1)) rank = index + 1;
+		return { rank, ...row };
+	});
 }
 
 export function listProviders() {
