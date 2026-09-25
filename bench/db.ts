@@ -58,7 +58,9 @@ export type BenchmarkResult = {
   cost: number;
   tokens: number;
   durationMs: number;
-  status: "success" | "failed";
+  // "timeout": cut off by a documented provider time limit. Final (never
+  // retried) and counted as an unsolved attempt.
+  status: "success" | "failed" | "timeout";
   errorMessage?: string;
   rawInput: string;
   rawOutput: string;
@@ -77,7 +79,7 @@ export function getPuzzleId(puzzle: Puzzle): string {
 export function getSuccessfulPuzzlesByModel(): Map<string, Set<string>> {
   const db = openReadDb();
   const results = db?.query<{ model: string; puzzle_id: string }, []>(
-    "SELECT model, puzzle_id FROM runs WHERE status = 'success'"
+    "SELECT model, puzzle_id FROM runs WHERE status IN ('success', 'timeout')"
   ).all() ?? [];
   db?.close();
   const successful = new Map<string, Set<string>>();

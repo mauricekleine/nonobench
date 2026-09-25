@@ -189,7 +189,7 @@ async function runBenchmark(
   let cost = 0;
   let tokens = 0;
   let correct = false;
-  let status: "success" | "failed" = "success";
+  let status: BenchmarkResult["status"] = "success";
   let errorMessage: string | undefined;
   let rawOutput = "";
   let reasoningTokens: number | null = null;
@@ -296,6 +296,13 @@ async function runBenchmark(
     correct = false;
     cost = 0;
     tokens = 0;
+    // A request that dies at a provider's documented time limit will die
+    // there again: record it as a final, unsolved attempt instead of retrying.
+    const limit = model.providerTimeLimit;
+    if (limit && performance.now() - start >= limit.seconds * 1000 - 5000) {
+      status = "timeout";
+      errorMessage = limit.note;
+    }
     }
   }
 

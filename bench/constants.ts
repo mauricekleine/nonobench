@@ -37,6 +37,9 @@ export type Model = {
   // Stream the response (transport only) for endpoints that drop requests
   // which stay silent for more than five minutes.
   stream?: boolean;
+  // A provider-side cap on request duration; runs cut off there count as
+  // unsolved attempts (status "timeout") rather than being retried.
+  providerTimeLimit?: { seconds: number; note: string };
 };
 
 export type OutputMode = "json_schema" | "text";
@@ -47,6 +50,14 @@ export function outputModeFor(model: Model): OutputMode {
   if (override === "text" || override === "json_schema") return override;
   return model.outputMode ?? "json_schema";
 }
+
+// Meta's API ends Muse Spark requests at about five minutes (no generation in
+// OpenRouter's activity log ever exceeded 298s, and cut-off requests were never
+// billed or marked cancelled), so longer attempts cannot finish.
+const MUSE_TIME_LIMIT = {
+  seconds: 300,
+  note: "Meta's API ends requests after about 5 minutes, before the model answered",
+};
 
 // A reasoning variant at an explicit effort, named "<family>-<effort>".
 function reasoningModel(id: string, family: string, effort: string): Model {
@@ -640,7 +651,7 @@ export const MODELS: Model[] = [
   reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"),
   reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"),
   reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"),
-  { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"), outputMode: "text", stream: true },
+  { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
   { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"), outputMode: "text" },
   // Muse Spark: Meta caps non-streaming requests at ~5 minutes (504; streaming
   // is exempt per its docs), and schema-constrained responses still hit the
@@ -650,7 +661,7 @@ export const MODELS: Model[] = [
   reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "medium"),
   reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "medium"),
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "medium"),
-  { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"), outputMode: "text", stream: true },
+  { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
   reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "medium"),
   // Effort ladder, step 2: step 1 gained 2+ puzzles (Sol 17 to 21, Gemini
   // 3.8 Flash 11 to 20), plus a first step for the pricier leaders.

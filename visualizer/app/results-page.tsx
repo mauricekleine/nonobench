@@ -58,6 +58,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { selectBestVariants } from "@/lib/select-best-variants";
@@ -89,6 +90,9 @@ type ModelData = {
 	// True when all of the variant's runs come from the original benchmark batch.
 	legacy: boolean;
 	complete?: boolean;
+	// Core puzzles cut off by a provider time limit; they count as unsolved.
+	timeouts?: number;
+	timeoutNote?: string | null;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -150,6 +154,37 @@ function getRankColor(rank: number, total: number): string {
 	const chroma = maxChroma - t * (maxChroma - minChroma);
 
 	return `oklch(${lightness.toFixed(3)} ${chroma.toFixed(3)} ${hue})`;
+}
+
+// Explains why a model lacks a finished run on every puzzle. Click/tap to open,
+// so it also works on touch screens.
+function IncompleteBadge({ model }: { model: Pick<ModelData, "timeouts" | "timeoutNote"> }) {
+	const timeouts = model.timeouts ?? 0;
+	return (
+		<Popover>
+			<PopoverTrigger
+				type="button"
+				className="shrink-0 cursor-pointer rounded font-mono text-[10px] text-[#FFCA16] underline decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:outline-[#FFCA16]"
+			>
+				incomplete
+			</PopoverTrigger>
+			<PopoverContent>
+				{timeouts > 0 ? (
+					<>
+						<p className="mb-1.5 font-medium text-foreground">
+							{timeouts} {timeouts === 1 ? "puzzle" : "puzzles"} without an answer
+						</p>
+						<p>
+							{model.timeoutNote ?? "The provider ended these requests before the model answered."} These attempts
+							count as unsolved, so the score reflects the model as it is served.
+						</p>
+					</>
+				) : (
+					<p>Not every puzzle has a finished run yet; the score covers the finished ones.</p>
+				)}
+			</PopoverContent>
+		</Popover>
+	);
 }
 
 function EffortBadge({ effort }: { effort: string }) {
@@ -819,11 +854,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 															{showAllLevels ? modelData.model : modelData.family}
 														</span>
 														{!showAllLevels && <EffortBadge effort={modelData.effort} />}
-														{modelData.complete === false && (
-															<span className="shrink-0 text-[10px] font-mono text-[#FFCA16]" title="Not every puzzle has a finished run yet">
-																incomplete
-															</span>
-														)}
+														{modelData.complete === false && <IncompleteBadge model={modelData} />}
 														{modelData.reasoning && (
 															<Tooltip>
 																<TooltipTrigger>

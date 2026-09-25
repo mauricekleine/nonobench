@@ -22,6 +22,14 @@ for (const row of db
 }
 const correctRunsJson = JSON.stringify([...correctRuns]);
 
+const timeoutNotes = new Map(
+	db
+		.query<{ model: string; error_message: string }, []>(
+			"SELECT model, MAX(error_message) AS error_message FROM runs WHERE status = 'timeout' GROUP BY model",
+		)
+		.all()
+		.map((row) => [row.model, row.error_message]),
+);
 const corePuzzleIds = PUZZLES.filter((puzzle) => CORE_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`)).map(getPuzzleId);
 const successfulRuns = new Set(
 	db
@@ -58,6 +66,7 @@ type SizeData = {
 	accuracy: number;
 	correct: number;
 	failed: number;
+	timeouts: number;
 	total: number;
 	runs: number;
 	avgDurationMs: number;
@@ -77,6 +86,9 @@ type ModelData = {
 	// True when every core puzzle has a successful run; partial results must
 	// not be read as finished ones.
 	complete: boolean;
+	// Core puzzles cut off by a provider time limit (counted as unsolved).
+	timeouts: number;
+	timeoutNote: string | null;
 	reasoning: boolean;
 	overallAccuracy: number;
 	overallCorrect: number;
@@ -119,6 +131,7 @@ type AggregatedRow = {
 	runs: number;
 	correct: number;
 	failed: number;
+	timeouts: number;
 	avg_duration_ms: number;
 	total_duration_ms: number;
 	avg_tokens: number;
@@ -169,7 +182,9 @@ type RawResults = {
 };
 
 // Aggregate stats from the runs table
-// All averages and totals EXCLUDE failed runs (status = 'failed')
+// All averages and totals EXCLUDE failed runs (status = 'failed', retryable).
+// Timeouts (a documented provider time limit) are final attempts: they count
+// as runs, never as correct, and their real duration and cost are included.
 const aggregatedResults = db
 	.query<AggregatedRow, { $correctRuns: string }>(
 		`
@@ -182,6 +197,7 @@ const aggregatedResults = db
       SUM(CASE WHEN status != 'failed' THEN 1 ELSE 0 END) as runs,
       SUM(CASE WHEN model || char(0) || puzzle_id IN (SELECT value FROM json_each($correctRuns)) THEN 1 ELSE 0 END) as correct,
       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+      SUM(CASE WHEN status = 'timeout' THEN 1 ELSE 0 END) as timeouts,
       AVG(CASE WHEN status != 'failed' THEN duration_ms ELSE NULL END) as avg_duration_ms,
       SUM(CASE WHEN status != 'failed' THEN duration_ms ELSE 0 END) as total_duration_ms,
       AVG(CASE WHEN status != 'failed' THEN tokens ELSE NULL END) as avg_tokens,
@@ -266,6 +282,7 @@ for (const row of aggregatedResults) {
 		accuracy: row.runs > 0 ? (row.correct / row.runs) * 100 : 0,
 		correct: row.correct,
 		failed: row.failed,
+		timeouts: row.timeouts,
 		total: row.total,
 		runs: row.runs,
 		avgDurationMs: row.avg_duration_ms ?? 0,
@@ -335,6 +352,10 @@ for (const [model, sizeDatas] of modelMap) {
 		effort: metadata.effort,
 		legacy: !structuredModels.has(model),
 		complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
+		timeouts: sortedSizeDatas
+			.filter((sizeData) => CORE_SIZES.some((size) => size === sizeData.size))
+			.reduce((sum, sizeData) => sum + sizeData.timeouts, 0),
+		timeoutNote: timeoutNotes.get(model) ?? null,
 		reasoning: modelReasoningMap.get(model) ?? false,
 		overallAccuracy: overallRuns > 0 ? (overallCorrect / overallRuns) * 100 : 0,
 		overallCorrect,
