@@ -50,6 +50,8 @@ const hasOutputMode = db
 	.query<{ name: string }, []>("PRAGMA table_info(runs)")
 	.all()
 	.some((column) => column.name === "output_mode");
+const runColumns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((column) => column.name));
+const optionalColumn = (name: string) => runColumns.has(name) ? name : `NULL AS ${name}`;
 const structuredModels = new Set(
 	hasOutputMode
 		? db
@@ -92,6 +94,7 @@ type ModelData = {
 	family: string;
 	effort: string;
 	legacy: boolean;
+	harness: "v1.0" | "v1.2";
 	// True when every core puzzle has a successful run; partial results must
 	// not be read as finished ones.
 	complete: boolean;
@@ -126,7 +129,7 @@ type BenchmarkResults = {
 		coreSizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean } & SizeData>;
+	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean; harness: "v1.0" | "v1.2" } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
 
@@ -165,6 +168,9 @@ type RawRow = {
 	raw_input: string | null;
 	raw_output: string | null;
 	output_mode: string | null;
+	provider_name: string | null;
+	quantization: string | null;
+	generation_id: string | null;
 };
 
 // Output type for raw results JSON
@@ -183,6 +189,10 @@ type RawResult = {
 	rawInput: string | null;
 	rawOutput: string | null;
 	outputMode: string;
+	harness: "v1.0" | "v1.2";
+	providerName: string | null;
+	quantization: string | null;
+	generationId: string | null;
 };
 
 type RawResults = {
@@ -355,6 +365,7 @@ for (const [model, sizeDatas] of modelMap) {
 			family: metadata.family,
 			effort: metadata.effort,
 			legacy: !structuredModels.has(model),
+			harness: structuredModels.has(model) ? "v1.2" : "v1.0",
 			...sizeData,
 		});
 	}
@@ -371,6 +382,7 @@ for (const [model, sizeDatas] of modelMap) {
 		family: metadata.family,
 		effort: metadata.effort,
 		legacy: !structuredModels.has(model),
+		harness: structuredModels.has(model) ? "v1.2" : "v1.0",
 		complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
 		timeouts: sortedSizeDatas
 			.filter((sizeData) => CORE_SIZES.some((size) => size === sizeData.size))
@@ -443,7 +455,10 @@ const rawResults = db
       error_message,
       raw_input,
       raw_output,
-      ${hasOutputMode ? "output_mode" : "NULL AS output_mode"}
+      ${hasOutputMode ? "output_mode" : "NULL AS output_mode"},
+      ${optionalColumn("provider_name")},
+      ${optionalColumn("quantization")},
+      ${optionalColumn("generation_id")}
     FROM runs
     ORDER BY model, size, timestamp
   `,
@@ -468,6 +483,10 @@ const rawResultsOutput: RawResults = {
 		rawInput: row.raw_input,
 		rawOutput: row.raw_output,
 		outputMode: row.output_mode ?? "text",
+		harness: row.output_mode === null ? "v1.0" : "v1.2",
+		providerName: row.provider_name,
+		quantization: row.quantization,
+		generationId: row.generation_id,
 	})),
 };
 

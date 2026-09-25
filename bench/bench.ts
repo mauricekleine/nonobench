@@ -6,6 +6,8 @@ import {
   MODELS,
   REQUEST_TIMEOUT_MS,
   outputModeFor,
+  pinnedProviderFor,
+  requestProviderOptions,
   type Model,
 } from "./constants";
 import {
@@ -17,6 +19,7 @@ import {
   type BenchmarkResult,
 } from "./db";
 import { gradeOutput } from "./grade";
+import { firstPartyAvailableFor, quantizationFor } from "./provider-pins";
 import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
@@ -85,7 +88,7 @@ for (const model of MODELS) {
   const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const missing = plannedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
   const extendedMissing = extendedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  console.log(`  ${model.name}: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
+  console.log(`  ${model.name} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable"}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
 }
 if (selectedModels.length === 0) {
   console.log("Select --model <name> (repeatable) or --all-missing to run.");
@@ -153,13 +156,13 @@ async function callModel(model: Model, options: Parameters<typeof generateText>[
   if (!model.stream) return generateText(options);
   let streamError: unknown;
   const result = streamText({ ...options, onError: ({ error }) => { streamError = error; } } as Parameters<typeof streamText>[0]);
-  const [text, usage, providerMetadata] = await Promise.all([result.text, result.totalUsage, result.providerMetadata]);
+  const [text, usage, providerMetadata, response] = await Promise.all([result.text, result.totalUsage, result.providerMetadata, result.response]);
   if (streamError) throw streamError;
-  return { text, usage, providerMetadata };
+  return { text, usage, providerMetadata, response };
 }
 
 // OpenRouter records each generation's cost; stats can lag a few seconds.
-async function fetchGenerationCost(id: string | undefined): Promise<number | null> {
+async function fetchGenerationDetails(id: string | undefined): Promise<{ cost: number; providerName: string | null } | null> {
   if (!id) return null;
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
@@ -167,8 +170,11 @@ async function fetchGenerationCost(id: string | undefined): Promise<number | nul
         headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
       });
       if (response.ok) {
-        const body = (await response.json()) as { data?: { total_cost?: number } };
-        if (typeof body.data?.total_cost === "number") return body.data.total_cost;
+        const body = (await response.json()) as { data?: { total_cost?: number; provider_name?: string } };
+        if (typeof body.data?.total_cost === "number") return {
+          cost: body.data.total_cost,
+          providerName: body.data.provider_name || null,
+        };
       }
     } catch {
       // Retry below.
@@ -193,6 +199,9 @@ async function runBenchmark(
   let errorMessage: string | undefined;
   let rawOutput = "";
   let reasoningTokens: number | null = null;
+  let providerName: string | null = null;
+  let quantization: string | null = null;
+  let generationId: string | null = null;
   const cells = puzzle.width * puzzle.height;
   const outputMode = outputModeFor(model);
 
@@ -240,6 +249,7 @@ async function runBenchmark(
       prompt: puzzle.clues.canonical,
       system: systemPrompt,
       timeout: REQUEST_TIMEOUT_MS,
+      providerOptions: requestProviderOptions(model),
       ...(outputMode === "json_schema" ? { output: Output.object({
         name: "nonogram_solution",
         schema: jsonSchema<{ solution: string }>({
@@ -254,15 +264,18 @@ async function runBenchmark(
           additionalProperties: false,
         }),
       }),
-      providerOptions: { openrouter: { provider: { require_parameters: true } } } } : {}),
+      } : {}),
     });
 
     rawOutput = resp.text;
     correct = gradeOutput(puzzle, resp.text);
 
     const openrouterMeta = resp.providerMetadata?.openrouter as
-      | { usage?: { costDetails?: { upstreamInferenceCost?: number }; cost?: number } }
+      | { provider?: string; quantization?: string; usage?: { costDetails?: { upstreamInferenceCost?: number }; cost?: number } }
       | undefined;
+    providerName = openrouterMeta?.provider || null;
+    quantization = openrouterMeta?.quantization ?? quantizationFor(model.llm.modelId, providerName);
+    generationId = resp.response?.id ?? null;
     const upstreamCost = openrouterMeta?.usage?.costDetails?.upstreamInferenceCost;
     cost = upstreamCost && upstreamCost > 0 ? upstreamCost : (openrouterMeta?.usage?.cost ?? 0);
     tokens = resp.usage.outputTokens ?? 0;
@@ -281,10 +294,13 @@ async function runBenchmark(
       correct = gradeOutput(puzzle, err.text);
       tokens = err.usage?.outputTokens ?? 0;
       reasoningTokens = err.usage?.outputTokenDetails?.reasoningTokens ?? null;
-      const generationCost = await fetchGenerationCost(err.response?.id);
-      cost = generationCost ?? 0;
+      const generation = await fetchGenerationDetails(err.response?.id);
+      generationId = err.response?.id ?? null;
+      providerName = generation?.providerName ?? null;
+      quantization = quantizationFor(model.llm.modelId, providerName);
+      cost = generation?.cost ?? 0;
       status = "success";
-      errorMessage = `Schema validation failed${generationCost === null ? " (cost unavailable)" : ""}: ${err.message}`;
+      errorMessage = `Schema validation failed${generation === null ? " (cost unavailable)" : ""}: ${err.message}`;
     } else {
     console.error(
       `[${model.name}] Error:`,
@@ -323,6 +339,9 @@ async function runBenchmark(
     reasoning: model.reasoning,
     outputMode,
     reasoningTokens,
+    providerName,
+    quantization,
+    generationId,
     ...(errorMessage ? { errorMessage } : {}),
   };
 }
@@ -359,6 +378,10 @@ function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean
 
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
+  if (!firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model))) {
+    console.log(`[${model.name}] Skipping: no first-party endpoint in provider-pins.json. Run refresh-provider-pins after endpoint availability changes.`);
+    return [];
+  }
   const puzzlesBySize = groupPuzzlesBySize(plannedPuzzles);
   const successfulPuzzles = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const allResults: BenchmarkResult[] = [];
