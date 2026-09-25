@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
+import { LOGO_CELLS } from "@/components/logo";
 import { getLeaderboard, getModelNames, listPuzzles, SIZES } from "@/lib/data";
 
 // Rendered at build time from results.json, so it follows every export.
@@ -23,9 +24,6 @@ const FOREGROUND = "#FDFDFD";
 const MUTED = "#FDFEFFA6";
 const TRACK = "#FDFDFD0F";
 const BORDER = "#FDFDFD14";
-const BLUE = "#70B8FF";
-const GREEN = "#46FEA5";
-const AMBER = "#FFCA16";
 
 // Same ramp as the leaderboard chart (oklch 0.78/0.14 → 0.45/0.06 at hue 230),
 // interpolated in sRGB because Satori has no oklch support.
@@ -42,13 +40,6 @@ const ROWS = 6;
 // Satori mis-sizes flex-grow tracks with percentage children, so the bar track
 // gets a fixed width: 1072px content minus the name and value columns and gaps.
 const TRACK_WIDTH = 524;
-
-// A 3x3 nonogram as the mark, in the three grid-size colours.
-const LOGO = [
-	[BLUE, BLUE, null],
-	[null, GREEN, GREEN],
-	[AMBER, null, AMBER],
-];
 
 export default function Image() {
 	const top = getLeaderboard().slice(0, ROWS);
@@ -81,7 +72,7 @@ export default function Image() {
 							backgroundColor: "#16171AEB",
 						}}
 					>
-						{LOGO.map((row, y) => (
+						{LOGO_CELLS.map((row, y) => (
 							<div key={y} style={{ display: "flex", gap: 5 }}>
 								{row.map((color, x) => (
 									<div

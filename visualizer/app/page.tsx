@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Logo } from "@/components/logo";
 
 import resultsData from "./results.json";
 import { PUZZLES } from "@/components/puzzles";
@@ -372,8 +373,8 @@ export default function Page() {
 				{/* Header - Resend style with clean typography */}
 				<header className="mb-4">
 					<div className="flex items-center gap-3 mb-3">
-						<div className="p-2.5 bg-foreground/10 rounded-lg border border-border">
-							<GridFour className="size-6 text-foreground" weight="duotone" />
+						<div className="p-2 bg-foreground/10 rounded-lg border border-border">
+							<Logo className="size-7 text-foreground" />
 						</div>
 						<h1 className="text-3xl font-semibold tracking-tight">
 							Nonobench Results
