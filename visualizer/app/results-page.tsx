@@ -4,6 +4,7 @@ import {
   CaretDown,
   Copy,
   DownloadSimple,
+  GridFour,
   GithubLogo,
   Question,
   Rows,
@@ -101,7 +102,7 @@ function IncompleteBadge({ model }: { model: Model }) {
     <Popover>
       <PopoverTrigger
         type="button"
-        className="shrink-0 rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright"
+        className="shrink-0 cursor-pointer rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember hover:bg-ember/20 focus-visible:outline-2 focus-visible:outline-ember-bright"
       >
         incomplete
       </PopoverTrigger>
@@ -317,6 +318,10 @@ export default function ResultsPage({
             <Link href="/puzzles" className={control}>
               <Rows size={16} />
               Explore puzzles
+            </Link>
+            <Link href="/puzzles/overview" className={control}>
+              <GridFour size={16} />
+              Puzzle insights
             </Link>
             <a href="/results-raw.json" download className={control}>
               <DownloadSimple size={16} />
@@ -729,7 +734,7 @@ export default function ResultsPage({
                       95% interval
                     </span>
                   </th>
-                  {results.summary.sizes.map((value) => (
+                  {displayedSizes.map((value) => (
                     <th key={value} className="px-3 py-3">
                       {value}
                     </th>
@@ -757,6 +762,10 @@ export default function ResultsPage({
                     }
                   >
                     {sortButton(perPuzzle ? "Time / puzzle" : "Total time", "time")}
+                    {/* Runs overlap in parallel, so this is summed solve time, not wall-clock. */}
+                    <span className="block text-[10px] font-normal text-dim">
+                      {perPuzzle ? "avg solve time" : "sum of solve times"}
+                    </span>
                   </th>
                 </tr>
               </thead>
@@ -782,7 +791,7 @@ export default function ResultsPage({
                           {(interval.high * 100).toFixed(0)}%)
                         </span>
                       </td>
-                      {results.summary.sizes.map((grid) => {
+                      {displayedSizes.map((grid) => {
                         const entry = model.bySize.find(
                           (row) => row.size === grid && row.runs > 0,
                         );
