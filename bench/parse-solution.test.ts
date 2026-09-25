@@ -6,6 +6,16 @@ describe("parseSolution", () => {
     expect(parseSolution(`${"1".repeat(100)} answer: ${"0".repeat(25)}`, 25)).toBe("0".repeat(25));
   });
 
+  test("prefers the last complete binary answer after a draft", () => {
+    expect(parseSolution(`${"0".repeat(25)}\nFinal answer: ${"1".repeat(25)}`, 25)).toBe("1".repeat(25));
+  });
+
+  test("prefers the last full-size whitespace block when no flat token is present", () => {
+    const draft = Array(25).fill("0").join(" ");
+    const final = Array(25).fill("1").join(" ");
+    expect(parseSolution(`${draft}\nCorrection:\n${final}`, 25)).toBe("1".repeat(25));
+  });
+
   describe("basic extraction", () => {
     test("extracts clean 5x5 solution (25 chars)", () => {
       const raw = "1100010000011001001101010";
