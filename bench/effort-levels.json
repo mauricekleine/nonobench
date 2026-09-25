@@ -37,10 +37,10 @@
       "levels": [
         "low",
         "medium",
-        "high"
-      ],
-      "cap": "high",
-      "capReason": "Benchmark exception: Claude Fable 5.1 stops at high"
+        "high",
+        "xhigh",
+        "max"
+      ]
     },
     "gpt-6-sol": {
       "modelId": "openai/gpt-6-sol",

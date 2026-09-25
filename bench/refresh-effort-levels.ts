@@ -37,9 +37,8 @@ for (const modelId of modelIds) {
   const supported = reasoning?.supported_efforts;
   const effortControl = Array.isArray(supported) && supported.some((level) => level !== "none") &&
     !(supported.length === 2 && supported.includes("high") && supported.includes("none"));
-  const cap = family === "claude-fable-5.1" ? "high" : null;
   const order = ["minimal", "low", "medium", "high", "xhigh", "max"];
-  const levels = effortControl ? order.filter((level) => supported!.includes(level) && (!cap || order.indexOf(level) <= order.indexOf(cap))) : [];
+  const levels = effortControl ? order.filter((level) => supported!.includes(level)) : [];
   families[family] = {
     modelId,
     supportedEfforts: supported ?? null,
@@ -47,7 +46,6 @@ for (const modelId of modelIds) {
     mandatory: reasoning?.mandatory ?? null,
     supportsMaxTokens: reasoning?.supports_max_tokens ?? false,
     levels,
-    ...(cap ? { cap, capReason: "Benchmark exception: Claude Fable 5.1 stops at high" } : {}),
   };
 }
 await Bun.write(new URL("./effort-levels.json", import.meta.url), JSON.stringify({ source, fetchedAt: new Date().toISOString(), families }, null, 2) + "\n");
