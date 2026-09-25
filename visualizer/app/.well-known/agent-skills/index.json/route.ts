@@ -12,7 +12,7 @@ export function GET() {
 				name: "nonobench",
 				type: "skill-md",
 				description:
-					"Look up NonoBench results (how well LLMs solve nonogram puzzles), fetch the benchmark puzzles, and check nonogram solutions.",
+					"Look up Nonobench results (how well LLMs solve nonogram puzzles), fetch the benchmark puzzles, and check nonogram solutions.",
 				url: `${SITE_URL}/.well-known/agent-skills/nonobench/SKILL.md`,
 				digest: `sha256:${createHash("sha256").update(skillMd()).digest("hex")}`,
 			},

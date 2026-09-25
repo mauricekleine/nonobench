@@ -376,7 +376,7 @@ export default function Page() {
 							<GridFour className="size-6 text-foreground" weight="duotone" />
 						</div>
 						<h1 className="text-3xl font-semibold tracking-tight">
-							NonoBench Results
+							Nonobench Results
 						</h1>
 					</div>
 					<p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
@@ -904,7 +904,7 @@ export default function Page() {
 				<footer className="mt-12 pt-8 border-t border-border">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<p className="text-sm text-muted-foreground">
-							NonoBench - Nonogram puzzle benchmark for LLMs
+							Nonobench - Nonogram puzzle benchmark for LLMs
 						</p>
 						<div className="flex items-center gap-5">
 							<a

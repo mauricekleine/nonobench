@@ -14,7 +14,7 @@ import {
 } from "@/lib/data";
 import { checkClues } from "@/lib/nonogram";
 
-export const MCP_SERVER_INFO = { name: "nonobench", title: "NonoBench", version: "1.0.0" };
+export const MCP_SERVER_INFO = { name: "nonobench", title: "Nonobench", version: "1.0.0" };
 
 const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
 
@@ -28,14 +28,14 @@ const size = z
 
 export function createMcpServer() {
 	const server = new McpServer(MCP_SERVER_INFO, {
-		instructions: `NonoBench measures how well LLMs solve nonogram (picross) puzzles: 30 puzzles across ${SIZES.join(", ")} grids. Accuracy is the share of puzzles where the model's grid satisfies every row and column clue. Results last updated ${RESULTS_TIMESTAMP}.`,
+		instructions: `Nonobench measures how well LLMs solve nonogram (picross) puzzles: 30 puzzles across ${SIZES.join(", ")} grids. Accuracy is the share of puzzles where the model's grid satisfies every row and column clue. Results last updated ${RESULTS_TIMESTAMP}.`,
 	});
 
 	server.registerTool(
 		"get_leaderboard",
 		{
 			title: "Get leaderboard",
-			description: "Models ranked by accuracy on NonoBench, overall or for one grid size.",
+			description: "Models ranked by accuracy on Nonobench, overall or for one grid size.",
 			inputSchema: { size },
 			annotations: readOnly,
 		},

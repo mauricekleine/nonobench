@@ -22,11 +22,11 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://www.nonobench.com"),
-	title: "NonoBench – LLM Nonogram Puzzle Solving Benchmark",
+	title: "Nonobench – LLM Nonogram Puzzle Solving Benchmark",
 	description:
 		"Evaluate and compare how well large language models solve Nonogram (Picross) puzzles. Interactive benchmark results, visualizations, and leaderboards for AI reasoning capabilities.",
 	keywords: [
-		"NonoBench",
+		"Nonobench",
 		"Nonogram",
 		"Picross",
 		"LLM benchmark",
@@ -54,14 +54,14 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "en_US",
-		title: "NonoBench – LLM Nonogram Puzzle Solving Benchmark",
+		title: "Nonobench – LLM Nonogram Puzzle Solving Benchmark",
 		description:
 			"Evaluate and compare how well large language models solve Nonogram puzzles. Interactive benchmark results and AI reasoning leaderboards.",
-		siteName: "NonoBench",
+		siteName: "Nonobench",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "NonoBench – LLM Nonogram Puzzle Solving Benchmark",
+		title: "Nonobench – LLM Nonogram Puzzle Solving Benchmark",
 		description:
 			"Evaluate and compare how well large language models solve Nonogram puzzles. Interactive benchmark results and AI reasoning leaderboards.",
 	},

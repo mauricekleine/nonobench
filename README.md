@@ -1,4 +1,4 @@
-# NonoBench
+# Nonobench
 
 A benchmark suite for evaluating LLM reasoning capabilities on Nonogram (Picross) puzzle solving across different grid sizes. Results are published at [nonobench.com](https://nonobench.com).
 
