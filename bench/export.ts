@@ -30,9 +30,10 @@ const successfulRuns = new Set(
 		.map((row) => `${row.model}\u0000${row.puzzle_id}`),
 );
 
-// Runs from before strict structured output have no output_mode (older
-// databases lack the column entirely). A variant is "legacy" when none of its
-// runs used structured output; the site fades those so new runs stand out.
+// Runs from the original benchmark have no output_mode (older databases lack
+// the column entirely). A variant is "legacy" when all of its runs are from
+// that earlier batch; the site fades those so new runs stand out. New runs
+// always record their mode, whether structured output or text.
 const hasOutputMode = db
 	.query<{ name: string }, []>("PRAGMA table_info(runs)")
 	.all()

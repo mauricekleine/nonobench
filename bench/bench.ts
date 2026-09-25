@@ -11,6 +11,7 @@ import {
 import {
   dbPath,
   getPuzzleId,
+  getSizeTally,
   getSuccessfulPuzzlesByModel,
   saveRunToDb,
   type BenchmarkResult,
@@ -144,6 +145,26 @@ function printTable<T extends Record<string, unknown>>(data: T[]): void {
   console.log(`└${"─".repeat(sep.length)}┘`);
 }
 
+// OpenRouter records each generation's cost; stats can lag a few seconds.
+async function fetchGenerationCost(id: string | undefined): Promise<number | null> {
+  if (!id) return null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const response = await fetch(`https://openrouter.ai/api/v1/generation?id=${encodeURIComponent(id)}`, {
+        headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
+      });
+      if (response.ok) {
+        const body = (await response.json()) as { data?: { total_cost?: number } };
+        if (typeof body.data?.total_cost === "number") return body.data.total_cost;
+      }
+    } catch {
+      // Retry below.
+    }
+    await Bun.sleep(3000);
+  }
+  return null;
+}
+
 async function runBenchmark(
   puzzle: Puzzle,
   model: Model
@@ -241,14 +262,16 @@ async function runBenchmark(
   } catch (err: any) {
     if (NoObjectGeneratedError.isInstance(err) && err.text) {
       // The model answered but the SDK could not validate the JSON (e.g. a
-      // truncated response). Grade what it said; cost is not reported here.
+      // truncated response). Grade what it said; the error carries no cost, so
+      // look it up from OpenRouter's generation record.
       rawOutput = err.text;
       correct = gradeOutput(puzzle, err.text);
       tokens = err.usage?.outputTokens ?? 0;
       reasoningTokens = err.usage?.outputTokenDetails?.reasoningTokens ?? null;
-      cost = 0;
+      const generationCost = await fetchGenerationCost(err.response?.id);
+      cost = generationCost ?? 0;
       status = "success";
-      errorMessage = `Schema validation failed (cost unavailable): ${err.message}`;
+      errorMessage = `Schema validation failed${generationCost === null ? " (cost unavailable)" : ""}: ${err.message}`;
     } else {
     console.error(
       `[${model.name}] Error:`,
@@ -321,6 +344,18 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
   const allResults: BenchmarkResult[] = [];
 
   for (const [size, puzzles] of puzzlesBySize) {
+    // A model that answered every 5x5 but solved none with structured output
+    // almost certainly has an output-format problem, not a reasoning one:
+    // stop before spending on larger grids and flag it for a text-mode check.
+    // Counts come from the database, so earlier sessions are included.
+    if (size !== "5x5" && outputModeFor(model) === "json_schema") {
+      const tally = getSizeTally(model.name, "5x5");
+      const fiveByFive = PUZZLES.filter((puzzle) => puzzle.width === 5 && puzzle.height === 5).length;
+      if (tally.answered === fiveByFive && tally.correct === 0) {
+        console.log(`[${model.name}] Stopped: 0/${tally.answered} on 5x5 with structured output; likely a format issue. Check it in text mode.`);
+        return allResults;
+      }
+    }
     // Filter out successfully benchmarked puzzles
     const puzzlesToRun = puzzles
       .slice(0, limit)
@@ -356,6 +391,7 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
       }
       if (reasoningLooksBroken(model, allResults)) {
         console.log(`[${model.name}] Stopped: most runs report zero reasoning tokens; check the endpoint.`);
+        await Promise.all(pending);
         return allResults;
       }
       // Budget guard: stop launching once this session's spend reaches the cap.
@@ -403,14 +439,6 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
       `[${model.name}] Completed ${size}: ${correctCount}/${sizeResults.length} correct, ${failedCount} failed`
     );
 
-    // A model that answers every 5x5 but solves none with structured output
-    // almost certainly has an output-format problem, not a reasoning one:
-    // stop before spending on larger grids and flag it for a text-mode check.
-    const answered = sizeResults.filter((r) => r.status === "success").length;
-    if (size === "5x5" && outputModeFor(model) === "json_schema" && answered === puzzles.length && correctCount === 0) {
-      console.log(`[${model.name}] Stopped: 0/${answered} on 5x5 with structured output; likely a format issue. Check it in text mode.`);
-      return allResults;
-    }
   }
 
   return allResults;

@@ -86,7 +86,7 @@ type ModelData = {
 	provider: string;
 	family: string;
 	effort: string;
-	// True when none of the variant's runs used strict structured output.
+	// True when all of the variant's runs come from the original benchmark batch.
 	legacy: boolean;
 	complete?: boolean;
 	reasoning: boolean;
@@ -238,7 +238,7 @@ function getModelStats(modelData: ModelData) {
 	};
 }
 
-// Earlier (free-text) runs are faded once newer runs exist, so new models stand out.
+// Earlier benchmark runs are faded once newer runs exist, so new models stand out.
 const hasNewRuns = results.byModel.some((model) => !model.legacy);
 
 export type Levels = "best" | "all";
@@ -588,7 +588,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 					</div>
 					{hasNewRuns && (
 						<span className="text-xs text-muted-foreground sm:ml-auto">
-							Faded: earlier runs (free-text answers)
+							Faded: earlier benchmark runs
 						</span>
 					)}
 				</div>

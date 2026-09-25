@@ -106,7 +106,7 @@ export function saveRunToDb(result: BenchmarkResult): void {
       reasoning = excluded.reasoning,
       output_mode = excluded.output_mode,
       reasoning_tokens = excluded.reasoning_tokens
-    WHERE runs.status = 'failed'
+    WHERE runs.status = 'failed' AND runs.output_mode IS NOT NULL
   `).run({
     $model: result.model,
     $puzzle_id: result.puzzleId,
@@ -124,4 +124,17 @@ export function saveRunToDb(result: BenchmarkResult): void {
     $output_mode: result.outputMode,
     $reasoning_tokens: result.reasoningTokens,
   });
+}
+
+// Answered and correct counts for one model at one size, including runs from
+// earlier invocations (so resumed runs are judged on the full set).
+export function getSizeTally(model: string, size: string): { answered: number; correct: number } {
+  const db = openReadDb();
+  const row = db
+    ?.query<{ answered: number; correct: number | null }, [string, string]>(
+      "SELECT COUNT(*) AS answered, SUM(correct) AS correct FROM runs WHERE model = ? AND size = ? AND status = 'success'"
+    )
+    .get(model, size);
+  db?.close();
+  return { answered: row?.answered ?? 0, correct: row?.correct ?? 0 };
 }
