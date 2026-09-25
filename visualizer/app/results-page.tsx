@@ -1,1065 +1,762 @@
 "use client";
 
 import {
-	Brain,
-	CaretDown,
-	CaretUp,
-	CaretUpDown,
-	
-	DownloadSimple,
-	GithubLogo,
-	GridFour,
-	Info,
-	Lightning,
-	Question,
-	Robot,
-	Rows,
-	XLogo,
+  CaretDown,
+  Copy,
+  DownloadSimple,
+  GithubLogo,
+  Question,
+  Rows,
+  XLogo,
 } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import {
-	Bar,
-	BarChart,
-	CartesianGrid,
-	Cell,
-	LabelList,
-	XAxis,
-	YAxis,
-} from "recharts";
+import { useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-	type ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from "@/components/ui/chart";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { selectBestVariants } from "@/lib/select-best-variants";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { NonobenchMark } from "@/components/nonobench-mark";
-
+import { applyFilters, scoreForSize, type Filters } from "@/lib/leaderboard";
+import { PROVIDERS } from "@/lib/providers";
 import resultsData from "./results.json";
-import { PUZZLES } from "@/components/puzzles";
 
 type SizeData = {
-	size: string;
-	accuracy: number;
-	correct: number;
-	failed: number;
-	total: number;
-	runs: number;
-	avgDurationMs: number;
-	totalDurationMs: number;
-	avgTokens: number;
-	totalTokens: number;
-	avgCost: number;
-	totalCost: number;
+  size: string;
+  accuracy: number;
+  correct: number;
+  runs: number;
+  avgDurationMs: number;
+  totalDurationMs: number;
+  avgCost: number;
+  totalCost: number;
 };
-
-type ModelData = {
-	model: string;
-	provider: string;
-	family: string;
-	effort: string;
-	// True when all of the variant's runs come from the original benchmark batch.
-	legacy: boolean;
-	complete?: boolean;
-	// Core puzzles cut off by a provider time limit; they count as unsolved.
-	timeouts?: number;
-	timeoutNote?: string | null;
-	reasoning: boolean;
-	overallAccuracy: number;
-	overallCorrect: number;
-	overallFailed: number;
-	overallTotal: number;
-	overallRuns: number;
-	bySize: SizeData[];
+type Model = {
+  model: string;
+  family: string;
+  effort: string;
+  provider: string;
+  displayName: string;
+  familyDisplayName: string;
+  providerName: string;
+  openWeights: boolean | null;
+  addedAt: string | null;
+  complete: boolean;
+  timeouts: number;
+  timeoutNote: string | null;
+  reasoning: boolean;
+  overallAccuracy: number;
+  overallCorrect: number;
+  overallRuns: number;
+  bySize: SizeData[];
 };
-
-type ErrorMessageData = {
-	message: string;
-	count: number;
-};
-
-type ModelErrorData = {
-	model: string;
-	totalErrors: number;
-	errors: ErrorMessageData[];
-};
-
-type SortColumn = "accuracy" | "totalCost" | "avgCost" | "totalTime" | "avgTime";
-type SortDirection = "asc" | "desc";
-
 type Results = {
-	timestamp: string;
-	summary: {
-		models: string[];
-		sizes: string[];
-		coreSizes?: string[];
-	};
-	byModel: ModelData[];
-	chartData: (SizeData & { model: string; provider: string; family: string; effort: string; legacy: boolean })[];
-	errorsByModel?: ModelErrorData[];
+  timestamp: string;
+  summary: { sizes: string[]; coreSizes: string[] };
+  byModel: Model[];
 };
-
 const results = resultsData as Results;
-const coreSizes = new Set(results.summary.coreSizes ?? ["5x5", "10x10", "15x15"]);
+const coreSizes = new Set(results.summary.coreSizes);
+const allFamilies = [...new Set(results.byModel.map((model) => model.family))];
+const providerGroups = [
+  ...new Set(results.byModel.map((model) => model.provider)),
+]
+  .sort()
+  .map((id) => ({
+    id,
+    families: allFamilies.filter((family) =>
+      results.byModel.some(
+        (model) => model.family === family && model.provider === id,
+      ),
+    ),
+  }));
+const control =
+  "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
+const formatCost = (value: number) =>
+  value < 0.01 ? `$${value.toFixed(4)}` : `$${value.toFixed(2)}`;
+const formatTime = (value: number) =>
+  value < 1000 ? `${Math.round(value)}ms` : `${(value / 1000).toFixed(2)}s`;
 
-const chartConfig = {
-	accuracy: {
-		label: "Accuracy",
-		color: "var(--chart-1)",
-	},
-} satisfies ChartConfig;
-
-// The leaderboard is the ember thread: the top model burns brightest and the
-// ramp cools down the ranks. Bars keep at least 3:1 against the panel.
-const EMBER_HUE = 55;
-
-function rankRamp(rank: number, total: number, [maxLightness, minLightness]: [number, number]): string {
-	const maxChroma = 0.14;
-	const minChroma = 0.05;
-	const t = total > 1 ? rank / (total - 1) : 0;
-	const lightness = maxLightness - t * (maxLightness - minLightness);
-	const chroma = maxChroma - t * (maxChroma - minChroma);
-	return `oklch(${lightness.toFixed(3)} ${chroma.toFixed(3)} ${EMBER_HUE})`;
+function IncompleteBadge({ model }: { model: Model }) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        type="button"
+        className="shrink-0 rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright"
+      >
+        incomplete
+      </PopoverTrigger>
+      <PopoverContent side="bottom">
+        {model.timeouts > 0 ? (
+          <>
+            <strong className="text-foreground">
+              {model.timeouts} puzzles without an answer
+            </strong>
+            <p className="mt-1">
+              {model.timeoutNote ??
+                "The provider ended these requests before the model answered."}{" "}
+              These attempts count as unsolved.
+            </p>
+          </>
+        ) : (
+          <p>
+            Not every puzzle has a finished run yet; the score covers finished
+            runs.
+          </p>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
 }
 
-function getRankColor(rank: number, total: number): string {
-	return rankRamp(rank, total, [0.8, 0.52]);
+function ModelName({
+  model,
+  allLevels = false,
+}: {
+  model: Model;
+  allLevels?: boolean;
+}) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-2">
+      <ProviderLogo
+        provider={model.provider}
+        size={16}
+        className="shrink-0 text-foreground"
+      />
+      <span className="min-w-0 truncate" title={model.displayName}>
+        {allLevels ? model.displayName : model.familyDisplayName}
+      </span>
+      <span className="shrink-0 rounded border border-line-strong px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">
+        {model.effort}
+      </span>
+    </span>
+  );
 }
 
-// Text in the rank colour stays lighter so it clears AA contrast on the panel.
-function getRankTextColor(rank: number, total: number): string {
-	return rankRamp(rank, total, [0.84, 0.68]);
+function stats(model: Model, size?: string) {
+  const rows = size
+    ? model.bySize.filter((row) => row.size === size)
+    : model.bySize.filter((row) => coreSizes.has(row.size));
+  const runs = size ? (rows[0]?.runs ?? 0) : model.overallRuns;
+  return {
+    accuracy: scoreForSize(model, size),
+    correct: size ? (rows[0]?.correct ?? 0) : model.overallCorrect,
+    runs,
+    cost: rows.reduce((sum, row) => sum + row.totalCost, 0),
+    time: rows.reduce((sum, row) => sum + row.totalDurationMs, 0),
+  };
 }
 
-// Explains why a model lacks a finished run on every puzzle. Click/tap to open,
-// so it also works on touch screens.
-function IncompleteBadge({ model }: { model: Pick<ModelData, "timeouts" | "timeoutNote"> }) {
-	const timeouts = model.timeouts ?? 0;
-	return (
-		<Popover>
-			<PopoverTrigger
-				type="button"
-				className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] leading-none text-ember transition-colors duration-150 ease-snap hover:bg-ember/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright"
-				>
-					<span aria-hidden="true" className="size-[5px] rounded-full bg-current" />
-					incomplete
-			</PopoverTrigger>
-			<PopoverContent>
-				{timeouts > 0 ? (
-					<>
-						<p className="mb-1.5 font-medium text-foreground">
-							{timeouts} {timeouts === 1 ? "puzzle" : "puzzles"} without an answer
-						</p>
-						<p>
-							{model.timeoutNote ?? "The provider ended these requests before the model answered."} These attempts
-							count as unsolved, so the score reflects the model as it is served.
-						</p>
-					</>
-				) : (
-					<p>Not every puzzle has a finished run yet; the score covers the finished ones.</p>
-				)}
-			</PopoverContent>
-		</Popover>
-	);
-}
+export default function ResultsPage({
+  filters,
+  onFiltersChange,
+}: {
+  filters: Filters;
+  onFiltersChange: (patch: Partial<Filters>) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [sort, setSort] = useState<{ key: string; desc: boolean }>({
+    key: "accuracy",
+    desc: true,
+  });
+  const [copyDone, setCopyDone] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const selectedFamilies = useMemo(
+    () =>
+      new Set(
+        allFamilies.filter(
+          (family) =>
+            (!filters.families || filters.families.includes(family)) &&
+            (!filters.providers ||
+              results.byModel.some(
+                (model) =>
+                  model.family === family &&
+                  filters.providers!.includes(model.provider),
+              )),
+        ),
+      ),
+    [filters.families, filters.providers],
+  );
+  const chosen = useMemo(
+    () => applyFilters(results.byModel, filters),
+    [filters],
+  );
+  const size = filters.size;
+  const allLevels = filters.effort === "all";
+  const rows = useMemo(
+    () =>
+      [...chosen].sort((a, b) => {
+        const aStats = stats(a, size),
+          bStats = stats(b, size);
+        const aValue =
+          sort.key === "accuracy"
+            ? aStats.accuracy
+            : sort.key === "cost"
+              ? aStats.cost
+              : aStats.time;
+        const bValue =
+          sort.key === "accuracy"
+            ? bStats.accuracy
+            : sort.key === "cost"
+              ? bStats.cost
+              : bStats.time;
+        return (
+          (sort.desc ? bValue - aValue : aValue - bValue) ||
+          a.model.localeCompare(b.model)
+        );
+      }),
+    [chosen, size, sort],
+  );
+  const updateFamilySelection = (next: Set<string>) =>
+    onFiltersChange({
+      providers: undefined,
+      families: next.size === allFamilies.length ? undefined : [...next],
+    });
+  const toggleFamily = (family: string) => {
+    const next = new Set(selectedFamilies);
+    if (next.has(family)) next.delete(family);
+    else next.add(family);
+    updateFamilySelection(next);
+  };
+  const toggleProvider = (provider: string) => {
+    const next = new Set(selectedFamilies);
+    const group = providerGroups.find((entry) => entry.id === provider)!;
+    const all = group.families.every((family) => next.has(family));
+    for (const family of group.families) {
+      if (all) next.delete(family);
+      else next.add(family);
+    }
+    updateFamilySelection(next);
+  };
+  const downloadChart = async () => {
+    if (!chartRef.current) return;
+    const { toPng } = await import("html-to-image");
+    const url = await toPng(chartRef.current, {
+      pixelRatio: 2,
+      backgroundColor: "#11110f",
+    });
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "nonobench-leaderboard.png";
+    link.click();
+  };
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopyDone(true);
+    window.setTimeout(() => setCopyDone(false), 2000);
+  };
+  const sortButton = (label: string, key: string) => (
+    <button
+      type="button"
+      className="hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"
+      onClick={() =>
+        setSort((old) => ({
+          key,
+          desc: old.key === key ? !old.desc : key === "accuracy",
+        }))
+      }
+    >
+      {label}
+      {sort.key === key ? (sort.desc ? " ↓" : " ↑") : ""}
+    </button>
+  );
 
-function EffortBadge({ effort }: { effort: string }) {
-	return <span className="inline-flex shrink-0 rounded-md border border-line-strong px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">{effort}</span>;
-}
-
-function ModelAxisTick({ x, y, label, effort, provider, legacy }: { x?: string | number; y?: string | number; label: string; effort: string; provider: string; legacy: boolean }) {
-	// Effort rides on the same rotated line so it can't collide with neighbouring labels.
-	// The logo sits at the tick, right under its bar; the label ends just before it,
-	// so no text-width estimate is needed.
-	return (
-		<g transform={`translate(${x ?? 0},${y ?? 0}) rotate(-35)`} opacity={hasNewRuns && legacy ? 0.3 : 1}>
-			<ProviderLogo provider={provider} size={13} x={-13} y={-6} fill="var(--muted-foreground)" />
-			<text x={-18} y={4} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>
-				{label}
-				{effort && (
-					<tspan fill="var(--dim)" fontFamily="var(--font-mono)" fontSize={10}>
-						{` · ${effort}`}
-					</tspan>
-				)}
-			</text>
-		</g>
-	);
-}
-
-function formatDuration(ms: number): string {
-	if (ms < 1000) return `${Math.round(ms)}ms`;
-	return `${(ms / 1000).toFixed(2)}s`;
-}
-
-function formatCost(cost: number): string {
-	if (cost < 0.01) return `$${cost.toFixed(4)}`;
-	return `$${cost.toFixed(2)}`;
-}
-
-function getSizeRuns(sizeData: SizeData): number {
-	return sizeData.runs;
-}
-
-function getSizeTotalDuration(sizeData: SizeData): number {
-	return sizeData.totalDurationMs;
-}
-
-function getModelRuns(modelData: ModelData): number {
-	return modelData.overallRuns;
-}
-
-// Helper to get accuracy for a specific size
-function getAccuracyForSize(modelData: ModelData, size: string): number {
-	const sizeData = modelData.bySize.find((s) => s.size === size);
-	return sizeData?.accuracy ?? 0;
-}
-
-// Helper to get stats for a specific size
-function getSizeStats(modelData: ModelData, size: string) {
-	const sizeData = modelData.bySize.find((s) => s.size === size);
-	if (!sizeData || sizeData.runs === 0) return { present: false, accuracy: 0, correct: 0, runs: 0, failed: 0, avgCost: 0, avgTime: 0 };
-	return {
-		present: true,
-		accuracy: sizeData.accuracy,
-		correct: sizeData.correct,
-		runs: getSizeRuns(sizeData),
-		failed: sizeData.failed,
-		avgCost: sizeData.avgCost,
-		avgTime: sizeData.avgDurationMs,
-	};
-}
-
-// Helper to get model stats
-function getModelStats(modelData: ModelData) {
-	const totalDuration = modelData.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + getSizeTotalDuration(s), 0);
-	const totalCost = modelData.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + s.totalCost, 0);
-	const runs = getModelRuns(modelData);
-	const avgDuration = runs > 0 ? totalDuration / runs : 0;
-	const avgCost = runs > 0 ? totalCost / runs : 0;
-
-	return {
-		avgDuration,
-		totalDuration,
-		totalCost,
-		avgCost,
-		totalFailed: modelData.overallFailed,
-		runs,
-		correct: modelData.overallCorrect,
-		accuracy: modelData.overallAccuracy,
-	};
-}
-
-// Earlier benchmark runs are faded once newer runs exist, so new models stand out.
-const hasNewRuns = results.byModel.some((model) => !model.legacy);
-
-export type Levels = "best" | "all";
-
-// Levels come in as a prop so the default view can be server-rendered; the
-// URL-bound wrapper in results-page-url.tsx takes over after hydration.
-export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels; onLevelsChange: (levels: Levels) => void }) {
-	const [selectedSize, setSelectedSize] = useState<string>("all");
-	const showAllLevels = levels === "all";
-	const [aboutOpen, setAboutOpen] = useState(false);
-	const [sortColumn, setSortColumn] = useState<SortColumn>("accuracy");
-	const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-	const [showReasoning, setShowReasoning] = useState(true);
-	const [showNonReasoning, setShowNonReasoning] = useState(true);
-
-	const handleSort = (column: SortColumn) => {
-		if (sortColumn === column) {
-			setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-		} else {
-			setSortColumn(column);
-			setSortDirection(column === "accuracy" ? "desc" : "asc");
-		}
-	};
-
-	const getSortIcon = (column: SortColumn) => {
-		if (sortColumn !== column) {
-			return <CaretUpDown className="size-3 text-muted-foreground/50" />;
-		}
-		return sortDirection === "asc" ? (
-			<CaretUp className="size-3 text-primary" weight="bold" />
-		) : (
-			<CaretDown className="size-3 text-primary" weight="bold" />
-		);
-	};
-
-	const sizes = useMemo(() => ["all", ...new Set(PUZZLES.map((puzzle) => `${puzzle.width}x${puzzle.height}`))], []);
-
-	// Apply type filters before selecting each family's best variant.
-	const filteredVariants = useMemo(() => {
-		return results.byModel.filter((model) => {
-			const isReasoning = model.reasoning;
-			if (isReasoning && !showReasoning) return false;
-			if (!isReasoning && !showNonReasoning) return false;
-			return true;
-		});
-	}, [showReasoning, showNonReasoning]);
-	const filteredModels = useMemo(
-		() => showAllLevels ? filteredVariants : selectBestVariants(filteredVariants),
-		[filteredVariants, showAllLevels],
-	);
-
-	const chartData = useMemo(() => {
-		const getChartModelStats = (model: ModelData) => {
-			const displayName = showAllLevels ? model.model : model.family;
-			if (selectedSize === "all") {
-				const totalDuration = model.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + getSizeTotalDuration(s), 0);
-				const totalCost = model.bySize.filter((size) => coreSizes.has(size.size)).reduce((sum, s) => sum + s.totalCost, 0);
-				const runs = getModelRuns(model);
-				return {
-					model: model.model,
-					displayName,
-					effort: model.effort,
-					accuracy: model.overallAccuracy,
-					correct: model.overallCorrect,
-					total: runs,
-					avgDuration: runs > 0 ? totalDuration / runs : 0,
-					totalCost,
-				};
-			}
-
-			const sizeData = model.bySize.find((s) => s.size === selectedSize);
-			if (!sizeData) {
-				return {
-					model: model.model,
-					displayName,
-					effort: model.effort,
-					accuracy: 0,
-					correct: 0,
-					total: 0,
-					avgDuration: 0,
-					totalCost: 0,
-				};
-			}
-			return {
-				model: model.model,
-			displayName,
-			effort: model.effort,
-				accuracy: sizeData.accuracy,
-				correct: sizeData.correct,
-				total: getSizeRuns(sizeData),
-				avgDuration: sizeData.avgDurationMs,
-				totalCost: sizeData.totalCost,
-			};
-		};
-
-		const data = filteredModels
-			.filter((model) => selectedSize === "all" || model.bySize.some((size) => size.size === selectedSize && size.runs > 0))
-			.map((model) => ({ ...getChartModelStats(model), provider: model.provider, legacy: model.legacy }));
-
-		// Sort by accuracy (highest first), then alphabetically for ties
-		const sorted = data.sort((a, b) => {
-			const diff = b.accuracy - a.accuracy;
-			if (diff !== 0) return diff;
-			return a.model.localeCompare(b.model);
-		});
-		return sorted.map((item, rank) => ({
-			...item,
-			fill: getRankColor(rank, sorted.length),
-		}));
-	}, [selectedSize, filteredModels, showAllLevels]);
-
-	const sortedModels = useMemo(() => {
-		return [...filteredModels].sort((a, b) => {
-			const statsA = getModelStats(a);
-			const statsB = getModelStats(b);
-
-			let comparison = 0;
-			switch (sortColumn) {
-				case "accuracy":
-					comparison = statsA.accuracy - statsB.accuracy;
-					break;
-				case "totalCost":
-					comparison = statsA.totalCost - statsB.totalCost;
-					break;
-				case "avgCost":
-					comparison = statsA.avgCost - statsB.avgCost;
-					break;
-				case "totalTime":
-					comparison = statsA.totalDuration - statsB.totalDuration;
-					break;
-				case "avgTime":
-					comparison = statsA.avgDuration - statsB.avgDuration;
-					break;
-			}
-
-			const primaryResult = sortDirection === "asc" ? comparison : -comparison;
-
-			// Secondary sort: alphabetically by model name when primary values are equal
-			if (primaryResult === 0) {
-				return a.model.localeCompare(b.model);
-			}
-
-			return primaryResult;
-		});
-	}, [sortColumn, sortDirection, filteredModels]);
-
-	// Calculate max accuracy for each size column (for highlighting)
-	const maxAccuracyBySize = useMemo(() => {
-		const sizes = ["5x5", "10x10", "15x15", "20x20"] as const;
-		const maxValues: Record<string, number> = {};
-
-		for (const size of sizes) {
-			maxValues[size] = Math.max(
-				0, // Ensure at least 0 if filteredModels is empty
-				...filteredModels.map((model) => getAccuracyForSize(model, size))
-			);
-		}
-
-		return maxValues;
-	}, [filteredModels]);
-
-	// Calculate benchmark stats
-	const benchmarkStats = useMemo(() => {
-		const totalModels = filteredModels.length;
-		const puzzlesPerModel = (results.summary.coreSizes ?? ["5x5", "10x10", "15x15"]).reduce(
-			(sum, size) => sum + PUZZLES.filter((puzzle) => `${puzzle.width}x${puzzle.height}` === size).length, 0);
-		const extendedPuzzles = PUZZLES.length - puzzlesPerModel;
-		const totalRuns = filteredVariants.reduce((sum, model) =>
-			sum + model.bySize.reduce((sizeSum, size) => sizeSum + size.runs, 0), 0);
-		return { totalModels, totalVariants: filteredVariants.length, totalPuzzles: puzzlesPerModel, extendedPuzzles, totalRuns };
-	}, [filteredModels, filteredVariants]);
-
-	return (
-		<div className="min-h-screen bg-background">
-			{/* Film grain, nonogram paper and the ember glow behind the header */}
-			<div className="noise-overlay" />
-			<div className="fixed inset-0 grid-pattern pointer-events-none" />
-			<div className="fixed inset-0 atmosphere pointer-events-none" />
-
-			<div className="relative max-w-7xl mx-auto px-6 py-12">
-				{/* Header: the wordmark next to its own solved nonogram */}
-				<header className="mb-4">
-					<div className="nono-trigger flex w-fit items-end gap-4 mb-4">
-						<NonobenchMark />
-						<h1 className="font-display text-3xl sm:text-4xl font-semibold lowercase leading-none tracking-[-0.02em] pb-px">
-							nonobench<span className="sr-only"> results</span>
-						</h1>
-					</div>
-					<p className="text-muted-foreground max-w-2xl text-base leading-relaxed text-pretty">
-						Benchmark results for LLM performance on Nonogram puzzle solving.
-						Comparing accuracy, speed, and cost across different grid sizes.
-					</p>
-
-					<div className="flex flex-wrap items-center gap-x-6 gap-y-2 my-5">
-						<div className="flex items-center gap-2 text-sm">
-							<GridFour className="size-4 text-dim" weight="duotone" />
-							<span className="text-muted-foreground">Puzzles:</span>
-							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalPuzzles} core + {benchmarkStats.extendedPuzzles} extended</span>
-						</div>
-						<div className="flex items-center gap-2 text-sm">
-							<Robot className="size-4 text-dim" weight="duotone" />
-							<span className="text-muted-foreground">Models:</span>
-							<span className="font-mono font-medium text-foreground">
-								{benchmarkStats.totalModels}
-								{!showAllLevels && <span className="text-muted-foreground"> ({benchmarkStats.totalVariants} variants)</span>}
-							</span>
-						</div>
-						<div className="flex items-center gap-2 text-sm">
-							<Lightning className="size-4 text-dim" weight="duotone" />
-							<span className="text-muted-foreground">Total runs:</span>
-							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalRuns}</span>
-						</div>
-					</div>
-
-					{/* Actions */}
-					<Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
-						<div className="flex flex-wrap items-center gap-2 mt-4">
-							<CollapsibleTrigger type="button" className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
-								<Question className="size-4" weight="bold" />
-								<span>What are Nonograms?</span>
-								<CaretDown
-									className={`size-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
-								/>
-							</CollapsibleTrigger>
-
-							<Link
-								href="/puzzles"
-								className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all whitespace-nowrap"
-							>
-								<Rows className="size-4" weight="bold" />
-								<span>Explore puzzles</span>
-							</Link>
-
-							<DropdownMenu>
-								<DropdownMenuTrigger type="button" className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
-									<DownloadSimple className="size-4" weight="bold" />
-									<span>Download results</span>
-									<CaretDown className="size-3" />
-								</DropdownMenuTrigger>
-								<DropdownMenuContent className="w-fit" align="start">
-									<DropdownMenuItem
-										onClick={() => {
-											const blob = new Blob([JSON.stringify(results, null, 2)], {
-												type: "application/json",
-											});
-											const url = URL.createObjectURL(blob);
-											const a = document.createElement("a");
-											a.href = url;
-											a.download = "nonobench-results.json";
-											a.click();
-											URL.revokeObjectURL(url);
-										}}
-									>
-										Download aggregated results
-									</DropdownMenuItem>
-									<DropdownMenuItem
-										onClick={() => {
-											const a = document.createElement("a");
-										a.href = "/results-raw.json";
-										a.download = "nonobench-results-raw.json";
-										a.click();
-										}}
-									>
-										Download raw results
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
-
-						<CollapsibleContent>
-							<div className="mt-3 p-5 rounded-lg bg-foreground/5 border border-border text-sm text-muted-foreground space-y-3 leading-relaxed">
-								<p>
-									<strong className="text-foreground">Nonograms</strong> (also
-									known as Picross, Griddlers, or Paint by Numbers) are logic
-									puzzles where you fill in cells on a grid based on numeric
-									clues provided for each row and column.
-								</p>
-								<p>
-									Each clue indicates the lengths of consecutive filled cells in
-									that row or column. For example, a clue of &ldquo;3 1&rdquo; means there
-									are exactly 3 consecutive filled cells, followed by at least
-									one empty cell, then 1 filled cell.
-								</p>
-								<p>
-									This benchmark tests how well LLMs can solve these puzzles
-									across different grid sizes (5×5, 10×10, 15×15), measuring
-									accuracy, response time, and cost.
-								</p>
-								<p>
-									An answer counts as correct when it satisfies every row and
-									column clue. Some puzzles have more than one valid solution,
-									so answers are checked against the clues rather than a single
-									stored solution.
-								</p>
-								<a
-									href="https://en.wikipedia.org/wiki/Nonogram"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1.5 text-ember underline-offset-3 hover:text-ember-bright hover:underline"
-								>
-									Learn more on Wikipedia
-									<Info className="size-3" />
-								</a>
-							</div>
-						</CollapsibleContent>
-					</Collapsible>
-					<p className="text-xs text-dim mt-6 font-mono">
-						Last updated: {new Date(results.timestamp).toLocaleString()}
-					</p>
-				</header>
-
-				{/* Model type filters */}
-				<div className="flex flex-wrap items-center gap-5 my-5 p-4 rounded-lg bg-foreground/5 border border-border">
-					<span className="text-sm text-muted-foreground font-medium">Filter by model type:</span>
-					<div className="flex items-center gap-2">
-						<Checkbox
-							id="reasoning"
-							checked={showReasoning}
-							onCheckedChange={(checked) => setShowReasoning(checked === true)}
-						/>
-						<Label htmlFor="reasoning" className="text-sm cursor-pointer flex items-center gap-1.5">
-							Reasoning models
-						</Label>
-					</div>
-					<div className="flex items-center gap-2">
-						<Checkbox
-							id="non-reasoning"
-							checked={showNonReasoning}
-							onCheckedChange={(checked) => setShowNonReasoning(checked === true)}
-						/>
-						<Label htmlFor="non-reasoning" className="text-sm cursor-pointer">
-							Non-reasoning models
-						</Label>
-					</div>
-					<div className="flex items-center gap-2">
-						<Checkbox
-							id="all-levels"
-							checked={showAllLevels}
-							onCheckedChange={(checked) => onLevelsChange(checked === true ? "all" : "best")}
-						/>
-						<Label htmlFor="all-levels" className="text-sm cursor-pointer">Show all reasoning levels</Label>
-					</div>
-					{hasNewRuns && (
-						<span className="text-xs text-muted-foreground sm:ml-auto">
-							Faded: earlier benchmark runs
-						</span>
-					)}
-				</div>
-
-				{/* Main Chart */}
-				<section className="mb-10">
-					<Card className="pb-0">
-						<CardHeader>
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-								<div>
-									<CardTitle>
-										<h2 className="font-display text-base font-medium lowercase tracking-[-0.01em]">model accuracy</h2>
-									</CardTitle>
-								</div>
-								<div className="flex items-center gap-2">
-									<span className="text-xs text-muted-foreground">
-										Size:
-									</span>
-									<Select
-										value={selectedSize}
-										onValueChange={(value) => setSelectedSize(value ?? "all")}
-										modal={false}
-									>
-										<SelectTrigger className="w-36" aria-label="Chart grid size">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{sizes.map((size) => (
-											<SelectItem key={size} value={size}>
-												{size === "all" ? "Core overall" : size}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
-						</CardHeader>
-						<CardContent>
-							{chartData.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">No {selectedSize} runs yet.</p>}
-							<div className={cn("overflow-x-auto -mx-6 px-6 pb-6", chartData.length === 0 && "hidden")}>
-								<ChartContainer
-									config={chartConfig}
-									className="h-[400px]"
-									style={{ minWidth: `${Math.max(500, chartData.length * 46)}px` }}
-								>
-									<BarChart
-										data={chartData}
-										margin={{ top: 30, right: 20, bottom: 60, left: showAllLevels ? 20 : 110 }}
-									>
-										<CartesianGrid
-											vertical={false}
-											strokeDasharray="3 3"
-											stroke="var(--border)"
-										/>
-										<XAxis
-											dataKey="model"
-											axisLine={false}
-											tickLine={false}
-								tick={(props) => {
-												const item = chartData.find((entry) => entry.model === props.payload.value);
-												return <ModelAxisTick {...props} label={item?.displayName ?? props.payload.value} effort={showAllLevels ? "" : item?.effort ?? ""} provider={item?.provider ?? ""} legacy={item?.legacy ?? false} />;
-											}}
-											interval={0}
-											height={showAllLevels ? 80 : 100}
-										/>
-										<YAxis
-											domain={[0, 100]}
-											tickFormatter={(v) => `${v}%`}
-											axisLine={false}
-											tickLine={false}
-											width={45}
-										/>
-										<ChartTooltip
-											content={
-												<ChartTooltipContent
-													hideLabel
-													hideIndicator
-													formatter={(value, name, props) => (
-														<div className="flex flex-col gap-0.5">
-															<span className="flex items-center gap-1.5 font-medium">
-																<ProviderLogo provider={props.payload.provider} size={14} className="shrink-0" />
-																	{props.payload.displayName}
-																</span>
-															{!showAllLevels && <EffortBadge effort={props.payload.effort} />}
-															{hasNewRuns && props.payload.legacy && (
-																<span className="text-muted-foreground">Earlier run</span>
-															)}
-															<span className="text-muted-foreground">
-																{props.payload.correct}/{props.payload.total}{" "}
-																solved ({Number(value).toFixed(1)}%)
-															</span>
-														</div>
-													)}
-												/>
-											}
-										/>
-										<Bar dataKey="accuracy" radius={[4, 4, 0, 0]}>
-											{chartData.map((entry, index) => (
-												<Cell key={`cell-${index}`} fill={entry.fill} fillOpacity={hasNewRuns && entry.legacy ? 0.3 : 1} />
-											))}
-											<LabelList
-												dataKey="accuracy"
-												position="top"
-												formatter={(v) => `${Number(v).toFixed(0)}%`}
-												className="fill-foreground font-mono text-xs font-semibold"
-											/>
-										</Bar>
-									</BarChart>
-								</ChartContainer>
-							</div>
-						</CardContent>
-					</Card>
-				</section>
-
-				{/* Per-Model Stats (Table) */}
-				<section>
-					<h2 className="font-display text-base font-medium lowercase tracking-[-0.01em] mb-4">
-						detailed model statistics
-					</h2>
-					<div className="rounded-lg border border-border bg-card overflow-hidden">
-						<div className="overflow-x-auto">
-							<table className="w-full text-sm">
-								<thead>
-									{/* Group header row */}
-									<tr className="border-b border-border bg-foreground/5">
-										<th
-											rowSpan={2}
-											className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-foreground/5 backdrop-blur-sm text-left font-medium px-4 py-3 border-r border-border align-bottom"
-										>
-											Model
-										</th>
-										<th
-											rowSpan={2}
-											aria-sort={sortColumn === "accuracy" ? sortDirection === "asc" ? "ascending" : "descending" : "none"}
-											className="text-left font-medium px-4 py-3 whitespace-nowrap align-bottom border-r border-border/50"
-										>
-											<button type="button" onClick={() => handleSort("accuracy")} className="flex items-center gap-1 cursor-pointer hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
-												Overall (core)
-												{getSortIcon("accuracy")}
-											</button>
-										</th>
-										<th
-											colSpan={5}
-											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-[#70B8FF]/10"
-										>
-											5×5
-										</th>
-										<th
-											colSpan={5}
-											className="text-center font-medium px-4 py-2 whitespace-nowrap border-r border-border/50 bg-[#46FEA5]/10"
-										>
-											10×10
-										</th>
-										<th
-											colSpan={5}
-											className="text-center font-medium px-4 py-2 whitespace-nowrap bg-[#FFCA16]/10"
-										>
-											15×15
-										</th>
-										<th colSpan={5} className="text-center font-medium px-4 py-2 whitespace-nowrap bg-[#C69CFF]/10">20×20</th>
-									</tr>
-									{/* Sub-header row */}
-									<tr className="border-b border-border bg-foreground/[0.03] text-xs">
-										{/* 5×5 columns */}
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Accuracy</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Runs</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Correct</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5">Avg cost</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#70B8FF]/5 border-r border-border/50">Avg time</th>
-										{/* 10×10 columns */}
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Accuracy</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Runs</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Correct</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5">Avg cost</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#46FEA5]/5 border-r border-border/50">Avg time</th>
-										{/* 15×15 columns */}
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Accuracy</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Runs</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Correct</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Avg cost</th>
-										<th className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#FFCA16]/5">Avg time</th>
-										{["Accuracy", "Runs", "Correct", "Avg cost", "Avg time"].map((label) => (
-											<th key={`20x20-${label}`} className="text-left font-medium px-3 py-2 whitespace-nowrap bg-[#C69CFF]/5">{label}</th>
-										))}
-									</tr>
-								</thead>
-								<tbody>
-									{sortedModels.map((modelData, index) => {
-										const stats = getModelStats(modelData);
-										const stats5x5 = getSizeStats(modelData, "5x5");
-										const stats10x10 = getSizeStats(modelData, "10x10");
-										const stats15x15 = getSizeStats(modelData, "15x15");
-										const stats20x20 = getSizeStats(modelData, "20x20");
-										const rowColor = getRankColor(index, sortedModels.length);
-										const rowTextColor = getRankTextColor(index, sortedModels.length);
-
-										const renderAccuracyCell = (sizeStats: ReturnType<typeof getSizeStats>, size: string, bgClass: string) => {
-											const isMax = sizeStats.accuracy > 0 && sizeStats.accuracy === maxAccuracyBySize[size];
-											return (
-												<td className={`text-left px-3 py-3.5 ${bgClass}`}>
-													<span
-														className="font-mono text-muted-foreground"
-														style={isMax ? {
-															textDecoration: "underline",
-															textDecorationColor: rowColor,
-															textUnderlineOffset: "3px",
-															textDecorationThickness: "2px",
-														} : undefined}
-													>
-														{sizeStats.present ? `${sizeStats.accuracy.toFixed(0)}%` : "—"}
-													</span>
-												</td>
-											);
-										};
-
-										return (
-											<tr
-												key={modelData.model}
-												className={cn(
-													"border-b border-border last:border-b-0 hover:bg-foreground/[0.03] transition-colors",
-													hasNewRuns && modelData.legacy && "opacity-45 hover:opacity-100",
-												)}
-											>
-												<td className="sticky w-48 max-w-48 sm:max-w-fit sm:w-fit left-0 bg-card/50 backdrop-blur-sm px-4 py-3.5 border-r border-border">
-													<div className="flex items-center gap-2.5">
-														<ProviderLogo provider={modelData.provider} size={16} className="shrink-0 text-foreground" />
-														<span className="font-medium truncate">
-															{showAllLevels ? modelData.model : modelData.family}
-														</span>
-														{!showAllLevels && <EffortBadge effort={modelData.effort} />}
-														{modelData.complete === false && <IncompleteBadge model={modelData} />}
-														{modelData.reasoning && (
-															<Tooltip>
-																<TooltipTrigger>
-																	<Brain className="size-3.5 text-muted-foreground shrink-0" weight="duotone" />
-																</TooltipTrigger>
-																<TooltipContent>
-																	<p>Reasoning model</p>
-																</TooltipContent>
-															</Tooltip>
-														)}
-													</div>
-												</td>
-												<td className="text-left px-4 py-3.5 border-r border-border/50">
-													<span className="font-mono" style={{ color: rowTextColor }}>
-														{stats.accuracy.toFixed(1)}%
-													</span>
-												</td>
-												{/* 5×5 columns */}
-												{renderAccuracyCell(stats5x5, "5x5", "bg-[#70B8FF]/5")}
-												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5">
-													<span className="font-mono text-muted-foreground text-xs">{stats5x5.runs}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5">
-													<span className="font-mono text-muted-foreground text-xs">{stats5x5.correct}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5">
-													<span className="font-mono text-muted-foreground text-xs">{formatCost(stats5x5.avgCost)}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#70B8FF]/5 border-r border-border/50">
-													<span className="font-mono text-muted-foreground text-xs">{formatDuration(stats5x5.avgTime)}</span>
-												</td>
-												{/* 10×10 columns */}
-												{renderAccuracyCell(stats10x10, "10x10", "bg-[#46FEA5]/5")}
-												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5">
-													<span className="font-mono text-muted-foreground text-xs">{stats10x10.runs}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5">
-													<span className="font-mono text-muted-foreground text-xs">{stats10x10.correct}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5">
-													<span className="font-mono text-muted-foreground text-xs">{formatCost(stats10x10.avgCost)}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#46FEA5]/5 border-r border-border/50">
-													<span className="font-mono text-muted-foreground text-xs">{formatDuration(stats10x10.avgTime)}</span>
-												</td>
-												{/* 15×15 columns */}
-												{renderAccuracyCell(stats15x15, "15x15", "bg-[#FFCA16]/5")}
-												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
-													<span className="font-mono text-muted-foreground text-xs">{stats15x15.runs}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
-													<span className="font-mono text-muted-foreground text-xs">{stats15x15.correct}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
-													<span className="font-mono text-muted-foreground text-xs">{formatCost(stats15x15.avgCost)}</span>
-												</td>
-												<td className="text-left px-3 py-3.5 bg-[#FFCA16]/5">
-													<span className="font-mono text-muted-foreground text-xs">{formatDuration(stats15x15.avgTime)}</span>
-												</td>
-											{renderAccuracyCell(stats20x20, "20x20", "bg-[#C69CFF]/5")}
-											{[
-												stats20x20.present ? stats20x20.runs : "—",
-												stats20x20.present ? stats20x20.correct : "—",
-												stats20x20.present ? formatCost(stats20x20.avgCost) : "—",
-												stats20x20.present ? formatDuration(stats20x20.avgTime) : "—",
-											].map((value, index) => (
-												<td key={`20x20-${index}`} className="text-left px-3 py-3.5 bg-[#C69CFF]/5">
-													<span className="font-mono text-muted-foreground text-xs">{value}</span>
-												</td>
-											))}
-											</tr>
-										);
-									})}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</section>
-
-				{/* Per-size stats */}
-				<section className="mt-12">
-					<h2 className="font-display text-base font-medium lowercase tracking-[-0.01em] mb-5">
-						statistics by grid size
-					</h2>
-					<div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-						{sizes.slice(1).map((size, index) => {
-							// Use the same variants shown in the chart and table.
-							const filteredModelNames = new Set(filteredModels.map((m) => m.model));
-							const sizeStats = results.chartData.filter(
-								(d) => d.size === size && d.runs > 0 && filteredModelNames.has(d.model),
-							);
-							const totalCorrect = sizeStats.reduce(
-								(sum, s) => sum + s.correct,
-								0,
-							);
-							const totalRuns = sizeStats.reduce(
-								(sum, s) => sum + getSizeRuns(s),
-								0,
-							);
-							// Skip tiers nobody has run yet (e.g. 20x20 before its first runs).
-							if (totalRuns === 0) return null;
-							const avgAccuracy = totalRuns > 0 ? (totalCorrect / totalRuns) * 100 : 0;
-							const totalDuration = sizeStats.reduce(
-								(sum, s) => sum + getSizeTotalDuration(s),
-								0,
-							);
-							const avgDuration = totalRuns > 0 ? totalDuration / totalRuns : 0;
-							const totalCost = sizeStats.reduce(
-								(sum, s) => sum + s.totalCost,
-								0,
-							);
-							const avgCost = totalRuns > 0 ? totalCost / totalRuns : 0;
-
-							// Grid-size colours: data categories, shared with the table and the explorer
-							const sizeColors = ["#70B8FF", "#46FEA5", "#FFCA16", "#C69CFF"];
-
-							return (
-								<Card key={size} className="overflow-hidden">
-									<CardHeader className="pb-3">
-										<CardTitle className="flex items-center gap-3">
-											<div
-												className="px-2.5 py-1 rounded font-mono text-sm font-semibold"
-												style={{ backgroundColor: `${sizeColors[index]}20`, color: sizeColors[index] }}
-											>
-												{size}
-											</div>
-											<span className="text-muted-foreground font-normal">{sizeStats.length} models</span>
-										</CardTitle>
-									</CardHeader>
-									<CardContent>
-										<div className="grid grid-cols-2 gap-4 mb-5">
-											<div>
-												<p className="text-muted-foreground text-xs mb-1">
-													Avg accuracy
-												</p>
-												<p className="font-display text-2xl font-medium tabular-nums tracking-[-0.02em]">
-													{totalRuns > 0 ? `${avgAccuracy.toFixed(1)}%` : "—"}
-												</p>
-											</div>
-											<div>
-												<p className="text-muted-foreground text-xs mb-1">Solved</p>
-												<p className="font-display text-2xl font-medium tabular-nums tracking-[-0.02em]">
-													{totalCorrect}
-													<span className="font-mono text-muted-foreground text-sm tracking-normal">
-														/{totalRuns}
-													</span>
-												</p>
-											</div>
-										</div>
-
-										<div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-											<div>
-												<p className="text-muted-foreground text-xs mb-1">
-													Avg time
-												</p>
-												<p className="font-mono text-sm font-medium">
-													{formatDuration(avgDuration)}
-												</p>
-											</div>
-											<div>
-												<p className="text-muted-foreground text-xs mb-1">
-													Avg cost
-												</p>
-												<p className="font-mono text-sm font-medium">
-													{formatCost(avgCost)}
-												</p>
-											</div>
-										</div>
-									</CardContent>
-								</Card>
-							);
-						})}
-					</div>
-				</section>
-
-				{/* Footer */}
-				<footer className="mt-12 pt-8 border-t border-border">
-					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-						<p className="text-sm text-muted-foreground">
-							Nonobench - Nonogram puzzle benchmark for LLMs
-						</p>
-						<div className="flex items-center gap-5">
-							<a
-								href="https://github.com/mauricekleine/nono-bench"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-							>
-								<GithubLogo className="size-4" weight="bold" />
-								<span>GitHub</span>
-							</a>
-							<a
-								href="https://x.com/mauricekleine"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-							>
-								<XLogo className="size-4" weight="bold" />
-								<span>@mauricekleine</span>
-							</a>
-						</div>
-					</div>
-				</footer>
-			</div>
-		</div>
-	);
+  return (
+    <div className="min-h-screen overflow-x-clip bg-background">
+      <div className="noise-overlay" />
+      <div className="pointer-events-none fixed inset-0 grid-pattern" />
+      <div className="pointer-events-none fixed inset-0 atmosphere" />
+      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
+        <header className="mb-8">
+          <div className="nono-trigger mb-4 flex w-fit items-end gap-4">
+            <NonobenchMark />
+            <h1 className="pb-px font-display text-3xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
+              nonobench<span className="sr-only"> results</span>
+            </h1>
+          </div>
+          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
+            Benchmark results for LLM performance on Nonogram puzzle solving.
+            Compare accuracy, speed, and cost across grid sizes.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-dim">
+            <span>{allFamilies.length} model families</span>
+            <span>{results.byModel.length} variants</span>
+            <span>
+              Updated {new Date(results.timestamp).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={control}
+              onClick={() => setAboutOpen(!aboutOpen)}
+              aria-expanded={aboutOpen}
+            >
+              <Question size={16} />
+              What are Nonograms?
+              <CaretDown size={13} />
+            </button>
+            <Link href="/puzzles" className={control}>
+              <Rows size={16} />
+              Explore puzzles
+            </Link>
+            <a href="/results-raw.json" download className={control}>
+              <DownloadSimple size={16} />
+              Raw results
+            </a>
+          </div>
+          {aboutOpen && (
+            <div className="mt-3 max-w-2xl rounded-lg border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
+              Nonograms are logic puzzles solved by filling cells according to
+              row and column clues. A model scores when its answer satisfies
+              every clue. The headline score covers 5×5, 10×10 and 15×15
+              puzzles.
+            </div>
+          )}
+        </header>
+        <div
+          aria-label="Leaderboard filters"
+          className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-foreground/5 p-3"
+        >
+          <Popover>
+            <PopoverTrigger type="button" className={control}>
+              Models{" "}
+              <span className="font-mono text-xs text-muted-foreground">
+                {selectedFamilies.size} of {allFamilies.length}
+              </span>
+              <CaretDown size={13} />
+            </PopoverTrigger>
+            <PopoverContent
+              side="bottom"
+              className="w-[min(24rem,calc(100vw-2rem))] p-0"
+            >
+              <div className="border-b border-border p-3">
+                <label htmlFor="model-search" className="sr-only">
+                  Search models
+                </label>
+                <input
+                  id="model-search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search models or providers"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ember"
+                />
+                <div className="mt-2 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => updateFamilySelection(new Set(allFamilies))}
+                    className="text-ember hover:underline"
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateFamilySelection(new Set())}
+                    className="text-ember hover:underline"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onFiltersChange({
+                        providers: undefined,
+                        families: undefined,
+                        effort: "best",
+                        reasoning: undefined,
+                        openWeights: undefined,
+                        size: undefined,
+                      });
+                      setSearch("");
+                    }}
+                    className="text-ember hover:underline"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              <div className="max-h-80 overflow-y-auto p-3">
+                {providerGroups.map((group) => {
+                  const families = group.families.filter((family) =>
+                    `${family} ${results.byModel.find((model) => model.family === family)?.familyDisplayName ?? ""} ${group.id}`
+                      .toLowerCase()
+                      .includes(search.toLowerCase()),
+                  );
+                  if (!families.length) return null;
+                  const selectedCount = group.families.filter((family) =>
+                    selectedFamilies.has(family),
+                  ).length;
+                  return (
+                    <div key={group.id} className="mb-3">
+                      <label className="flex items-center gap-2 py-1 text-sm font-medium text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={selectedCount === group.families.length}
+                          ref={(node) => {
+                            if (node)
+                              node.indeterminate =
+                                selectedCount > 0 &&
+                                selectedCount < group.families.length;
+                          }}
+                          onChange={() => toggleProvider(group.id)}
+                        />
+                        <ProviderLogo provider={group.id} size={15} />
+                        {PROVIDERS[group.id]?.name ?? group.id}
+                        <span className="ml-auto font-mono text-xs text-dim">
+                          {selectedCount}/{group.families.length}
+                        </span>
+                      </label>
+                      {families.map((family) => (
+                        <label
+                          key={family}
+                          className="ml-5 flex items-center gap-2 py-1 text-xs text-muted-foreground"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedFamilies.has(family)}
+                            onChange={() => toggleFamily(family)}
+                          />
+                          <span className="truncate">
+                            {results.byModel.find(
+                              (model) => model.family === family,
+                            )?.familyDisplayName ?? family}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger type="button" className={control}>
+              Filters
+              {(filters.reasoning !== undefined ||
+                filters.openWeights !== undefined) && (
+                <span className="size-1.5 rounded-full bg-ember" />
+              )}
+              <CaretDown size={13} />
+            </PopoverTrigger>
+            <PopoverContent side="bottom" className="w-56 space-y-3">
+              <label className="block text-sm text-foreground">
+                Reasoning
+                <select
+                  value={
+                    filters.reasoning === undefined
+                      ? "any"
+                      : String(filters.reasoning)
+                  }
+                  onChange={(event) =>
+                    onFiltersChange({
+                      reasoning:
+                        event.target.value === "any"
+                          ? undefined
+                          : event.target.value === "true",
+                    })
+                  }
+                  className="mt-1 w-full rounded border border-border bg-background p-2 text-sm"
+                >
+                  <option value="any">Any</option>
+                  <option value="true">Reasoning</option>
+                  <option value="false">Non-reasoning</option>
+                </select>
+              </label>
+              <label className="block text-sm text-foreground">
+                Weights
+                <select
+                  value={
+                    filters.openWeights === undefined
+                      ? "any"
+                      : String(filters.openWeights)
+                  }
+                  onChange={(event) =>
+                    onFiltersChange({
+                      openWeights:
+                        event.target.value === "any"
+                          ? undefined
+                          : event.target.value === "true",
+                    })
+                  }
+                  className="mt-1 w-full rounded border border-border bg-background p-2 text-sm"
+                >
+                  <option value="any">Any</option>
+                  <option value="true">Open weights</option>
+                  <option value="false">Proprietary</option>
+                </select>
+              </label>
+            </PopoverContent>
+          </Popover>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            Effort{" "}
+            <select
+              value={filters.effort ?? "best"}
+              onChange={(event) =>
+                onFiltersChange({ effort: event.target.value })
+              }
+              className={control + " appearance-none pr-3"}
+            >
+              <option value="best">Best</option>
+              <option value="all">All levels</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            Size{" "}
+            <select
+              value={size ?? "all"}
+              onChange={(event) =>
+                onFiltersChange({
+                  size:
+                    event.target.value === "all"
+                      ? undefined
+                      : event.target.value,
+                })
+              }
+              className={control + " appearance-none pr-3"}
+            >
+              <option value="all">Core overall</option>
+              {results.summary.sizes.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <section className="mb-10">
+          <Card className="pb-0">
+            <div ref={chartRef}>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>
+                    <h2 className="font-display text-base font-medium lowercase">
+                      model accuracy
+                    </h2>
+                  </CardTitle>
+                  <span className="font-mono text-xs text-dim">
+                    {chosen.length} {allLevels ? "variants" : "models"} ·{" "}
+                    {size ?? "core overall"}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1 pb-6">
+                  {chosen.length === 0 && (
+                    <p className="py-10 text-center text-sm text-muted-foreground">
+                      No models match these filters. Select more models or
+                      change the filters.
+                    </p>
+                  )}
+                  {chosen.map((model) => {
+                    const value = stats(model, size);
+                    return (
+                      <div
+                        key={model.model}
+                        className="grid min-w-0 grid-cols-[minmax(0,1fr)_3rem] items-center gap-x-2 gap-y-1 border-b border-border/40 py-2 sm:grid-cols-[minmax(12rem,19rem)_minmax(0,1fr)_3rem]"
+                      >
+                        <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-1.5 text-xs sm:text-sm">
+                          <ModelName model={model} allLevels={allLevels} />
+                          {!model.complete && <IncompleteBadge model={model} />}
+                        </div>
+                        <Tooltip>
+                          <TooltipTrigger
+                            type="button"
+                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy; ${value.correct} of ${value.runs} correct; ${formatCost(value.cost)} cost; ${formatTime(value.time)} total time`}
+                            className="col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ember-bright sm:col-span-1 sm:col-start-2 sm:row-start-1"
+                          >
+                            <span
+                              className="block h-full rounded-sm"
+                              style={{
+                                width: `${Math.max(value.accuracy, value.accuracy > 0 ? 1 : 0)}%`,
+                                backgroundColor:
+                                  PROVIDERS[model.provider]?.color ?? "#D8A46B",
+                              }}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <strong>{model.displayName}</strong>
+                            <p>
+                              {value.correct}/{value.runs} solved ·{" "}
+                              {value.accuracy.toFixed(1)}%
+                            </p>
+                            <p>
+                              Cost {formatCost(value.cost)} · Time{" "}
+                              {formatTime(value.time)}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <span className="col-start-2 row-start-1 text-right font-mono text-xs font-medium tabular-nums sm:col-start-3">
+                          {value.accuracy.toFixed(1)}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </div>
+            <div className="flex flex-wrap gap-2 px-6 pb-5">
+              <button type="button" className={control} onClick={copyLink}>
+                <Copy size={15} />
+                {copyDone ? "Copied" : "Copy link"}
+              </button>
+              <button type="button" className={control} onClick={downloadChart}>
+                <DownloadSimple size={15} />
+                Download chart as PNG
+              </button>
+            </div>
+          </Card>
+        </section>
+        <section>
+          <h2 className="mb-4 font-display text-base font-medium lowercase">
+            detailed model statistics
+          </h2>
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+            <table className="w-full min-w-[650px] text-sm">
+              <thead>
+                <tr className="border-b border-border bg-foreground/5 text-left">
+                  <th className="sticky left-0 bg-card px-4 py-3">Model</th>
+                  <th className="px-3 py-3">
+                    {sortButton(
+                      size ? `${size} accuracy` : "Core accuracy",
+                      "accuracy",
+                    )}
+                  </th>
+                  {results.summary.sizes.map((value) => (
+                    <th key={value} className="px-3 py-3">
+                      {value}
+                    </th>
+                  ))}
+                  <th className="px-3 py-3">{sortButton("Cost", "cost")}</th>
+                  <th className="px-3 py-3">{sortButton("Time", "time")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((model) => {
+                  const value = stats(model, size);
+                  return (
+                    <tr
+                      key={model.model}
+                      className="border-b border-border/50 last:border-b-0 hover:bg-foreground/5"
+                    >
+                      <td className="sticky left-0 max-w-64 bg-card px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <ModelName model={model} allLevels={allLevels} />
+                          {!model.complete && <IncompleteBadge model={model} />}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 font-mono text-ember">
+                        {value.accuracy.toFixed(1)}%
+                      </td>
+                      {results.summary.sizes.map((grid) => {
+                        const entry = model.bySize.find(
+                          (row) => row.size === grid && row.runs > 0,
+                        );
+                        return (
+                          <td
+                            key={grid}
+                            className="px-3 py-3 font-mono text-muted-foreground"
+                          >
+                            {entry ? `${entry.accuracy.toFixed(0)}%` : "—"}
+                          </td>
+                        );
+                      })}
+                      <td className="px-3 py-3 font-mono text-muted-foreground">
+                        {formatCost(value.cost)}
+                      </td>
+                      <td className="px-3 py-3 font-mono text-muted-foreground">
+                        {formatTime(value.time)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section className="mt-12">
+          <h2 className="mb-5 font-display text-base font-medium lowercase">
+            statistics by grid size
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {results.summary.sizes.map((grid, index) => {
+              const entries = chosen
+                .map((model) => model.bySize.find((row) => row.size === grid))
+                .filter((row): row is SizeData => !!row && row.runs > 0);
+              const runs = entries.reduce((sum, row) => sum + row.runs, 0);
+              if (!runs) return null;
+              const correct = entries.reduce(
+                (sum, row) => sum + row.correct,
+                0,
+              );
+              const totalCost = entries.reduce(
+                (sum, row) => sum + row.totalCost,
+                0,
+              );
+              const totalTime = entries.reduce(
+                (sum, row) => sum + row.totalDurationMs,
+                0,
+              );
+              const color = ["#70B8FF", "#46FEA5", "#FFCA16", "#C69CFF"][index];
+              return (
+                <Card key={grid}>
+                  <CardHeader>
+                    <CardTitle>
+                      <span
+                        className="rounded px-2 py-1 font-mono text-sm"
+                        style={{ color, backgroundColor: `${color}20` }}
+                      >
+                        {grid}
+                      </span>
+                      <span className="ml-3 text-sm font-normal text-muted-foreground">
+                        {entries.length} models
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="font-display text-2xl">
+                      {((correct / runs) * 100).toFixed(1)}%
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {correct}/{runs} solved
+                    </p>
+                    <div className="mt-4 flex gap-4 border-t border-border pt-3 font-mono text-xs text-muted-foreground">
+                      <span>{formatTime(totalTime / runs)} avg time</span>
+                      <span>{formatCost(totalCost / runs)} avg cost</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+        <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground">
+          <span>Nonobench · Nonogram puzzle benchmark for LLMs</span>
+          <span className="flex gap-5">
+            <a
+              href="https://github.com/mauricekleine/nono-bench"
+              className="inline-flex items-center gap-1 hover:text-foreground"
+            >
+              <GithubLogo size={16} />
+              GitHub
+            </a>
+            <a
+              href="https://x.com/mauricekleine"
+              className="inline-flex items-center gap-1 hover:text-foreground"
+            >
+              <XLogo size={16} />
+              @mauricekleine
+            </a>
+          </span>
+        </footer>
+      </div>
+    </div>
+  );
 }

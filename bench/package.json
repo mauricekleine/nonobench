@@ -6,6 +6,7 @@
   "scripts": {
     "bench": "bun run bench.ts",
     "export": "bun run export.ts",
+    "refresh-metadata": "bun run refresh-metadata.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "regrade": "bun run regrade.ts",

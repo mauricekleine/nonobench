@@ -4,7 +4,11 @@ import { z } from "zod";
 import {
 	findPuzzle,
 	getLeaderboard,
+	getVariants,
 	getModel,
+	listProviders,
+	listFamilies,
+	compareModels,
 	getPuzzle,
 	listPuzzles,
 	listRuns,
@@ -13,6 +17,7 @@ import {
 	SIZES,
 } from "@/lib/data";
 import { checkClues } from "@/lib/nonogram";
+import { validateFilters, type Filters } from "@/lib/leaderboard";
 
 export const MCP_SERVER_INFO = { name: "nonobench", title: "Nonobench", version: "1.0.0" };
 
@@ -35,12 +40,24 @@ export function createMcpServer() {
 		"get_leaderboard",
 		{
 			title: "Get leaderboard",
-			description: "Models ranked by accuracy on Nonobench, overall or for one grid size.",
-			inputSchema: { size },
+			description: "Models ranked by accuracy; defaults to all effort levels for compatibility.",
+			inputSchema: { size, provider: z.string().optional().describe("Comma-separated provider ids"), family: z.string().optional().describe("Comma-separated family ids"), effort: z.string().optional().describe("best, all (default), or one effort level"), reasoning: z.boolean().optional(), open_weights: z.boolean().optional() },
 			annotations: readOnly,
 		},
-		async ({ size }) => result({ updatedAt: RESULTS_TIMESTAMP, size: size ?? "all", models: getLeaderboard(size) }),
+		async ({ size, provider, family, effort, reasoning, open_weights }) => {
+			const filters: Filters = { size, providers: provider?.split(","), families: family?.split(","), effort: effort ?? "all", reasoning, openWeights: open_weights };
+			const error = validateFilters(getVariants().map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), filters, SIZES);
+			return error ? failure(error) : result({ updatedAt: RESULTS_TIMESTAMP, size: size ?? "all", models: getLeaderboard(size, filters) });
+		},
 	);
+
+	server.registerTool("list_providers", { title: "List providers", description: "Provider ids, names, families and variant counts.", inputSchema: {}, annotations: readOnly }, async () => result(listProviders()));
+	server.registerTool("list_families", { title: "List families", description: "Model families, available efforts and best variants.", inputSchema: {}, annotations: readOnly }, async () => result(listFamilies()));
+	server.registerTool("compare_models", { title: "Compare models", description: "Side-by-side core overall and per-size accuracy, cost, latency and token results for model or family names.", inputSchema: { models: z.array(z.string()).min(2).max(20) }, annotations: readOnly }, async ({ models }) => {
+		const compared = compareModels(models);
+		const missing = models.filter((_, index) => !compared[index]);
+		return missing.length ? failure(`Unknown model or family: ${missing.join(", ")}. Call list_families or get_leaderboard for names.`) : result({ models: compared });
+	});
 
 	server.registerTool(
 		"get_model_results",

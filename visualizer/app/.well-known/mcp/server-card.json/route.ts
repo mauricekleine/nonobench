@@ -13,7 +13,7 @@ export function GET() {
 		transport: { type: "streamable-http", endpoint: `${SITE_URL}/mcp` },
 		capabilities: { tools: { listChanged: true } },
 		authentication: { required: false },
-		tools: ["get_leaderboard", "get_model_results", "list_puzzles", "get_puzzle", "check_solution", "list_runs"].map(
+		tools: ["get_leaderboard", "list_providers", "list_families", "compare_models", "get_model_results", "list_puzzles", "get_puzzle", "check_solution", "list_runs"].map(
 			(name) => ({ name }),
 		),
 	});

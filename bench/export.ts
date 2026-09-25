@@ -3,6 +3,8 @@ import { MODELS } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
 import { gradeOutput } from "./grade";
 import { CORE_SIZES, sortSizes } from "./sizes";
+import modelMetadata from "./model-metadata.json";
+import { PROVIDERS } from "../visualizer/lib/providers";
 
 const db = openReadDb();
 if (!db) throw new Error("Database does not exist");
@@ -79,6 +81,11 @@ type SizeData = {
 
 type ModelData = {
 	model: string;
+	displayName: string;
+	familyDisplayName: string;
+	providerName: string;
+	openWeights: boolean | null;
+	addedAt: string | null;
 	provider: string;
 	family: string;
 	effort: string;
@@ -314,6 +321,12 @@ for (const [model, sizeDatas] of modelMap) {
 	const metadata = modelsByName.get(model);
 	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
 	const { provider } = metadata;
+	const catalog = (modelMetadata as Record<string, { displayName: string; openWeights: boolean | null; addedAt: string | null }>)[metadata.llm.modelId];
+	if (!catalog) throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
+	const familyDisplayName = catalog.displayName;
+	const displayName = metadata.effort === "none" || metadata.effort === "default"
+		? familyDisplayName + (metadata.effort === "default" && metadata.reasoning ? " (default)" : "")
+		: `${familyDisplayName} (${metadata.effort})`;
 	// Sort size data by size
 	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
 		(size) => sizeDatas.find((s) => s.size === size)!,
@@ -347,6 +360,11 @@ for (const [model, sizeDatas] of modelMap) {
 	// Overall accuracy uses runs (excluding failed), not total
 	byModel.push({
 		model,
+		displayName,
+		familyDisplayName,
+		providerName: PROVIDERS[provider]?.name ?? provider,
+		openWeights: catalog.openWeights,
+		addedAt: catalog.addedAt,
 		provider,
 		family: metadata.family,
 		effort: metadata.effort,
