@@ -5,7 +5,7 @@ import {
 	CaretDown,
 	CaretUp,
 	CaretUpDown,
-	ChartBar,
+	
 	DownloadSimple,
 	GithubLogo,
 	GridFour,
@@ -60,10 +60,10 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { selectBestVariants } from "@/lib/select-best-variants";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
+import { NonobenchMark } from "@/components/nonobench-mark";
 
 import resultsData from "./results.json";
 import { PUZZLES } from "@/components/puzzles";
@@ -139,22 +139,26 @@ const chartConfig = {
 	},
 } satisfies ChartConfig;
 
-// Generate a color based on rank (0 = brightest/top, higher = dimmer)
-// Uses Resend's Blue color (#70B8FF) as primary with decreasing opacity
-function getRankColor(rank: number, total: number): string {
-	// Resend Blue: #70B8FF - using oklch for smooth gradients
-	const maxLightness = 0.78;
-	const minLightness = 0.45;
-	const maxChroma = 0.14;
-	const minChroma = 0.06;
-	const hue = 230; // Blue hue matching Resend's #70B8FF
+// The leaderboard is the ember thread: the top model burns brightest and the
+// ramp cools down the ranks. Bars keep at least 3:1 against the panel.
+const EMBER_HUE = 55;
 
-	// Calculate lightness and chroma based on rank (0 = brightest)
+function rankRamp(rank: number, total: number, [maxLightness, minLightness]: [number, number]): string {
+	const maxChroma = 0.14;
+	const minChroma = 0.05;
 	const t = total > 1 ? rank / (total - 1) : 0;
 	const lightness = maxLightness - t * (maxLightness - minLightness);
 	const chroma = maxChroma - t * (maxChroma - minChroma);
+	return `oklch(${lightness.toFixed(3)} ${chroma.toFixed(3)} ${EMBER_HUE})`;
+}
 
-	return `oklch(${lightness.toFixed(3)} ${chroma.toFixed(3)} ${hue})`;
+function getRankColor(rank: number, total: number): string {
+	return rankRamp(rank, total, [0.8, 0.52]);
+}
+
+// Text in the rank colour stays lighter so it clears AA contrast on the panel.
+function getRankTextColor(rank: number, total: number): string {
+	return rankRamp(rank, total, [0.84, 0.68]);
 }
 
 // Explains why a model lacks a finished run on every puzzle. Click/tap to open,
@@ -165,9 +169,10 @@ function IncompleteBadge({ model }: { model: Pick<ModelData, "timeouts" | "timeo
 		<Popover>
 			<PopoverTrigger
 				type="button"
-				className="shrink-0 cursor-pointer rounded font-mono text-[10px] text-[#FFCA16] underline decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:outline-[#FFCA16]"
-			>
-				incomplete
+				className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] leading-none text-ember transition-colors duration-150 ease-snap hover:bg-ember/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright"
+				>
+					<span aria-hidden="true" className="size-[5px] rounded-full bg-current" />
+					incomplete
 			</PopoverTrigger>
 			<PopoverContent>
 				{timeouts > 0 ? (
@@ -189,7 +194,7 @@ function IncompleteBadge({ model }: { model: Pick<ModelData, "timeouts" | "timeo
 }
 
 function EffortBadge({ effort }: { effort: string }) {
-	return <span className="inline-flex shrink-0 rounded border border-[#70B8FF]/25 bg-[#70B8FF]/10 px-1.5 py-0.5 font-mono text-[10px] leading-none text-[#70B8FF]">{effort}</span>;
+	return <span className="inline-flex shrink-0 rounded-md border border-line-strong px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">{effort}</span>;
 }
 
 function ModelAxisTick({ x, y, label, effort, provider, legacy }: { x?: string | number; y?: string | number; label: string; effort: string; provider: string; legacy: boolean }) {
@@ -202,7 +207,7 @@ function ModelAxisTick({ x, y, label, effort, provider, legacy }: { x?: string |
 			<text x={-18} y={4} textAnchor="end" fill="var(--muted-foreground)" fontSize={11}>
 				{label}
 				{effort && (
-					<tspan fill="var(--chart-1)" fillOpacity={0.8} fontFamily="monospace" fontSize={10}>
+					<tspan fill="var(--dim)" fontFamily="var(--font-mono)" fontSize={10}>
 						{` · ${effort}`}
 					</tspan>
 				)}
@@ -449,38 +454,33 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 
 	return (
 		<div className="min-h-screen bg-background">
-			{/* Resend noise texture overlay for atmospheric depth */}
+			{/* Film grain, nonogram paper and the ember glow behind the header */}
 			<div className="noise-overlay" />
-			{/* Grid pattern background for Nonogram theme */}
 			<div className="fixed inset-0 grid-pattern pointer-events-none" />
-			{/* Subtle gradient background - Resend style */}
-			<div className="fixed inset-0 bg-linear-to-br from-chart-1/3 via-transparent to-chart-2/3 pointer-events-none" />
+			<div className="fixed inset-0 atmosphere pointer-events-none" />
 
 			<div className="relative max-w-7xl mx-auto px-6 py-12">
-				{/* Header - Resend style with clean typography */}
+				{/* Header: the wordmark next to its own solved nonogram */}
 				<header className="mb-4">
-					<div className="flex items-center gap-3 mb-3">
-						<div className="p-2 bg-foreground/10 rounded-lg border border-border">
-							<Logo className="size-7 text-foreground" />
-						</div>
-						<h1 className="text-3xl font-semibold tracking-tight">
-							Nonobench Results
+					<div className="nono-trigger flex w-fit items-end gap-4 mb-4">
+						<NonobenchMark />
+						<h1 className="font-display text-3xl sm:text-4xl font-semibold lowercase leading-none tracking-[-0.02em] pb-px">
+							nonobench<span className="sr-only"> results</span>
 						</h1>
 					</div>
-					<p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
+					<p className="text-muted-foreground max-w-2xl text-base leading-relaxed text-pretty">
 						Benchmark results for LLM performance on Nonogram puzzle solving.
 						Comparing accuracy, speed, and cost across different grid sizes.
 					</p>
 
-					{/* Benchmark stats - Resend semantic colors */}
-					<div className="flex items-center gap-6 my-5">
+					<div className="flex flex-wrap items-center gap-x-6 gap-y-2 my-5">
 						<div className="flex items-center gap-2 text-sm">
-							<GridFour className="size-4 text-[#70B8FF]" weight="duotone" />
+							<GridFour className="size-4 text-dim" weight="duotone" />
 							<span className="text-muted-foreground">Puzzles:</span>
 							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalPuzzles} core + {benchmarkStats.extendedPuzzles} extended</span>
 						</div>
 						<div className="flex items-center gap-2 text-sm">
-							<Robot className="size-4 text-[#46FEA5]" weight="duotone" />
+							<Robot className="size-4 text-dim" weight="duotone" />
 							<span className="text-muted-foreground">Models:</span>
 							<span className="font-mono font-medium text-foreground">
 								{benchmarkStats.totalModels}
@@ -488,13 +488,13 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 							</span>
 						</div>
 						<div className="flex items-center gap-2 text-sm">
-							<Lightning className="size-4 text-[#FFCA16]" weight="duotone" />
+							<Lightning className="size-4 text-dim" weight="duotone" />
 							<span className="text-muted-foreground">Total runs:</span>
 							<span className="font-mono font-medium text-foreground">{benchmarkStats.totalRuns}</span>
 						</div>
 					</div>
 
-					{/* Action buttons - Resend pill style */}
+					{/* Actions */}
 					<Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
 						<div className="flex flex-wrap items-center gap-2 mt-4">
 							<CollapsibleTrigger type="button" className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full transition-all cursor-pointer whitespace-nowrap">
@@ -578,7 +578,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 									href="https://en.wikipedia.org/wiki/Nonogram"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1.5 text-[#70B8FF] hover:underline"
+									className="inline-flex items-center gap-1.5 text-ember underline-offset-3 hover:text-ember-bright hover:underline"
 								>
 									Learn more on Wikipedia
 									<Info className="size-3" />
@@ -586,12 +586,12 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 							</div>
 						</CollapsibleContent>
 					</Collapsible>
-					<p className="text-xs text-muted-foreground/60 mt-6 font-mono">
+					<p className="text-xs text-dim mt-6 font-mono">
 						Last updated: {new Date(results.timestamp).toLocaleString()}
 					</p>
 				</header>
 
-				{/* Model type filters - Resend style */}
+				{/* Model type filters */}
 				<div className="flex flex-wrap items-center gap-5 my-5 p-4 rounded-lg bg-foreground/5 border border-border">
 					<span className="text-sm text-muted-foreground font-medium">Filter by model type:</span>
 					<div className="flex items-center gap-2">
@@ -635,9 +635,8 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 						<CardHeader>
 							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 								<div>
-									<CardTitle className="flex items-center gap-2">
-										<ChartBar className="size-4" weight="bold" />
-										Model Accuracy
+									<CardTitle>
+										<h2 className="font-display text-base font-medium lowercase tracking-[-0.01em]">model accuracy</h2>
 									</CardTitle>
 								</div>
 								<div className="flex items-center gap-2">
@@ -742,8 +741,8 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 
 				{/* Per-Model Stats (Table) */}
 				<section>
-					<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
-						Detailed Model Statistics
+					<h2 className="font-display text-base font-medium lowercase tracking-[-0.01em] mb-4">
+						detailed model statistics
 					</h2>
 					<div className="rounded-lg border border-border bg-card overflow-hidden">
 						<div className="overflow-x-auto">
@@ -820,6 +819,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 										const stats15x15 = getSizeStats(modelData, "15x15");
 										const stats20x20 = getSizeStats(modelData, "20x20");
 										const rowColor = getRankColor(index, sortedModels.length);
+										const rowTextColor = getRankTextColor(index, sortedModels.length);
 
 										const renderAccuracyCell = (sizeStats: ReturnType<typeof getSizeStats>, size: string, bgClass: string) => {
 											const isMax = sizeStats.accuracy > 0 && sizeStats.accuracy === maxAccuracyBySize[size];
@@ -859,7 +859,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 														{modelData.reasoning && (
 															<Tooltip>
 																<TooltipTrigger>
-																	<Brain className="size-3.5 text-[#70B8FF] shrink-0" weight="duotone" />
+																	<Brain className="size-3.5 text-muted-foreground shrink-0" weight="duotone" />
 																</TooltipTrigger>
 																<TooltipContent>
 																	<p>Reasoning model</p>
@@ -869,7 +869,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 													</div>
 												</td>
 												<td className="text-left px-4 py-3.5 border-r border-border/50">
-													<span className="font-mono font-semibold" style={{ color: rowColor }}>
+													<span className="font-mono" style={{ color: rowTextColor }}>
 														{stats.accuracy.toFixed(1)}%
 													</span>
 												</td>
@@ -935,10 +935,10 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 					</div>
 				</section>
 
-				{/* Per-Size Stats - Resend card style */}
+				{/* Per-size stats */}
 				<section className="mt-12">
-					<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-5">
-						Statistics by grid size
+					<h2 className="font-display text-base font-medium lowercase tracking-[-0.01em] mb-5">
+						statistics by grid size
 					</h2>
 					<div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
 						{sizes.slice(1).map((size, index) => {
@@ -969,7 +969,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 							);
 							const avgCost = totalRuns > 0 ? totalCost / totalRuns : 0;
 
-							// Resend semantic colors for each size
+							// Grid-size colours: data categories, shared with the table and the explorer
 							const sizeColors = ["#70B8FF", "#46FEA5", "#FFCA16", "#C69CFF"];
 
 							return (
@@ -982,7 +982,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 											>
 												{size}
 											</div>
-											<span className="text-muted-foreground font-normal">Grid · {sizeStats.length} models</span>
+											<span className="text-muted-foreground font-normal">{sizeStats.length} models</span>
 										</CardTitle>
 									</CardHeader>
 									<CardContent>
@@ -991,15 +991,15 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 												<p className="text-muted-foreground text-xs mb-1">
 													Avg accuracy
 												</p>
-												<p className="font-mono text-3xl font-semibold tracking-tight">
+												<p className="font-display text-2xl font-medium tabular-nums tracking-[-0.02em]">
 													{totalRuns > 0 ? `${avgAccuracy.toFixed(1)}%` : "—"}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground text-xs mb-1">Solved</p>
-												<p className="font-mono text-3xl font-semibold tracking-tight">
+												<p className="font-display text-2xl font-medium tabular-nums tracking-[-0.02em]">
 													{totalCorrect}
-													<span className="text-muted-foreground text-base font-normal">
+													<span className="font-mono text-muted-foreground text-sm tracking-normal">
 														/{totalRuns}
 													</span>
 												</p>
@@ -1008,7 +1008,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 
 										<div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
 											<div>
-												<p className="text-muted-foreground text-[11px] uppercase tracking-wider mb-1">
+												<p className="text-muted-foreground text-xs mb-1">
 													Avg time
 												</p>
 												<p className="font-mono text-sm font-medium">
@@ -1016,7 +1016,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 												</p>
 											</div>
 											<div>
-												<p className="text-muted-foreground text-[11px] uppercase tracking-wider mb-1">
+												<p className="text-muted-foreground text-xs mb-1">
 													Avg cost
 												</p>
 												<p className="font-mono text-sm font-medium">
@@ -1031,7 +1031,7 @@ export default function ResultsPage({ levels, onLevelsChange }: { levels: Levels
 					</div>
 				</section>
 
-				{/* Footer - Resend minimal style */}
+				{/* Footer */}
 				<footer className="mt-12 pt-8 border-t border-border">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<p className="text-sm text-muted-foreground">

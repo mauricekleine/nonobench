@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, IBM_Plex_Mono } from "next/font/google";
+import { Figtree, Fragment_Mono, Unbounded } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { WebMcp } from "@/components/webmcp";
@@ -7,16 +7,22 @@ import { WebMcp } from "@/components/webmcp";
 import "./globals.css";
 import Script from "next/script";
 
-// Resend uses Inter for body text
-const inter = Inter({
+// Superthread type roles, from Google Fonts: a wide, squared display face for the
+// wordmark and headings, a warm round sans for body, Fragment Mono for numbers and meta.
+const display = Unbounded({
+	subsets: ["latin"],
+	weight: ["500", "600"],
+	variable: "--font-display",
+});
+
+const sans = Figtree({
 	subsets: ["latin"],
 	variable: "--font-sans",
 });
 
-// Resend uses CommitMono for code - IBM Plex Mono as fallback since CommitMono isn't on Google Fonts
-const ibmPlexMono = IBM_Plex_Mono({
+const mono = Fragment_Mono({
 	subsets: ["latin"],
-	weight: ["400", "500", "600"],
+	weight: "400",
 	variable: "--font-mono",
 });
 
@@ -76,7 +82,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="dark">
 			<body
-				className={`${inter.variable} ${ibmPlexMono.variable} antialiased font-sans`}
+				className={`${display.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}
 			>
 				<NuqsAdapter>{children}</NuqsAdapter>
 				<WebMcp />
