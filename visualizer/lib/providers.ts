@@ -1,18 +1,20 @@
 // Provider labels and bar colors are shared by the exporter and visualizer.
-// Colors are chosen to remain visible against the site's void panels.
+// Colors are spread around the hue wheel with alternating lightness so every
+// pair stays visibly distinct (min OKLab distance ~10 across all 14) and each
+// clears 3:1 contrast on the void panels; logos and names carry identity too.
 export const PROVIDERS: Record<string, { name: string; color: string }> = {
-	openai: { name: "OpenAI", color: "#79D8B2" },
-	anthropic: { name: "Anthropic", color: "#E9AA86" },
-	google: { name: "Google", color: "#87B7FF" },
-	"x-ai": { name: "xAI", color: "#D5D9E6" },
-	deepseek: { name: "DeepSeek", color: "#8B9DFF" },
-	qwen: { name: "Qwen", color: "#D7A4FF" },
-	"z-ai": { name: "Z.ai", color: "#A6D994" },
-	moonshotai: { name: "Moonshot AI", color: "#F5B8D1" },
-	xiaomi: { name: "Xiaomi", color: "#FFAE78" },
-	"bytedance-seed": { name: "ByteDance Seed", color: "#9CDDD9" },
-	minimax: { name: "MiniMax", color: "#E7BC86" },
-	mistralai: { name: "Mistral AI", color: "#F4B36D" },
-	meta: { name: "Meta", color: "#8FBFFF" },
-	allenai: { name: "Allen Institute for AI", color: "#B9CF83" },
+	openai: { name: "OpenAI", color: "#4FCB9C" },
+	anthropic: { name: "Anthropic", color: "#CB7B48" },
+	google: { name: "Google", color: "#65A7FA" },
+	"x-ai": { name: "xAI", color: "#EDEEF2" },
+	deepseek: { name: "DeepSeek", color: "#667CE5" },
+	qwen: { name: "Qwen", color: "#D79AFC" },
+	"z-ai": { name: "Z.ai", color: "#B0E562" },
+	moonshotai: { name: "Moonshot AI", color: "#D871A1" },
+	xiaomi: { name: "Xiaomi", color: "#FF9D71" },
+	"bytedance-seed": { name: "ByteDance Seed", color: "#009FAC" },
+	minimax: { name: "MiniMax", color: "#D14A65" },
+	mistralai: { name: "Mistral AI", color: "#FACA4B" },
+	meta: { name: "Meta", color: "#7DD9FC" },
+	allenai: { name: "Allen Institute for AI", color: "#9C9E51" },
 };

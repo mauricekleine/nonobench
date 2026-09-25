@@ -116,13 +116,7 @@ function IncompleteBadge({ model }: { model: Model }) {
   );
 }
 
-function ModelName({
-  model,
-  allLevels = false,
-}: {
-  model: Model;
-  allLevels?: boolean;
-}) {
+function ModelName({ model }: { model: Model }) {
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
       <ProviderLogo
@@ -130,8 +124,9 @@ function ModelName({
         size={16}
         className="shrink-0 text-foreground"
       />
+      {/* The effort badge already names the level, so the family name suffices. */}
       <span className="min-w-0 truncate" title={model.displayName}>
-        {allLevels ? model.displayName : model.familyDisplayName}
+        {model.familyDisplayName}
       </span>
       <span className="shrink-0 rounded border border-line-strong px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">
         {model.effort}
@@ -563,7 +558,7 @@ export default function ResultsPage({
                         className="grid min-w-0 grid-cols-[minmax(0,1fr)_3rem] items-center gap-x-2 gap-y-1 border-b border-border/40 py-2 sm:grid-cols-[minmax(12rem,19rem)_minmax(0,1fr)_3rem]"
                       >
                         <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-1.5 text-xs sm:text-sm">
-                          <ModelName model={model} allLevels={allLevels} />
+                          <ModelName model={model} />
                           {!model.complete && <IncompleteBadge model={model} />}
                         </div>
                         <Tooltip>
@@ -648,7 +643,7 @@ export default function ResultsPage({
                     >
                       <td className="sticky left-0 max-w-64 bg-card px-4 py-3">
                         <div className="flex items-center gap-1">
-                          <ModelName model={model} allLevels={allLevels} />
+                          <ModelName model={model} />
                           {!model.complete && <IncompleteBadge model={model} />}
                         </div>
                       </td>
