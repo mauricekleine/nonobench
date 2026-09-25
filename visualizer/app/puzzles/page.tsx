@@ -10,16 +10,20 @@ import { PUZZLES } from "@/components/puzzles";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { PuzzleFilters, puzzleModel, usePuzzleExport, usePuzzleFilters } from "@/components/puzzles/puzzle-filters";
 import { describeMissingAnswer, inspectAnswer } from "@/lib/puzzle-insights";
-import { effortLabel, formatDuration } from "@/lib/display";
+import { effortLabel, formatDuration, sizeLabel } from "@/lib/display";
 import { PROVIDERS } from "@/lib/providers";
+import resultsData from "@/app/results.json";
+
+const hasHardRuns = resultsData.byModel.some((model) => model.bySize.some((entry) => entry.size === "20x20" && entry.runs > 0));
+const visiblePuzzles = hasHardRuns ? PUZZLES : PUZZLES.filter((puzzle) => puzzle.width !== 20);
 
 function PuzzlesContent() {
   const [currentIndex, setCurrentIndex] = useQueryState("puzzle", parseAsInteger.withDefault(0));
   const [selectedModel, setSelectedModel] = useQueryState("model", parseAsString);
   const { filters, models, change } = usePuzzleFilters();
   const { data, error } = usePuzzleExport();
-  const safeIndex = Math.max(0, Math.min(currentIndex, PUZZLES.length - 1));
-  const puzzle = PUZZLES[safeIndex];
+  const safeIndex = Math.max(0, Math.min(currentIndex, visiblePuzzles.length - 1));
+  const puzzle = visiblePuzzles[safeIndex];
   const result = data?.puzzles.find((entry) => entry.index === safeIndex);
   const visible = useMemo(() => new Set(models.map((model) => model.model)), [models]);
   const runs = result?.runs.filter((run) => visible.has(run.model)) ?? [];
@@ -29,8 +33,8 @@ function PuzzlesContent() {
   const violatedRows = inspection?.mode === "ambiguous-wrong" ? inspection.clues.rowViolations.map((line) => line.index) : undefined;
   const violatedColumns = inspection?.mode === "ambiguous-wrong" ? inspection.clues.columnViolations.map((line) => line.index) : undefined;
   const goTo = useCallback((index: number) => { void setCurrentIndex(index); void setSelectedModel(null); }, [setCurrentIndex, setSelectedModel]);
-  const previous = useCallback(() => goTo(safeIndex === 0 ? PUZZLES.length - 1 : safeIndex - 1), [goTo, safeIndex]);
-  const next = useCallback(() => goTo(safeIndex === PUZZLES.length - 1 ? 0 : safeIndex + 1), [goTo, safeIndex]);
+  const previous = useCallback(() => goTo(safeIndex === 0 ? visiblePuzzles.length - 1 : safeIndex - 1), [goTo, safeIndex]);
+  const next = useCallback(() => goTo(safeIndex === visiblePuzzles.length - 1 ? 0 : safeIndex + 1), [goTo, safeIndex]);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLElement && (event.target.closest("button, a, input, select, textarea, [role=button]") || event.target.isContentEditable)) return;
@@ -42,9 +46,9 @@ function PuzzlesContent() {
   }, [previous, next]);
 
   return <div className="relative min-h-screen overflow-x-clip bg-background text-foreground"><div className="noise-overlay" /><div className="fixed inset-0 grid-pattern pointer-events-none" /><div className="fixed inset-0 atmosphere pointer-events-none" />
-    <header className="relative border-b border-border bg-card/50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6"><div className="flex items-center gap-3"><NonobenchMark size="sm" /><div><h1 className="font-display text-lg font-semibold lowercase tracking-tight">puzzle explorer</h1><p className="text-sm text-muted-foreground">Browse all {PUZZLES.length} puzzles</p></div></div><nav className="flex gap-4 text-sm"><Link href="/puzzles/overview" className="text-ember underline focus-visible:outline-2 focus-visible:outline-ember">Puzzle insights</Link><Link href="/" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">Results</Link></nav></div></header>
+    <header className="relative border-b border-border bg-card/50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6"><div className="flex items-center gap-3"><NonobenchMark size="sm" /><div><h1 className="font-display text-lg font-semibold lowercase tracking-tight">nonobench <Link href="/how-it-works#whats-new" className="align-middle rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link></h1><p className="text-sm text-muted-foreground">Puzzle explorer · {visiblePuzzles.length} puzzles</p></div></div><nav className="flex gap-4 text-sm"><Link href="/how-it-works" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">How it works</Link><Link href="/puzzles/overview" className="text-ember underline focus-visible:outline-2 focus-visible:outline-ember">Puzzle insights</Link><Link href="/" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">Results</Link></nav></div></header>
     <main className="relative mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,24rem)]">
-      <section aria-label={`Puzzle ${safeIndex + 1}`} className="flex min-w-0 flex-col items-center gap-5"><div className="flex w-full items-center justify-center gap-3"><button type="button" onClick={previous} aria-label="Previous puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretLeft size={20} /></button><div className="min-w-0 text-center"><span className="font-mono font-semibold">Puzzle {safeIndex + 1} of {PUZZLES.length}</span><span className="mx-2 text-muted-foreground">·</span><span className="font-mono text-[#FFCA16]">{puzzle.width}×{puzzle.height}</span></div><button type="button" onClick={next} aria-label="Next puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretRight size={20} /></button></div>
+      <section aria-label={`Puzzle ${safeIndex + 1}`} className="flex min-w-0 flex-col items-center gap-5"><div className="flex w-full items-center justify-center gap-3"><button type="button" onClick={previous} aria-label="Previous puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretLeft size={20} /></button><div className="min-w-0 text-center"><span className="font-mono font-semibold">Puzzle {safeIndex + 1} of {visiblePuzzles.length}</span><span className="mx-2 text-muted-foreground">·</span><span className="font-mono text-[#FFCA16]">{puzzle.width === 20 ? sizeLabel("20x20") : `${puzzle.width}×${puzzle.height}`}</span></div><button type="button" onClick={next} aria-label="Next puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretRight size={20} /></button></div>
         <div className="max-w-full overflow-x-auto rounded-2xl border border-border bg-card/70 p-3 sm:p-6"><div className={puzzle.width === 20 ? "[zoom:0.54] sm:[zoom:1]" : ""}><Nonogram key={safeIndex} height={puzzle.height} width={puzzle.width} solution={puzzle.solution.replace(/\s/g, "")} overlay={inspection?.cells} violatedRows={violatedRows} violatedColumns={violatedColumns} /></div></div>
         {selectedModel && <div className="w-full max-w-xl rounded-lg border border-border bg-card/80 p-4 text-sm"><h2 className="font-semibold">{selectedMetadata?.displayName ?? selectedModel}’s answer</h2>{inspection ? <>
           {inspection.mode === "valid" && <p className="mt-1 text-muted-foreground">{inspection.referenceDifference ? `A valid alternative solution: differs from the reference grid in ${inspection.referenceDifference} cells but satisfies every clue.` : "This grid satisfies every row and column clue."}</p>}
@@ -68,7 +72,7 @@ function PuzzlesContent() {
         {error ? <p role="alert" className="mt-4 text-sm">Could not load model answers. Refresh to try again.</p> : !data ? <p role="status" className="mt-4 text-sm">Loading answers…</p> : runs.length ? <ul className="mt-4 max-h-[38rem] space-y-1 overflow-y-auto" aria-label="Model results for this puzzle">{runs.map((run) => { const model = models.find((entry) => entry.model === run.model); const active = selectedModel === run.model; return <li key={run.model}><button type="button" onClick={() => void setSelectedModel(active ? null : run.model)} aria-pressed={active} className={`flex w-full items-center gap-2 rounded-md border p-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember ${active ? "border-ember bg-ember/10" : "border-transparent hover:bg-foreground/5"}`}><span style={{ color: PROVIDERS[model?.provider ?? ""]?.color }}><ProviderLogo provider={model?.provider ?? ""} size={16} /></span><span className="min-w-0 flex-1"><span className="block truncate font-medium">{model?.displayName ?? run.model}</span><span className="block truncate text-xs text-muted-foreground">{effortLabel(model?.effort ?? "none")} · ${run.cost.toFixed(4)} · {formatDuration(run.durationMs)}</span></span><span className={`font-mono font-bold ${run.status === "timeout" ? "text-[#D871A1]" : run.correct ? "text-[#46FEA5]" : "text-[#FFCA16]"}`} aria-hidden="true">{run.status === "timeout" ? "cut off" : run.correct ? "✓" : "✗"}</span><span className="sr-only">{run.status === "timeout" ? "Cut off" : run.correct ? "Solved" : "Wrong"}</span></button></li>; })}</ul> : <p className="mt-4 text-sm text-muted-foreground">No model results match these filters{result?.attempts === 0 ? "; this puzzle has not been run yet" : ""}.</p>}
       </div></aside>
     </main>
-    <footer className="relative border-t border-border bg-card/50 px-4 py-4"><div className="mx-auto flex max-w-7xl flex-wrap justify-center gap-1.5">{PUZZLES.map((entry, index) => <button type="button" key={index} onClick={() => goTo(index)} aria-label={`Go to puzzle ${index + 1}`} aria-current={index === safeIndex ? "step" : undefined} className={`size-3 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember ${index === safeIndex ? "ring-2 ring-white/30" : "opacity-60"} ${entry.width === 5 ? "bg-[#70B8FF]" : entry.width === 10 ? "bg-[#46FEA5]" : entry.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]"}`} />)}</div></footer>
+    <footer className="relative border-t border-border bg-card/50 px-4 py-4"><div className="mx-auto flex max-w-7xl flex-wrap justify-center gap-1.5">{visiblePuzzles.map((entry, index) => <button type="button" key={index} onClick={() => goTo(index)} aria-label={`Go to puzzle ${index + 1}`} aria-current={index === safeIndex ? "step" : undefined} className={`size-3 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember ${index === safeIndex ? "ring-2 ring-white/30" : "opacity-60"} ${entry.width === 5 ? "bg-[#70B8FF]" : entry.width === 10 ? "bg-[#46FEA5]" : entry.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]"}`} />)}</div></footer>
   </div>;
 }
 
