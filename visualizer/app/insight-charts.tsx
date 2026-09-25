@@ -9,11 +9,14 @@ import {
 } from "@/components/ui/tooltip";
 import {
   chartStats,
+  decadeTicks,
   effortInsight,
   effortLadders,
+  effortRowDomain,
   scatterFrontier,
   scatterPoints,
   type ChartVariant,
+  type EffortGroup,
   type XMetric,
 } from "@/lib/chart-data";
 import { EFFORT_ORDER, effortRank } from "@/lib/insights";
@@ -33,6 +36,20 @@ const metricValue = (value: number, metric: XMetric) =>
     : metric === "time"
       ? `${(value / 1000).toFixed(1)}s`
       : `${Math.round(value).toLocaleString()} tokens`;
+const logTickLabel = (value: number, metric: XMetric) => {
+  if (metric === "cost") return `$${value}`;
+  if (metric === "tokens")
+    return value >= 1_000_000
+      ? `${value / 1_000_000}m`
+      : value >= 1_000
+        ? `${value / 1_000}k`
+        : `${value}`;
+  const seconds = value / 1000;
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${minutes}m${remainder ? ` ${remainder}s` : ""}`;
+};
 const colorFor = (provider: string) => PROVIDERS[provider]?.color ?? "#D8A46B";
 const sectionClass = "mt-10 rounded-lg border border-border bg-card p-4 sm:p-6";
 const headingClass = "font-display text-base font-medium lowercase";
@@ -74,7 +91,8 @@ export function AccuracyScatter({
         : `M ${xPosition(point.x)} ${yPosition(point.y)}`,
     )
     .join(" ");
-  const ticks = [lower, Math.sqrt(lower * upper), upper];
+  const decades = decadeTicks(lower, upper);
+  const ticks = decades.length ? decades : [Math.sqrt(lower * upper)];
   const hovered = points.find((point) => point.id === hoveredId);
 
   return (
@@ -160,11 +178,11 @@ export function AccuracyScatter({
               preserveAspectRatio="none"
               aria-hidden="true"
             >
-              {[5, 50, 95].map((position) => (
+              {ticks.map((tick) => (
                 <line
-                  key={`x${position}`}
-                  x1={position}
-                  x2={position}
+                  key={`x${tick}`}
+                  x1={xPosition(tick)}
+                  x2={xPosition(tick)}
                   y1="0"
                   y2="100"
                   stroke="var(--border)"
@@ -307,9 +325,15 @@ export function AccuracyScatter({
               </div>
             )}
           </div>
-          <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground">
-            {ticks.map((tick, index) => (
-              <span key={index}>{metricValue(tick, metric)}</span>
+          <div className="relative mt-1 h-5 font-mono text-[10px] text-muted-foreground">
+            {ticks.map((tick) => (
+              <span
+                key={tick}
+                className="absolute -translate-x-1/2 whitespace-nowrap"
+                style={{ left: `${xPosition(tick)}%` }}
+              >
+                {logTickLabel(tick, metric)}
+              </span>
             ))}
           </div>
           <p className="mt-2 text-center text-xs text-muted-foreground">
@@ -364,6 +388,130 @@ export function AccuracyScatter({
   );
 }
 
+function LadderRow({
+  group,
+  size,
+}: {
+  group: EffortGroup<ChartVariant>;
+  size?: string;
+}) {
+  const color = colorFor(group.variants[0].provider);
+  const domain = effortRowDomain(group, size);
+  const xPosition = (model: ChartVariant) =>
+    group.kind === "reasoning"
+      ? model.effort === "none"
+        ? 10
+        : 45
+      : 6 + effortRank(model.effort) * 10;
+  const yPosition = (accuracy: number) =>
+    87 - (65 * (accuracy - domain.low)) / (domain.high - domain.low);
+  const line = group.variants
+    .map(
+      (model, index) =>
+        `${index ? "L" : "M"} ${xPosition(model)} ${yPosition(chartStats(model, size).accuracy)}`,
+    )
+    .join(" ");
+  const end = group.variants[group.variants.length - 1];
+  const endStats = chartStats(end, size);
+  return (
+    <div
+      className="relative h-28 min-w-0 border-t border-border/50"
+      role="group"
+      aria-label={`${end.familyDisplayName} ${group.kind === "reasoning" ? "reasoning off to on" : "effort ladder"}`}
+    >
+      <svg
+        className="absolute inset-0 h-full w-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        {(group.kind === "reasoning"
+          ? [10, 45]
+          : EFFORT_ORDER.map((_, index) => 6 + index * 10)
+        ).map((x) => (
+          <line
+            key={x}
+            x1={x}
+            x2={x}
+            y1="0"
+            y2="100"
+            stroke="var(--border)"
+            strokeWidth="0.12"
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
+        <line
+          x1="0"
+          x2="100"
+          y1="50"
+          y2="50"
+          stroke="var(--border)"
+          strokeWidth="0.12"
+          vectorEffect="non-scaling-stroke"
+        />
+        <path
+          d={line}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {group.variants.map((model) => {
+        const value = chartStats(model, size);
+        const x = xPosition(model);
+        const y = yPosition(value.accuracy);
+        const level =
+          group.kind === "reasoning"
+            ? model.effort === "none"
+              ? "reasoning off"
+              : "reasoning on (provider default)"
+            : `${model.effort} effort`;
+        return (
+          <div key={model.model}>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap font-mono text-[10px] font-medium tabular-nums text-foreground sm:text-xs"
+              style={{ left: `${x}%`, top: `calc(${y}% - 10px)` }}
+            >
+              {value.correct}/{value.runs}
+            </span>
+            <Tooltip>
+              <TooltipTrigger
+                type="button"
+                className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ember-bright"
+                style={{ left: `${x}%`, top: `${y}%` }}
+                aria-label={`${model.familyDisplayName}, ${level}, ${value.accuracy.toFixed(1)}% accuracy, ${value.correct} of ${value.runs} solved`}
+              >
+                <span
+                  className="size-[10px] rounded-full border-2 border-card"
+                  style={{ backgroundColor: color }}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {model.familyDisplayName} · {level}: {value.accuracy.toFixed(1)}
+                % ({value.correct}/{value.runs} solved)
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        );
+      })}
+      <span
+        className="absolute flex max-w-[34%] min-w-0 items-center gap-1 text-xs"
+        style={{
+          left: `${xPosition(end) + 4}%`,
+          top: `${yPosition(endStats.accuracy)}%`,
+          transform: "translateY(-50%)",
+        }}
+        title={end.familyDisplayName}
+      >
+        <ProviderLogo provider={end.provider} size={13} className="shrink-0" />
+        <span className="truncate">{end.familyDisplayName}</span>
+      </span>
+    </div>
+  );
+}
+
 export function EffortLadder({
   models,
   filters,
@@ -372,10 +520,17 @@ export function EffortLadder({
   filters: Filters;
 }) {
   const ladders = effortLadders(models, filters);
+  const ordered = ladders.filter((group) => group.kind === "ordered");
+  const reasoning = ladders.filter((group) => group.kind === "reasoning");
   const size = filters.size;
-  const efforts = [...EFFORT_ORDER, "default"];
-  const xPosition = (effort: string) => 5 + effortRank(effort) * 10;
-  const yPosition = (accuracy: number) => 88 - accuracy * 0.75;
+  const effortAbbreviations: Record<string, string> = {
+    none: "none",
+    minimal: "min",
+    low: "low",
+    medium: "med",
+    high: "high",
+    xhigh: "xh",
+  };
   return (
     <section className={sectionClass} aria-labelledby="effort-heading">
       <h2 id="effort-heading" className={headingClass}>
@@ -385,160 +540,99 @@ export function EffortLadder({
         {effortInsight(ladders, size)}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        All measured effort levels are shown for each selected family, including
-        when Effort is set to Best.
+        All measured ordered levels appear even when Effort is set to Best.
+        Values show puzzles solved. Rows are sorted by endpoint change and each
+        uses its own vertical score scale.
       </p>
-      <p className="mt-2 text-xs text-muted-foreground">Accuracy ↑ (0–100%)</p>
-      {ladders.length > 0 && (
-        <div className="mt-5 min-w-0">
+      {ordered.length > 0 && (
+        <div className="mt-6 min-w-0">
           <div className="relative h-6 font-mono text-[10px] text-muted-foreground">
-            {efforts.map((effort) => (
+            {EFFORT_ORDER.map((effort, index) => (
               <span
                 key={effort}
                 className="absolute -translate-x-1/2"
-                style={{ left: `${xPosition(effort)}%` }}
+                style={{ left: `${6 + index * 10}%` }}
                 title={effort}
               >
-                <span className="sm:hidden">
-                  {
-                    (
-                      {
-                        none: "none",
-                        minimal: "min",
-                        low: "low",
-                        medium: "med",
-                        high: "high",
-                        xhigh: "xh",
-                        default: "def",
-                      } as Record<string, string>
-                    )[effort]
-                  }
-                </span>
+                <span className="sm:hidden">{effortAbbreviations[effort]}</span>
                 <span className="hidden sm:inline">{effort}</span>
               </span>
             ))}
           </div>
-          {ladders.map((ladder) => {
-            const color = colorFor(ladder[0].provider);
-            const line = ladder
-              .map(
-                (model, index) =>
-                  `${index ? "L" : "M"} ${xPosition(model.effort)} ${yPosition(chartStats(model, size).accuracy)}`,
-              )
-              .join(" ");
-            const end = ladder[ladder.length - 1];
-            return (
-              <div
-                key={ladder[0].family}
-                className="relative h-16 min-w-0 border-t border-border/50"
-                role="group"
-                aria-label={`${ladder[0].familyDisplayName} effort ladder`}
-              >
-                <svg
-                  className="absolute inset-0 h-full w-full"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                  aria-hidden="true"
-                >
-                  {efforts.map((effort) => (
-                    <line
-                      key={effort}
-                      x1={xPosition(effort)}
-                      x2={xPosition(effort)}
-                      y1="0"
-                      y2="100"
-                      stroke="var(--border)"
-                      strokeWidth="0.12"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  ))}
-                  {[0, 50, 100].map((accuracy) => (
-                    <line
-                      key={accuracy}
-                      x1="0"
-                      x2="100"
-                      y1={yPosition(accuracy)}
-                      y2={yPosition(accuracy)}
-                      stroke="var(--border)"
-                      strokeWidth="0.12"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  ))}
-                  <path
-                    d={line}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth="2"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
-                {ladder.map((model) => (
-                  <Tooltip key={model.model}>
-                    <TooltipTrigger
-                      type="button"
-                      className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ember-bright"
-                      style={{
-                        left: `${xPosition(model.effort)}%`,
-                        top: `${yPosition(chartStats(model, size).accuracy)}%`,
-                      }}
-                      aria-label={`${model.familyDisplayName}, ${model.effort} effort, ${chartStats(model, size).accuracy.toFixed(1)}% accuracy`}
-                    >
-                      <span
-                        className="size-[10px] rounded-full border-2 border-card"
-                        style={{ backgroundColor: color }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {model.familyDisplayName} · {model.effort}:{" "}
-                      {chartStats(model, size).accuracy.toFixed(1)}%
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-                <span
-                  className="absolute flex max-w-[28%] min-w-0 items-center gap-1 text-xs"
-                  style={{
-                    left: `${xPosition(end.effort) + 2}%`,
-                    top: `${yPosition(chartStats(end, size).accuracy)}%`,
-                    transform: "translateY(-50%)",
-                  }}
-                  title={ladder[0].familyDisplayName}
-                >
-                  <ProviderLogo
-                    provider={ladder[0].provider}
-                    size={13}
-                    className="shrink-0"
-                  />
-                  <span className="truncate">
-                    {ladder[0].familyDisplayName}
-                  </span>
-                </span>
-              </div>
-            );
-          })}
+          {ordered.map((group) => (
+            <LadderRow
+              key={group.variants[0].family}
+              group={group}
+              size={size}
+            />
+          ))}
         </div>
+      )}
+      {reasoning.length > 0 && (
+        <div className="mt-7 min-w-0">
+          <h3 className="text-sm font-medium text-foreground">
+            Reasoning off → on
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            “On” uses the provider default; its effort level is unknown.
+          </p>
+          <div className="relative mt-4 h-6 font-mono text-[10px] text-muted-foreground">
+            <span className="absolute -translate-x-1/2" style={{ left: "10%" }}>
+              off
+            </span>
+            <span className="absolute -translate-x-1/2" style={{ left: "45%" }}>
+              on
+            </span>
+          </div>
+          {reasoning.map((group) => (
+            <LadderRow
+              key={group.variants[0].family}
+              group={group}
+              size={size}
+            />
+          ))}
+        </div>
+      )}
+      {!ladders.length && (
+        <p className="py-8 text-sm text-muted-foreground">
+          No families with comparable levels match these filters.
+        </p>
       )}
       <details className="mt-5 border-t border-border pt-3 text-sm">
         <summary className="cursor-pointer text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">
           View effort data table
         </summary>
         <div className="mt-3 max-h-96 overflow-auto">
-          <table className="w-full min-w-[360px] text-left text-xs">
+          <table className="w-full min-w-[400px] text-left text-xs">
             <thead>
               <tr className="border-b border-border">
                 <th className="py-2">Family</th>
-                <th>Effort</th>
+                <th>Level</th>
                 <th>Accuracy</th>
+                <th>Solved</th>
               </tr>
             </thead>
             <tbody>
-              {ladders.flatMap((ladder) =>
-                ladder.map((model) => (
-                  <tr key={model.model} className="border-b border-border/50">
-                    <td className="py-2">{model.familyDisplayName}</td>
-                    <td>{model.effort}</td>
-                    <td>{chartStats(model, size).accuracy.toFixed(1)}%</td>
-                  </tr>
-                )),
+              {ladders.flatMap((group) =>
+                group.variants.map((model) => {
+                  const value = chartStats(model, size);
+                  return (
+                    <tr key={model.model} className="border-b border-border/50">
+                      <td className="py-2">{model.familyDisplayName}</td>
+                      <td>
+                        {group.kind === "reasoning"
+                          ? model.effort === "none"
+                            ? "off"
+                            : "on (default)"
+                          : model.effort}
+                      </td>
+                      <td>{value.accuracy.toFixed(1)}%</td>
+                      <td>
+                        {value.correct}/{value.runs}
+                      </td>
+                    </tr>
+                  );
+                }),
               )}
             </tbody>
           </table>
