@@ -1,4 +1,4 @@
-import { generateText, jsonSchema, NoObjectGeneratedError, Output } from "ai";
+import { generateText, jsonSchema, NoObjectGeneratedError, Output, streamText } from "ai";
 import { codeBlock } from "common-tags";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
@@ -145,6 +145,19 @@ function printTable<T extends Record<string, unknown>>(data: T[]): void {
   console.log(`└${"─".repeat(sep.length)}┘`);
 }
 
+// Streaming changes only the transport: OpenRouter sends keepalive comments
+// while the model thinks, so no idle timer (ours or upstream) cuts off long,
+// silent requests. Used for models whose endpoints drop responses that take
+// more than five minutes.
+async function callModel(model: Model, options: Parameters<typeof generateText>[0]) {
+  if (!model.stream) return generateText(options);
+  let streamError: unknown;
+  const result = streamText({ ...options, onError: ({ error }) => { streamError = error; } } as Parameters<typeof streamText>[0]);
+  const [text, usage, providerMetadata] = await Promise.all([result.text, result.totalUsage, result.providerMetadata]);
+  if (streamError) throw streamError;
+  return { text, usage, providerMetadata };
+}
+
 // OpenRouter records each generation's cost; stats can lag a few seconds.
 async function fetchGenerationCost(id: string | undefined): Promise<number | null> {
   if (!id) return null;
@@ -222,7 +235,7 @@ async function runBenchmark(
     // Strict structured output: the provider constrains the final answer to the
     // schema, so models cannot wrap the grid in prose. require_parameters makes
     // OpenRouter refuse endpoints that would silently ignore the schema.
-    const resp = await generateText({
+    const resp = await callModel(model, {
       model: model.llm,
       prompt: puzzle.clues.canonical,
       system: systemPrompt,
