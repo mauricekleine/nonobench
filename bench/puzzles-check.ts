@@ -1,4 +1,6 @@
 import { strict as assert } from "node:assert";
+import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import type { Puzzle } from "../visualizer/components/puzzles";
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { getPuzzleId } from "./db";
@@ -7,6 +9,15 @@ import { solveByLines } from "./line-solver";
 // One-based puzzle numbers pinned by the exhaustive ambiguity check below.
 export const MULTIPLE_SOLUTION_PUZZLE_NUMBERS = [9, 11, 12, 15, 19, 22, 23, 25, 27, 30] as const;
 const ambiguousPuzzleNumbers = new Set<number>(MULTIPLE_SOLUTION_PUZZLE_NUMBERS);
+const LINE_SOLVABLE_20X20_IDS = new Set([
+  "ee8afee7d47c7ac6", "10ae67320255ae66", "565cb9b2c23c139f",
+  "a73bebc90376f757", "2854305400138ef4",
+]);
+const DEEP_20X20_IDS = new Set([
+  "44b158587297cf4b", "1b0723af88accdb9", "6f72b46ca59e728e",
+  "358414c49e908494", "dd480d72eb93ef3f",
+]);
+const uniquenessSolver = process.env.NONOGRAM_SOLVER ?? "/Users/maurice/Projects/nonogram-solver/build/nonogram_hybrid";
 
 function clue(line: string): number[] {
   return (line.match(/1+/g) ?? []).map((run) => run.length);
@@ -46,10 +57,27 @@ function checkPuzzle(puzzle: Puzzle, index: number): void {
     assert.deepEqual(clue(Array.from({ length: puzzle.height }, (_, row) => solution[row * puzzle.width + col]).join("")), columnClues[col]!);
   }
   if (puzzle.width === 20 && puzzle.height === 20) {
+    const id = getPuzzleId(puzzle);
+    assert.ok(LINE_SOLVABLE_20X20_IDS.has(id) || DEEP_20X20_IDS.has(id), `Unpinned 20x20 puzzle: ${id}`);
+    const expectedLineSolvable = LINE_SOLVABLE_20X20_IDS.has(id);
     const result = solveByLines(puzzle.width, puzzle.height, rowClues, columnClues);
-    assert.equal(result.solved, true);
-    assert.equal(result.grid, solution);
-    console.log(`20x20 puzzle ${index + 1} (${getPuzzleId(puzzle)}): line-solvable in ${result.sweeps} sweeps`);
+    assert.equal(result.solved, expectedLineSolvable);
+    if (expectedLineSolvable) assert.equal(result.grid, solution);
+    else assert.ok(result.grid.split("?").length - 1 >= 40);
+    if (existsSync(uniquenessSolver)) {
+      const check = spawnSync(uniquenessSolver, ["--check-unique", "-"], {
+        input: JSON.stringify({ rows: rowClues, columns: columnClues }), encoding: "utf8", timeout: 30000,
+      });
+      assert.equal(check.status, 0, check.error?.message ?? check.stderr);
+      const verified = JSON.parse(check.stdout) as { solved: boolean; unique: boolean; lineSolvable: boolean; solution: string; timeMs: number };
+      assert.equal(verified.solved, true);
+      assert.equal(verified.unique, true);
+      assert.equal(verified.lineSolvable, expectedLineSolvable);
+      assert.equal(verified.solution, solution);
+      console.log(`20x20 puzzle ${index + 1} (${id}): unique, lineSolvable=${result.solved}, unknown=${result.grid.split("?").length - 1}, cppTimeMs=${verified.timeMs}`);
+    } else {
+      console.log(`20x20 puzzle ${index + 1} (${id}): C++ uniqueness check skipped (solver missing), lineSolvable=${result.solved}`);
+    }
     return;
   }
   const rowOptions = rowClues.map((runs) => patterns(puzzle.width, runs));
@@ -132,6 +160,12 @@ function checkPuzzle(puzzle: Puzzle, index: number): void {
 
 if (import.meta.main) {
   assert.equal(PUZZLES.length, 40);
+  assert.equal(LINE_SOLVABLE_20X20_IDS.size, 5);
+  assert.equal(DEEP_20X20_IDS.size, 5);
+  assert.deepEqual(
+    new Set(PUZZLES.slice(30).map(getPuzzleId)),
+    new Set([...LINE_SOLVABLE_20X20_IDS, ...DEEP_20X20_IDS]),
+  );
   const index = Number(process.argv[2]);
   const puzzle = PUZZLES[index];
   if (!puzzle) throw new Error(`Unknown puzzle index: ${index}`);
