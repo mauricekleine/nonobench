@@ -22,7 +22,8 @@ import {
 import { gradeOutput } from "./grade";
 import { firstPartyAvailableFor, quantizationFor } from "./provider-pins";
 import { systemPromptFor } from "./prompt";
-import { answerFormatFor, CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
+import maxOutputEvidence from "./max-output-tokens.json";
+import { answerFormatFor, HARD_MODE_OUTPUT_TOKENS, CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 import { isProviderTimeout } from "./timeout";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
@@ -156,6 +157,11 @@ function printTable<T extends Record<string, unknown>>(data: T[]): void {
 // while the model thinks, so no idle timer (ours or upstream) cuts off long,
 // silent requests. Used for models whose endpoints drop responses that take
 // more than five minutes.
+function hardModeOutputTokens(model: Model): number {
+  const endpointMax = (maxOutputEvidence.models as Record<string, number | null>)[model.llm.modelId];
+  return Math.min(HARD_MODE_OUTPUT_TOKENS, endpointMax ?? HARD_MODE_OUTPUT_TOKENS);
+}
+
 async function callModel(model: Model, options: Parameters<typeof generateText>[0]) {
   if (!model.stream) return generateText(options);
   let streamError: unknown;
@@ -227,6 +233,7 @@ async function runBenchmark(
       system: systemPrompt,
       timeout: REQUEST_TIMEOUT_MS,
       providerOptions: requestProviderOptions(model),
+      ...(answerFormat === "rows" ? { maxOutputTokens: hardModeOutputTokens(model) } : {}),
       ...(outputMode === "json_schema" ? { output: Output.object({
         name: "nonogram_solution",
         schema: jsonSchema<{ solution: string | string[] }>({

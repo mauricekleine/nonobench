@@ -200,7 +200,28 @@ almost entirely.
 **Implication.** Standard no longer separates the frontier. That is the
 reason for Hard mode, and why its answer format (section 4) has to be right.
 
-## 10. The prompt is part of the method: version it
+## 10. Output budgets are part of the method
+
+**Assumed.** A model's answer ends when the model is done.
+
+**Saw.** No output limit was set, so every provider's default applied:
+65,536 tokens for Anthropic, OpenAI, Qwen and Meta, and 131,072 for
+DeepSeek, GLM and Kimi. On Standard, 105 answers across 28 variants were
+cut off mid-reasoning (`finish_reason: length`) and scored wrong. On the
+random Hard-mode pilot, 4 of Claude Opus 5.5's 6 misses were cut off at
+65,536 tokens.
+
+**Changed.** Hard mode gives every request the same 128,000-token budget,
+capped at the endpoint's own maximum (Gemini 3.8 Flash: 65,536). The Opus
+answers cut off in the pilot were rerun under that budget; answers that
+finished below the old limit are unaffected by it. Standard keeps the
+provider defaults and lists them under Limitations.
+
+**Open.** Whether to rerun Standard's cut-off answers under the same budget.
+Needing more than 65k tokens is itself a result about efficiency, but the
+limit differed by provider.
+
+## 11. The prompt is part of the method: version it
 
 **Saw.** The prompt gained the line "if there is no solution, output 0"
 partway through the original January session; 747 early runs used the

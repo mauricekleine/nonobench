@@ -19,3 +19,9 @@ export function answerFormatFor(size: string): AnswerFormat {
   if (override === "flat" || override === "rows") return override;
   return (EXTENDED_SIZES as readonly string[]).includes(size) ? "rows" : "flat";
 }
+
+// Hard mode answer budget. Without it each provider's default applies
+// (65,536 for some, 131,072 for others), which cuts off long reasoning
+// unevenly. Every Hard-mode request gets the same budget, capped at the
+// endpoint's own maximum (max-output-tokens.json).
+export const HARD_MODE_OUTPUT_TOKENS = 128_000;
