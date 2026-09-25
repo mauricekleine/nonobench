@@ -43,11 +43,11 @@ export function createMcpServer() {
 		{
 			title: "Get leaderboard",
 			description: "Models ranked by accuracy; defaults to all effort levels for compatibility.",
-			inputSchema: { size, provider: z.string().optional().describe("Comma-separated provider ids; empty means no filter"), family: z.string().optional().describe("Comma-separated family ids; empty means no filter"), effort: z.string().optional().describe("best, all (default), or one effort level; empty means all"), reasoning: z.boolean().optional(), open_weights: z.boolean().optional() },
+			inputSchema: { size, provider: z.string().optional().describe("Comma-separated provider ids; empty means no filter"), family: z.string().optional().describe("Comma-separated family ids; empty means no filter"), effort: z.string().optional().describe("best, all (default), or one effort level; empty means all"), reasoning: z.boolean().optional(), open_weights: z.boolean().optional(), min_correct: z.number().int().min(0).optional().describe("Minimum puzzles solved in the selected tier; default 0 includes unsolved variants") },
 			annotations: readOnly,
 		},
-		async ({ size, provider, family, effort, reasoning, open_weights }) => {
-			const filters: Filters = { size, providers: parseCommaList(provider), families: parseCommaList(family), effort: effort?.trim() || "all", reasoning, openWeights: open_weights };
+		async ({ size, provider, family, effort, reasoning, open_weights, min_correct }) => {
+			const filters: Filters = { size, providers: parseCommaList(provider), families: parseCommaList(family), effort: effort?.trim() || "all", reasoning, openWeights: open_weights, minCorrect: min_correct ?? 0 };
 			const error = validateFilters(getVariants().map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), filters, SIZES);
 			return error ? failure(error) : result({ updatedAt: RESULTS_TIMESTAMP, size: size ?? "all", models: getLeaderboard(size, filters) });
 		},

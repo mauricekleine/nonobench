@@ -55,3 +55,15 @@ test("empty provider and family lists impose no filter; empty effort means all",
     ),
   ).toBe(true);
 });
+
+test("min_correct is opt in and uses the selected tier", async () => {
+  const root = "https://example.test/api/v1/leaderboard";
+  const all = await GET(new Request(root)).json();
+  const solved = await GET(new Request(`${root}?min_correct=1`)).json();
+  expect(all.models.length).toBe(getVariants().length);
+  expect(solved.models.length).toBeLessThan(all.models.length);
+  expect(solved.models.every((model: { correct: number }) => model.correct >= 1)).toBe(true);
+  const sized = await GET(new Request(`${root}?size=5x5&min_correct=1`)).json();
+  expect(sized.models.every((model: { correct: number }) => model.correct >= 1)).toBe(true);
+  expect(GET(new Request(`${root}?min_correct=-1`)).status).toBe(400);
+});

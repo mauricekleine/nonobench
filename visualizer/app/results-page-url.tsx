@@ -21,6 +21,8 @@ const parsers = {
   s: parseAsString,
   levels: parseAsString,
   x: parseAsString,
+  z: parseAsString,
+  u: parseAsString,
 };
 export function UrlResultsPage() {
   const [query, setQuery] = useQueryStates(parsers);
@@ -73,14 +75,19 @@ export function UrlResultsPage() {
   };
   const metric: XMetric =
     query.x === "time" || query.x === "tokens" ? query.x : "cost";
+  const includeUnsolved = query.z === "1";
   return (
     <ResultsPage
-      filters={filters}
+      filters={{ ...filters, minCorrect: includeUnsolved ? 0 : 1 }}
       onFiltersChange={change}
       metric={metric}
       onMetricChange={(x) => {
         void setQuery({ x: x === "cost" ? null : x });
       }}
+      includeUnsolved={includeUnsolved}
+      onIncludeUnsolvedChange={(include) => void setQuery({ z: include ? "1" : null })}
+      perPuzzle={query.u === "avg"}
+      onPerPuzzleChange={(average) => void setQuery({ u: average ? "avg" : null })}
     />
   );
 }
@@ -88,10 +95,14 @@ export function UrlResultsPage() {
 export function DefaultResultsPage() {
   return (
     <ResultsPage
-      filters={{ effort: "best" }}
+      filters={{ effort: "best", minCorrect: 1 }}
       onFiltersChange={() => {}}
       metric="cost"
       onMetricChange={() => {}}
+      includeUnsolved={false}
+      onIncludeUnsolvedChange={() => {}}
+      perPuzzle={false}
+      onPerPuzzleChange={() => {}}
     />
   );
 }

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import resultsData from "@/app/results.json";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { applyFilters, type Filters, type LeaderboardVariant } from "@/lib/leaderboard";
+import { effortLabel } from "@/lib/display";
 import { PROVIDERS } from "@/lib/providers";
 
 export type DisplayModel = LeaderboardVariant & { displayName: string; familyDisplayName: string };
@@ -23,6 +24,8 @@ export function usePuzzleFilters() {
     effort: params.get("e") ?? "best",
     reasoning: params.has("r") ? params.get("r") === "true" : undefined,
     openWeights: params.has("w") ? params.get("w") === "true" : undefined,
+    // Like the homepage: variants that solved no puzzles are hidden unless z=1.
+    minCorrect: params.get("z") === "1" ? 0 : 1,
   }), [params]);
   const filtered = useMemo(() => applyFilters(models, filters), [filters]);
   const change = (patch: Partial<Filters>) => {
@@ -32,6 +35,7 @@ export function usePuzzleFilters() {
     if (Object.hasOwn(patch, "effort")) { if (patch.effort && patch.effort !== "best") next.set("e", patch.effort); else next.delete("e"); }
     if (Object.hasOwn(patch, "reasoning")) { if (patch.reasoning === undefined) next.delete("r"); else next.set("r", String(patch.reasoning)); }
     if (Object.hasOwn(patch, "openWeights")) { if (patch.openWeights === undefined) next.delete("w"); else next.set("w", String(patch.openWeights)); }
+    if (Object.hasOwn(patch, "minCorrect")) { if (patch.minCorrect === 0) next.set("z", "1"); else next.delete("z"); }
     router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
   };
   return { filters, models: filtered, change, params };
@@ -55,10 +59,11 @@ export function PuzzleFilters({ filters, change, count }: { filters: Filters; ch
           </div> : null; })}
       </div>
     </details>
-    <label className="text-xs text-muted-foreground">Effort <select className={control} value={filters.effort ?? "best"} onChange={(event) => change({ effort: event.target.value })}><option value="best">Best per family</option><option value="all">All</option>{[...new Set(models.map((model) => model.effort))].sort().map((effort) => <option key={effort} value={effort}>{effort}</option>)}</select></label>
+    <label className="text-xs text-muted-foreground">Effort <select className={control} value={filters.effort ?? "best"} onChange={(event) => change({ effort: event.target.value })}><option value="best">Best per family</option><option value="all">All</option>{[...new Set(models.map((model) => model.effort))].sort().map((effort) => <option key={effort} value={effort}>{effortLabel(effort)}</option>)}</select></label>
     <label className="text-xs text-muted-foreground">Reasoning <select className={control} value={filters.reasoning === undefined ? "any" : String(filters.reasoning)} onChange={(event) => change({ reasoning: event.target.value === "any" ? undefined : event.target.value === "true" })}><option value="any">Any</option><option value="true">Yes</option><option value="false">No</option></select></label>
     <label className="text-xs text-muted-foreground">Weights <select className={control} value={filters.openWeights === undefined ? "any" : String(filters.openWeights)} onChange={(event) => change({ openWeights: event.target.value === "any" ? undefined : event.target.value === "true" })}><option value="any">Any</option><option value="true">Open</option><option value="false">Proprietary</option></select></label>
-    <button className="text-xs text-ember underline focus-visible:outline-2 focus-visible:outline-ember" onClick={() => change({ providers: undefined, families: undefined, effort: "best", reasoning: undefined, openWeights: undefined })}>Reset</button>
+    <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={filters.minCorrect === 0} onChange={(event) => change({ minCorrect: event.target.checked ? 0 : 1 })} />Include variants that solved no puzzles</label>
+    <button className="text-xs text-ember underline focus-visible:outline-2 focus-visible:outline-ember" onClick={() => change({ providers: undefined, families: undefined, effort: "best", reasoning: undefined, openWeights: undefined, minCorrect: 1 })}>Reset</button>
   </div>;
 }
 

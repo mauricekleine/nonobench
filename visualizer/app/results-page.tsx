@@ -4,6 +4,7 @@ import {
   CaretDown,
   Copy,
   DownloadSimple,
+  GridFour,
   GithubLogo,
   Question,
   Rows,
@@ -30,6 +31,7 @@ import {
   type Filters,
 } from "@/lib/leaderboard";
 import { chartStats, type XMetric } from "@/lib/chart-data";
+import { effortLabel, effortTitle, formatDuration } from "@/lib/display";
 import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
 import { AccuracyScatter, EffortLadder, SizeBreakdown } from "./insight-charts";
@@ -94,15 +96,13 @@ const control =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
 const formatCost = (value: number) =>
   value < 0.01 ? `$${value.toFixed(4)}` : `$${value.toFixed(2)}`;
-const formatTime = (value: number) =>
-  value < 1000 ? `${Math.round(value)}ms` : `${(value / 1000).toFixed(2)}s`;
 
 function IncompleteBadge({ model }: { model: Model }) {
   return (
     <Popover>
       <PopoverTrigger
         type="button"
-        className="shrink-0 rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright"
+        className="shrink-0 cursor-pointer rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember hover:bg-ember/20 focus-visible:outline-2 focus-visible:outline-ember-bright"
       >
         incomplete
       </PopoverTrigger>
@@ -141,8 +141,8 @@ function ModelName({ model }: { model: Model }) {
       <span className="min-w-0 truncate" title={model.displayName}>
         {model.familyDisplayName}
       </span>
-      <span className="shrink-0 rounded border border-line-strong px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">
-        {model.effort}
+      <span title={effortTitle(model.effort)} className="shrink-0 rounded border border-line-strong px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">
+        {effortLabel(model.effort)}
       </span>
     </span>
   );
@@ -153,11 +153,19 @@ export default function ResultsPage({
   onFiltersChange,
   metric,
   onMetricChange,
+  includeUnsolved,
+  onIncludeUnsolvedChange,
+  perPuzzle,
+  onPerPuzzleChange,
 }: {
   filters: Filters;
   onFiltersChange: (patch: Partial<Filters>) => void;
   metric: XMetric;
   onMetricChange: (metric: XMetric) => void;
+  includeUnsolved: boolean;
+  onIncludeUnsolvedChange: (include: boolean) => void;
+  perPuzzle: boolean;
+  onPerPuzzleChange: (average: boolean) => void;
 }) {
   const [search, setSearch] = useState("");
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -187,6 +195,11 @@ export default function ResultsPage({
     () => applyFilters(results.byModel, filters),
     [filters],
   );
+  const hiddenCount = useMemo(() => {
+    const scope = { ...filters, effort: "all" };
+    return applyFilters(results.byModel, { ...scope, minCorrect: 0 }).length -
+      applyFilters(results.byModel, { ...scope, minCorrect: 1 }).length;
+  }, [filters]);
   const size = filters.size;
   const allLevels = filters.effort === "all";
   const rows = useMemo(
@@ -198,20 +211,20 @@ export default function ResultsPage({
           sort.key === "accuracy"
             ? aStats.accuracy
             : sort.key === "cost"
-              ? aStats.cost
-              : aStats.time;
+              ? perPuzzle ? aStats.cost / aStats.runs : aStats.cost
+              : perPuzzle ? aStats.time / aStats.runs : aStats.time;
         const bValue =
           sort.key === "accuracy"
             ? bStats.accuracy
             : sort.key === "cost"
-              ? bStats.cost
-              : bStats.time;
+              ? perPuzzle ? bStats.cost / bStats.runs : bStats.cost
+              : perPuzzle ? bStats.time / bStats.runs : bStats.time;
         return (
           (sort.desc ? bValue - aValue : aValue - bValue) ||
           a.model.localeCompare(b.model)
         );
       }),
-    [chosen, size, sort],
+    [chosen, size, sort, perPuzzle],
   );
   const updateFamilySelection = (next: Set<string>) =>
     onFiltersChange({
@@ -305,6 +318,10 @@ export default function ResultsPage({
             <Link href="/puzzles" className={control}>
               <Rows size={16} />
               Explore puzzles
+            </Link>
+            <Link href="/puzzles/overview" className={control}>
+              <GridFour size={16} />
+              Puzzle insights
             </Link>
             <a href="/results-raw.json" download className={control}>
               <DownloadSimple size={16} />
@@ -507,16 +524,17 @@ export default function ResultsPage({
               onChange={(event) =>
                 onFiltersChange({ effort: event.target.value })
               }
-              className={control + " appearance-none pr-3"}
+              className={control + " appearance-none pr-8"}
             >
               <option value="best">Best</option>
               <option value="all">All levels</option>
               {effortLevels.map((level) => (
                 <option key={level} value={level}>
-                  {level}
+                  {effortLabel(level)}
                 </option>
               ))}
             </select>
+            <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
           </label>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Size{" "}
@@ -530,7 +548,7 @@ export default function ResultsPage({
                       : event.target.value,
                 })
               }
-              className={control + " appearance-none pr-3"}
+              className={control + " appearance-none pr-8"}
             >
               <option value="all">Core overall</option>
               {displayedSizes.map((value) => (
@@ -539,8 +557,20 @@ export default function ResultsPage({
                 </option>
               ))}
             </select>
+            <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
           </label>
         </div>
+        {hiddenCount > 0 && (
+          <p className="mb-5 -mt-2 text-xs text-muted-foreground">
+            {includeUnsolved
+              ? `${hiddenCount} variants that solved no puzzles are shown`
+              : `${hiddenCount} variants that solved no puzzles are hidden`}{" "}
+            ·{" "}
+            <button type="button" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={() => onIncludeUnsolvedChange(!includeUnsolved)}>
+              {includeUnsolved ? "Hide them" : "Show them"}
+            </button>
+          </p>
+        )}
         <section className="mb-10">
           <Card className="pb-0">
             <div ref={chartRef}>
@@ -593,7 +623,7 @@ export default function ResultsPage({
                         <Tooltip>
                           <TooltipTrigger
                             type="button"
-                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(value.cost)} cost; ${formatTime(value.time)} total time`}
+                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(perPuzzle ? value.cost / value.runs : value.cost)} ${perPuzzle ? "cost per puzzle" : "total cost"}; ${formatDuration(perPuzzle ? value.time / value.runs : value.time)} ${perPuzzle ? "time per puzzle" : "total time"}`}
                             className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ember-bright sm:col-span-1 sm:col-start-2 sm:row-start-1"
                           >
                             <span
@@ -629,8 +659,8 @@ export default function ResultsPage({
                               {(interval.high * 100).toFixed(0)}%
                             </p>
                             <p>
-                              Cost {formatCost(value.cost)} · Time{" "}
-                              {formatTime(value.time)}
+                              {perPuzzle ? "Cost / puzzle" : "Total cost"} {formatCost(perPuzzle ? value.cost / value.runs : value.cost)} · {perPuzzle ? "Time / puzzle" : "Total time"}{" "}
+                              {formatDuration(perPuzzle ? value.time / value.runs : value.time)}
                             </p>
                           </TooltipContent>
                         </Tooltip>
@@ -667,11 +697,21 @@ export default function ResultsPage({
         />
         <EffortLadder models={results.byModel} filters={filters} />
         <SizeBreakdown models={chosen} size={size} />
-        <section>
-          <h2 className="mb-4 font-display text-base font-medium lowercase">
-            detailed model statistics
-          </h2>
-          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+        <section className="mt-10 rounded-lg border border-border bg-card" aria-labelledby="details-heading">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
+            <div>
+              <h2 id="details-heading" className="font-display text-base font-medium lowercase">detailed model statistics</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Accuracy and usage for the selected tier.</p>
+            </div>
+            <div role="group" aria-label="Cost and time units" className="inline-flex rounded-md border border-border bg-background p-1 text-xs">
+              {([false, true] as const).map((average) => (
+                <button key={String(average)} type="button" aria-pressed={perPuzzle === average} onClick={() => onPerPuzzleChange(average)} className={`rounded px-2.5 py-1.5 focus-visible:outline-2 focus-visible:outline-ember-bright ${perPuzzle === average ? "bg-ember text-background" : "text-muted-foreground hover:text-foreground"}`}>
+                  {average ? "Per puzzle" : "Totals"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[650px] text-sm">
               <thead>
                 <tr className="border-b border-border bg-foreground/5 text-left">
@@ -694,7 +734,7 @@ export default function ResultsPage({
                       95% interval
                     </span>
                   </th>
-                  {results.summary.sizes.map((value) => (
+                  {displayedSizes.map((value) => (
                     <th key={value} className="px-3 py-3">
                       {value}
                     </th>
@@ -709,7 +749,7 @@ export default function ResultsPage({
                         : "none"
                     }
                   >
-                    {sortButton("Cost", "cost")}
+                    {sortButton(perPuzzle ? "Cost / puzzle" : "Total cost", "cost")}
                   </th>
                   <th
                     className="px-3 py-3"
@@ -721,7 +761,11 @@ export default function ResultsPage({
                         : "none"
                     }
                   >
-                    {sortButton("Time", "time")}
+                    {sortButton(perPuzzle ? "Time / puzzle" : "Total time", "time")}
+                    {/* Runs overlap in parallel, so this is summed solve time, not wall-clock. */}
+                    <span className="block text-[10px] font-normal text-dim">
+                      {perPuzzle ? "avg solve time" : "sum of solve times"}
+                    </span>
                   </th>
                 </tr>
               </thead>
@@ -747,7 +791,7 @@ export default function ResultsPage({
                           {(interval.high * 100).toFixed(0)}%)
                         </span>
                       </td>
-                      {results.summary.sizes.map((grid) => {
+                      {displayedSizes.map((grid) => {
                         const entry = model.bySize.find(
                           (row) => row.size === grid && row.runs > 0,
                         );
@@ -761,10 +805,10 @@ export default function ResultsPage({
                         );
                       })}
                       <td className="px-3 py-3 font-mono text-muted-foreground">
-                        {formatCost(value.cost)}
+                        {formatCost(perPuzzle ? value.cost / value.runs : value.cost)}
                       </td>
                       <td className="px-3 py-3 font-mono text-muted-foreground">
-                        {formatTime(value.time)}
+                        {formatDuration(perPuzzle ? value.time / value.runs : value.time)}
                       </td>
                     </tr>
                   );
@@ -773,11 +817,10 @@ export default function ResultsPage({
             </table>
           </div>
         </section>
-        <section className="mt-12">
-          <h2 className="mb-5 font-display text-base font-medium lowercase">
-            statistics by grid size
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="mt-10 rounded-lg border border-border bg-card p-4 sm:p-6" aria-labelledby="grid-stats-heading">
+          <h2 id="grid-stats-heading" className="font-display text-base font-medium lowercase">statistics by grid size</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Combined results for the selected models.</p>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {results.summary.sizes.map((grid, index) => {
               const entries = chosen
                 .map((model) => model.bySize.find((row) => row.size === grid))
@@ -820,7 +863,7 @@ export default function ResultsPage({
                       {correct}/{runs} solved
                     </p>
                     <div className="mt-4 flex gap-4 border-t border-border pt-3 font-mono text-xs text-muted-foreground">
-                      <span>{formatTime(totalTime / runs)} avg time</span>
+                      <span>{formatDuration(totalTime / runs)} avg time</span>
                       <span>{formatCost(totalCost / runs)} avg cost</span>
                     </div>
                   </CardContent>

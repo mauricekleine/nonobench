@@ -14,6 +14,7 @@ const leaderboardParams = [
 	{ name: "effort", in: "query", description: "best, all, or a specific effort level. Omitted or empty defaults to all for backwards compatibility.", schema: { type: "string", default: "all" } },
 	{ name: "reasoning", in: "query", description: "true includes only reasoning variants; false includes only non-reasoning variants.", schema: { type: "boolean" } },
 	{ name: "open_weights", in: "query", description: "true includes only verified open-weight models; false includes only proprietary models. Unknown weights are excluded by both.", schema: { type: "boolean" } },
+	{ name: "min_correct", in: "query", description: "Minimum puzzles solved in the selected tier. Default 0 includes variants that solved none; use 1 to hide them.", schema: { type: "integer", minimum: 0, default: 0 } },
 ];
 
 const error = { description: "Error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } };
@@ -175,7 +176,7 @@ const spec = {
 								openWeights: { type: ["boolean", "null"], description: "null means unknown; excluded by both open_weights=true and open_weights=false." },
 								addedAt: { type: ["string", "null"], format: "date-time" },
 								family: { type: "string", description: "Underlying model; variants differ only in reasoning effort." },
-								effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default)." },
+								effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default). default means reasoning on without adjustable levels." },
 								provider: { type: ["string", "null"], description: "OpenRouter provider prefix, e.g. openai or anthropic." },
 								earlierBatch: { type: "boolean", description: "True for runs from the original benchmark batch." },
 								complete: { type: "boolean", description: "False when not every core puzzle has a finished run." },
@@ -201,7 +202,7 @@ const spec = {
 					openWeights: { type: ["boolean", "null"], description: "null means unknown; excluded by both open_weights=true and open_weights=false." },
 					addedAt: { type: ["string", "null"], format: "date-time" },
 					family: { type: "string", description: "Underlying model; variants differ only in reasoning effort." },
-					effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default)." },
+					effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default). default means reasoning on without adjustable levels." },
 					provider: { type: ["string", "null"], description: "OpenRouter provider prefix, e.g. openai or anthropic." },
 					earlierBatch: { type: "boolean", description: "True for runs from the original benchmark batch." },
 					complete: { type: "boolean", description: "False when not every core puzzle has a finished run." },
