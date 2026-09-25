@@ -670,6 +670,9 @@ export const MODELS: Model[] = [
   reasoningModel("moonshotai/kimi-k3", "kimi-k3", "medium"),
   reasoningModel("x-ai/grok-4.7", "grok-4.7", "medium"),
   reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "medium"),
+  // Effort ladder, step 3: Sol gained 5 at high; Opus gets its first step.
+  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "xhigh"),
+  reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "medium"),
   // No effort control on OpenRouter: reasoning on at the provider default.
   { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
