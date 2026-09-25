@@ -673,6 +673,8 @@ export const MODELS: Model[] = [
   // Effort ladder, step 3: Sol gained 5 at high; Opus gets its first step.
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "xhigh"),
   reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "medium"),
+  // Step 4: Opus gained 9 at medium (18 to 27); Sol lost 2 at xhigh and stops.
+  reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "high"),
   // No effort control on OpenRouter: reasoning on at the provider default.
   { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
