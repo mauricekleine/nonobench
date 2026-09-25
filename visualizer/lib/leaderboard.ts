@@ -7,6 +7,7 @@ export type Filters = {
   reasoning?: boolean;
   openWeights?: boolean;
   size?: string;
+  minCorrect?: number;
 };
 
 export type LeaderboardVariant = {
@@ -19,7 +20,14 @@ export type LeaderboardVariant = {
   complete?: boolean;
   overallAccuracy: number;
   overallRuns: number;
-  bySize: { size: string; runs: number; accuracy: number; totalCost: number }[];
+  overallCorrect?: number;
+  bySize: {
+    size: string;
+    runs: number;
+    correct?: number;
+    accuracy: number;
+    totalCost: number;
+  }[];
   displayName?: string;
   familyDisplayName?: string;
 };
@@ -104,6 +112,16 @@ export function applyFilters<T extends LeaderboardVariant>(
           (entry) => entry.size === filters.size && entry.runs > 0,
         ),
     )
+    .filter((model) => {
+      const correct = filters.size
+        ? (() => {
+            const entry = model.bySize.find((row) => row.size === filters.size);
+            return entry?.correct ?? Math.round((entry?.accuracy ?? 0) * (entry?.runs ?? 0) / 100);
+          })()
+        : model.overallCorrect ??
+          Math.round((model.overallAccuracy * model.overallRuns) / 100);
+      return correct >= (filters.minCorrect ?? 0);
+    })
     .sort(
       (a, b) =>
         Number(scoreForSize(b, filters.size).toFixed(1)) -
@@ -162,6 +180,16 @@ export function parseApiFilters(params: URLSearchParams): {
       filters: {},
       error: 'Invalid open_weights. Use "true" or "false".',
     };
+  const minCorrectValue = params.get("min_correct");
+  const minCorrect = minCorrectValue === null ? 0 : Number(minCorrectValue);
+  if (
+    (minCorrectValue !== null && !/^(0|[1-9]\d*)$/.test(minCorrectValue)) ||
+    !Number.isSafeInteger(minCorrect)
+  )
+    return {
+      filters: {},
+      error: "Invalid min_correct. Use a non-negative integer.",
+    };
   return {
     filters: {
       providers: parseCommaList(params.get("provider")),
@@ -170,6 +198,7 @@ export function parseApiFilters(params: URLSearchParams): {
       reasoning,
       openWeights,
       size: params.get("size")?.trim() || undefined,
+      minCorrect,
     },
     error: null,
   };

@@ -20,6 +20,7 @@ import {
   type XMetric,
 } from "@/lib/chart-data";
 import { EFFORT_ORDER, effortRank } from "@/lib/insights";
+import { effortDescription, effortLabel, effortTitle } from "@/lib/display";
 import { type Filters } from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
 
@@ -247,7 +248,7 @@ export function AccuracyScatter({
                       type="button"
                       onFocus={() => setActiveFamily(point.model.family)}
                       onBlur={() => setActiveFamily(null)}
-                      aria-label={`${point.model.displayName}, ${point.model.effort} effort, ${point.y.toFixed(1)}% accuracy, ${metricValue(point.x, metric)} per puzzle`}
+                      aria-label={`${point.model.displayName}, ${effortDescription(point.model.effort)}, ${point.y.toFixed(1)}% accuracy, ${metricValue(point.x, metric)} per puzzle`}
                       className="pointer-events-none absolute -left-3 -top-3 flex size-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-bright"
                       style={{
                         opacity:
@@ -267,9 +268,10 @@ export function AccuracyScatter({
                     <TooltipContent side="top">
                       <strong>{point.model.displayName}</strong>
                       <p>
-                        {point.model.effort} effort · {point.y.toFixed(1)}%
+                        {effortDescription(point.model.effort)} · {point.y.toFixed(1)}%
                         accuracy
                       </p>
+                      {effortTitle(point.model.effort) && <p>{effortTitle(point.model.effort)}</p>}
                       <p>{metricValue(point.x, metric)} per puzzle</p>
                     </TooltipContent>
                   </Tooltip>
@@ -318,9 +320,10 @@ export function AccuracyScatter({
               >
                 <strong>{hovered.model.displayName}</strong>
                 <div>
-                  {hovered.model.effort} effort · {hovered.y.toFixed(1)}%
+                  {effortDescription(hovered.model.effort)} · {hovered.y.toFixed(1)}%
                   accuracy
                 </div>
+                {effortTitle(hovered.model.effort) && <div>{effortTitle(hovered.model.effort)}</div>}
                 <div>{metricValue(hovered.x, metric)} per puzzle</div>
               </div>
             )}
@@ -374,7 +377,7 @@ export function AccuracyScatter({
               {points.map((point) => (
                 <tr key={point.id} className="border-b border-border/50">
                   <td className="py-2">{point.model.familyDisplayName}</td>
-                  <td>{point.model.effort}</td>
+                  <td title={effortTitle(point.model.effort)}>{effortLabel(point.model.effort)}</td>
                   <td>{point.y.toFixed(1)}%</td>
                   <td>{metricValue(point.x, metric)}</td>
                   <td>{frontierIds.has(point.id) ? "Yes" : ""}</td>
@@ -465,10 +468,13 @@ function LadderRow({
           group.kind === "reasoning"
             ? model.effort === "none"
               ? "reasoning off"
-              : "reasoning on (provider default)"
+              : "reasoning on"
             : `${model.effort} effort`;
         return (
           <div key={model.model}>
+            <span aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 whitespace-nowrap rounded bg-card px-0.5 font-mono text-[10px] text-muted-foreground" style={{ left: `${x}%`, bottom: "2%" }}>
+              {group.kind === "reasoning" ? model.effort === "none" ? "off" : "on" : model.effort === "medium" ? "med" : model.effort === "minimal" ? "min" : model.effort === "xhigh" ? "xh" : model.effort}
+            </span>
             <span
               aria-hidden="true"
               className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap font-mono text-[10px] font-medium tabular-nums text-foreground sm:text-xs"
@@ -491,10 +497,18 @@ function LadderRow({
               <TooltipContent>
                 {model.familyDisplayName} · {level}: {value.accuracy.toFixed(1)}
                 % ({value.correct}/{value.runs} solved)
+                {effortTitle(model.effort) && <p>{effortTitle(model.effort)}</p>}
               </TooltipContent>
             </Tooltip>
           </div>
         );
+      })}
+      {group.variants.slice(1).map((model, index) => {
+        const previous = group.variants[index];
+        const delta = chartStats(model, size).correct - chartStats(previous, size).correct;
+        const middleX = (xPosition(previous) + xPosition(model)) / 2;
+        const middleY = (yPosition(chartStats(previous, size).accuracy) + yPosition(chartStats(model, size).accuracy)) / 2;
+        return <span key={`${previous.model}-${model.model}`} aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded border border-border bg-card px-1 font-mono text-[10px] tabular-nums text-foreground" style={{ left: `${middleX}%`, top: `${middleY}%` }}>{delta > 0 ? `+${delta}` : delta < 0 ? `−${-delta}` : "0"}</span>;
       })}
       <span
         className="absolute flex max-w-[34%] min-w-0 items-center gap-1 text-xs"
@@ -541,7 +555,7 @@ export function EffortLadder({
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
         All measured ordered levels appear even when Effort is set to Best.
-        Values show puzzles solved. Rows are sorted by endpoint change and each
+        Values show puzzles solved; steps show the change in solved puzzles. Rows are sorted by endpoint change and each
         uses its own vertical score scale.
       </p>
       {ordered.length > 0 && (
@@ -619,12 +633,12 @@ export function EffortLadder({
                   return (
                     <tr key={model.model} className="border-b border-border/50">
                       <td className="py-2">{model.familyDisplayName}</td>
-                      <td>
+                      <td title={effortTitle(model.effort)}>
                         {group.kind === "reasoning"
                           ? model.effort === "none"
                             ? "off"
-                            : "on (default)"
-                          : model.effort}
+                            : "on"
+                          : effortLabel(model.effort)}
                       </td>
                       <td>{value.accuracy.toFixed(1)}%</td>
                       <td>
@@ -677,8 +691,8 @@ export function SizeBreakdown({
                 className="shrink-0"
               />
               <span className="truncate">{model.familyDisplayName}</span>
-              <span className="shrink-0 font-mono text-[10px] text-dim">
-                {model.effort}
+              <span title={effortTitle(model.effort)} className="shrink-0 font-mono text-[10px] text-dim">
+                {effortLabel(model.effort)}
               </span>
             </span>
             <div
@@ -738,7 +752,7 @@ export function SizeBreakdown({
               {models.map((model) => (
                 <tr key={model.model} className="border-b border-border/50">
                   <td className="py-2">
-                    {model.familyDisplayName} ({model.effort})
+                    {model.familyDisplayName} (<span title={effortTitle(model.effort)}>{effortLabel(model.effort)}</span>)
                   </td>
                   {sizes.map((grid) => {
                     const entry = model.bySize.find(

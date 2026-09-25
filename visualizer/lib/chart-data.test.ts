@@ -92,6 +92,12 @@ describe("chart data", () => {
     ).toEqual(["Beta"]);
   });
 
+  test("ladders also exclude unsolved variants when the page hides them", () => {
+    const group = [variant("Delta", "low", 0), variant("Delta", "high", 80)];
+    expect(effortLadders(group, { minCorrect: 0 })).toHaveLength(1);
+    expect(effortLadders(group, { minCorrect: 1 })).toHaveLength(0);
+  });
+
   test("orders the biggest endpoint change first, then the best score", () => {
     const groups = effortLadders(variants, {});
     expect(groups.map((group) => group.variants[0].family)).toEqual([

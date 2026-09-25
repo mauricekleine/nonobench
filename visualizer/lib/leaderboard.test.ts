@@ -127,3 +127,20 @@ test("unknown weight status matches neither true nor false", () => {
   expect(applyFilters(unknown, { openWeights: true })).toEqual([]);
   expect(applyFilters(unknown, { openWeights: false })).toEqual([]);
 });
+
+test("minimum solved filter uses the selected tier and keeps zero as the API default", () => {
+  const zero = {
+    ...variants[0],
+    model: "zero",
+    family: "zero",
+    overallAccuracy: 0,
+    overallCorrect: 0,
+    bySize: [{ size: "5x5", runs: 10, correct: 2, accuracy: 20, totalCost: 1 }],
+  };
+  expect(applyFilters([zero], { effort: "all" })).toHaveLength(1);
+  expect(applyFilters([zero], { effort: "all", minCorrect: 1 })).toHaveLength(0);
+  expect(applyFilters([zero], { effort: "all", size: "5x5", minCorrect: 1 })).toHaveLength(1);
+  expect(parseApiFilters(new URLSearchParams("min_correct=1")).filters.minCorrect).toBe(1);
+  expect(parseApiFilters(new URLSearchParams()).filters.minCorrect).toBe(0);
+  expect(parseApiFilters(new URLSearchParams("min_correct=1.5")).error).toContain("min_correct");
+});
