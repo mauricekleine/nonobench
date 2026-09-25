@@ -51,10 +51,15 @@ const spec = {
 				responses: { "200": json("Model results", { $ref: "#/components/schemas/Model" }), "404": error },
 			},
 		},
+		"/api/v1/models/{model}/puzzles": { get: {
+			operationId: "getModelPuzzles", summary: "Puzzle outcomes for one model, including solved puzzle ids",
+			parameters: [{ name: "model", in: "path", required: true, schema: { type: "string" } }],
+			responses: { "200": json("Model puzzle outcomes", { $ref: "#/components/schemas/ModelPuzzles" }), "404": error },
+		} },
 		"/api/v1/puzzles": {
 			get: {
 				operationId: "listPuzzles",
-				summary: "The 30 benchmark puzzles with their clues",
+				summary: "The 40 benchmark puzzles with their clues",
 				parameters: [sizeParam],
 				responses: {
 					"200": json("Puzzles", {
@@ -107,6 +112,15 @@ const spec = {
 				responses: { "200": json("Check result", { $ref: "#/components/schemas/ClueCheck" }), "400": error, "404": error },
 			},
 		},
+		"/api/v1/puzzles/{id}/results": { get: {
+			operationId: "getPuzzleResults", summary: "Per-model results for one puzzle",
+			parameters: [
+				{ name: "id", in: "path", required: true, schema: { type: "string" } },
+				...leaderboardParams.filter((param) => param.name !== "size"),
+				{ name: "include_answers", in: "query", description: "Include each model's parsed 0/1 grid when available.", schema: { type: "boolean", default: false } },
+			],
+			responses: { "200": json("Puzzle results", { $ref: "#/components/schemas/PuzzleResults" }), "400": error, "404": error },
+		} },
 		"/api/v1/runs": {
 			get: {
 				operationId: "listRuns",
@@ -138,6 +152,11 @@ const spec = {
 	components: {
 		schemas: {
 			Error: { type: "object", properties: { error: { type: "string" } } },
+			PuzzleResults: { type: "object", properties: {
+				updatedAt: { type: "string", format: "date-time" }, puzzleId: { type: "string" }, index: { type: "integer" }, size: { type: "string" }, attempts: { type: "integer" }, solved: { type: "integer" },
+				runs: { type: "array", items: { type: "object", properties: { model: { type: "string" }, displayName: { type: "string" }, family: { type: "string" }, effort: { type: ["string", "null"] }, provider: { type: ["string", "null"] }, status: { type: "string", enum: ["success", "timeout"] }, correct: { type: "boolean" }, answer: { type: ["string", "null"], description: "Only present when include_answers=true." }, tokens: { type: "integer" }, cost: { type: "number" }, durationMs: { type: "number" } } } },
+			} },
+			ModelPuzzles: { type: "object", properties: { model: { type: "string" }, displayName: { type: "string" }, solved: { type: "integer" }, attempted: { type: "integer" }, puzzles: { type: "array", items: { type: "object", properties: { id: { type: "string" }, index: { type: "integer" }, size: { type: "string" }, solveRate: { type: "number" }, state: { type: "string", enum: ["solved", "wrong", "cut-off", "not-run"] }, correct: { type: "boolean" }, status: { type: "string" }, cost: { type: "number" }, durationMs: { type: "number" } } } } } },
 			Leaderboard: {
 				type: "object",
 				properties: {

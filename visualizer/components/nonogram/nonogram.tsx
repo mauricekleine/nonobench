@@ -7,17 +7,20 @@ import { NonogramColumnClues } from "./nonogram-column-clues";
 import { NonogramsGrid } from "./nonogram-grid";
 import { NonogramRowClues } from "./nonogram-row-clues";
 import { useNonogramStore } from "./store";
+import type { CellState } from "@/lib/puzzle-insights";
 
 type Props = {
   height: number;
   solution: string;
   width: number;
+  overlay?: CellState[];
 };
 
 export function Nonogram({
   height,
   solution,
   width,
+  overlay,
 }: Props) {
   const initialize = useNonogramStore((state) => state.initialize);
 
@@ -60,7 +63,7 @@ export function Nonogram({
 
       <NonogramRowClues />
 
-      <NonogramsGrid onDragMove={handleDragMove} />
+      <NonogramsGrid onDragMove={handleDragMove} overlay={overlay} />
 
       <DragTooltip ref={tooltipReference} />
     </div>

@@ -18,6 +18,8 @@ import {
 } from "@/lib/data";
 import { checkClues } from "@/lib/nonogram";
 import { parseCommaList, validateFilters, type Filters } from "@/lib/leaderboard";
+import { filteredModelIds, loadPuzzleResults } from "@/lib/puzzle-results-server";
+import { runState } from "@/lib/puzzle-insights";
 
 export const MCP_SERVER_INFO = { name: "nonobench", title: "Nonobench", version: "1.0.0" };
 
@@ -33,7 +35,7 @@ const size = z
 
 export function createMcpServer() {
 	const server = new McpServer(MCP_SERVER_INFO, {
-		instructions: `Nonobench measures how well LLMs solve nonogram (picross) puzzles: 30 puzzles across ${SIZES.join(", ")} grids. Accuracy is the share of puzzles where the model's grid satisfies every row and column clue. Results last updated ${RESULTS_TIMESTAMP}.`,
+		instructions: `Nonobench measures how well LLMs solve nonogram (picross) puzzles: 40 puzzles across ${SIZES.join(", ")} grids. The 20x20 tier is not yet run. Accuracy is the share of puzzles where the model's grid satisfies every row and column clue. Results last updated ${RESULTS_TIMESTAMP}.`,
 	});
 
 	server.registerTool(
@@ -119,6 +121,41 @@ export function createMcpServer() {
 			return found ? result(checkClues(found.puzzle, grid.replace(/\s/g, ""))) : failure(`Unknown puzzle "${id}".`);
 		},
 	);
+
+	server.registerTool("get_puzzle_results", {
+		title: "Get puzzle results",
+		description: "Per-model outcomes for one puzzle. Answers are omitted unless requested.",
+		inputSchema: { id: z.string(), provider: z.string().optional(), family: z.string().optional(), effort: z.string().optional(), reasoning: z.boolean().optional(), open_weights: z.boolean().optional(), include_answers: z.boolean().optional() },
+		annotations: readOnly,
+	}, async ({ id, provider, family, effort, reasoning, open_weights, include_answers }) => {
+		if (!getPuzzle(id)) return failure(`Unknown puzzle "${id}".`);
+		const filters: Filters = { providers: parseCommaList(provider), families: parseCommaList(family), effort: effort?.trim() || "all", reasoning, openWeights: open_weights };
+		const invalid = validateFilters(getVariants().map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), filters, SIZES);
+		if (invalid) return failure(invalid);
+		const puzzle = (await loadPuzzleResults()).puzzles.find((entry) => entry.id === id);
+		if (!puzzle) return failure(`No results for puzzle "${id}".`);
+		const selected = filteredModelIds(filters);
+		const runs = puzzle.runs.filter((run) => selected.has(run.model)).map((run) => {
+			const model = getVariants().find((entry) => entry.model === run.model);
+			const { answer, ...rest } = run;
+			return { ...rest, displayName: model?.displayName ?? run.model, family: model?.family ?? run.model, effort: model?.effort ?? null, provider: model?.provider ?? null, ...(include_answers ? { answer } : {}) };
+		});
+		return result({ puzzleId: id, index: puzzle.index, size: puzzle.size, attempts: runs.length, solved: runs.filter((run) => run.correct).length, runs });
+	});
+
+	server.registerTool("get_model_puzzles", {
+		title: "Get model puzzles",
+		description: "Which puzzles one model solved, missed, timed out on, or has not run.",
+		inputSchema: { model: z.string() }, annotations: readOnly,
+	}, async ({ model }) => {
+		const metadata = getModel(model);
+		if (!metadata) return failure(`Unknown model "${model}".`);
+		const puzzles = (await loadPuzzleResults()).puzzles.map((puzzle) => {
+			const run = puzzle.runs.find((entry) => entry.model === model);
+			return { id: puzzle.id, index: puzzle.index, size: puzzle.size, solveRate: puzzle.solveRate, state: runState(run) };
+		});
+		return result({ model, displayName: metadata.displayName, solved: puzzles.filter((puzzle) => puzzle.state === "solved").length, attempted: puzzles.filter((puzzle) => puzzle.state !== "not-run").length, puzzles });
+	});
 
 	server.registerTool(
 		"list_runs",
