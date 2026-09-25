@@ -96,9 +96,30 @@ rows directly. VGRP-Bench, which includes nonograms, reports format failures
 as a major problem even with 2D JSON arrays
 ([VGRP-Bench](https://arxiv.org/html/2503.23064v2)).
 
-**Changed.** Hard mode was paused after about $14 of runs. Candidate fix:
-ask for the grid row by row, as an array of row strings or one row per line,
-so each row resets the count. Being tested before rerunning.
+**Tested.** Hard mode was paused after about $14 of runs and the same three
+models were rerun with one row per line (structured output: an array of row
+strings):
+
+| Model | 20x20 flat | 20x20 rows |
+|---|---|---|
+| GPT-6 Sol high | 0/10 | 10/10 |
+| Claude Opus 5.5 high | 2/10 | 10/10 |
+| Claude Fable 5.1 high | 0/10 | 7/10 |
+
+At 15x15 the same change made no difference (separate experiment database,
+four models): 23/40 solved with the flat string, 21/40 with rows. Per model:
+- Claude Opus 5.5: 8 → 7
+- GPT-6 Sol: 7 → 4
+- Gemini 3.8 Flash: 5 → 5
+- DeepSeek V4.1 Flash: 3 → 5
+
+Those shifts are within single-run noise. At 225 cells, the wrong-length
+answers mostly come from models that are lost on the logic, not from
+miscounting.
+
+**Changed.** Hard mode asks for one row per line. Standard keeps the flat
+string: it is not the bottleneck at 15x15, and changing it would break
+comparability with every earlier run.
 
 **Open.** A wrong-length answer can be a counting failure or a model that is
 lost on the logic; the answer alone doesn't say which. Standard also carries
@@ -120,8 +141,19 @@ puzzles that line logic alone can't solve, checked by an exact solver.
 Difficulty is described by line-solvability and how far line propagation
 gets, not by size.
 
-**Open.** A principled difficulty scale (search depth, branching needed) would
-make tiers comparable.
+**Then saw.** With the row format, GPT-6 Sol and Claude Opus 5.5 solved all
+ten Hard-mode puzzles, including the five that line logic alone can't solve.
+Opus solved one of those with 459 reasoning tokens, far too few to deduce a
+20x20 grid. The generator draws smooth, symmetric, picture-like shapes, and a
+model can complete the picture instead of solving the clues. Uniqueness and
+"not line-solvable" are necessary for a hard puzzle, but they are not
+enough: the picture must not give the answer away. The noisier 15x15s stay
+much harder (Sol 7/10, Opus 8/10).
+
+**Open.** Hard puzzles need low visual regularity as well as logical depth,
+e.g. random fills at a density that keeps them unique. A principled
+difficulty scale (search depth, branching needed) would make tiers
+comparable.
 
 ## 6. Provider limits become scores unless handled explicitly
 
