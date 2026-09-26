@@ -60,7 +60,7 @@ export function Nonogram({
   );
 
   return (
-    <div className="grid w-fit relative">
+    <div className="grid w-max relative">
       <div className="col-start-2">
         <NonogramColumnClues violatedColumns={violatedColumns} />
       </div>

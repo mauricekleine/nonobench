@@ -104,7 +104,7 @@ export default function Image() {
 						fontSize: 22,
 					}}
 				>
-					LLM nonogram benchmark
+					v1.2 · LLM nonogram benchmark
 				</div>
 			</div>
 

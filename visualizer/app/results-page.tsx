@@ -7,6 +7,7 @@ import {
   GridFour,
   GithubLogo,
   Question,
+  Info,
   Rows,
   XLogo,
 } from "@phosphor-icons/react";
@@ -28,13 +29,16 @@ import { NonobenchMark } from "@/components/nonobench-mark";
 import {
   applyFilters,
   availableSizes,
+  type BenchmarkVersion,
   type Filters,
 } from "@/lib/leaderboard";
 import { chartStats, type XMetric } from "@/lib/chart-data";
-import { effortLabel, effortTitle, formatDuration } from "@/lib/display";
+import { effortLabel, effortTitle, formatCost, formatDuration, shortSizeLabel, sizeLabel } from "@/lib/display";
 import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
-import { AccuracyScatter, EffortLadder, SizeBreakdown } from "./insight-charts";
+import { AccuracyScatter, EffortLadder } from "./insight-charts";
+import { HardModeIntro, HardModeMisses } from "./hard-mode";
+import { EffortToggle, filterPill, ModelsPopover, Segmented, Switch } from "@/components/filter-bar";
 import resultsData from "./results.json";
 
 type SizeData = {
@@ -56,6 +60,8 @@ type Model = {
   displayName: string;
   familyDisplayName: string;
   providerName: string;
+  version?: BenchmarkVersion;
+  legacy?: boolean;
   openWeights: boolean | null;
   addedAt: string | null;
   complete: boolean;
@@ -73,38 +79,35 @@ type Results = {
   byModel: Model[];
 };
 const results = resultsData as Results;
-const allFamilies = [...new Set(results.byModel.map((model) => model.family))];
-const providerGroups = [
-  ...new Set(results.byModel.map((model) => model.provider)),
-]
-  .sort()
-  .map((id) => ({
-    id,
-    families: allFamilies.filter((family) =>
-      results.byModel.some(
-        (model) => model.family === family && model.provider === id,
-      ),
-    ),
-  }));
+const familiesWithResults = new Set(results.byModel.filter((model) => model.overallCorrect > 0).map((model) => model.family)).size;
+const variantsWithResults = results.byModel.filter((model) => model.overallCorrect > 0).length;
+const HARD_SIZE = "20x20";
 const displayedSizes = results.summary.sizes.filter((size) =>
   availableSizes(results.byModel).includes(size),
 );
-const effortLevels = [
-  ...new Set(results.byModel.map((model) => model.effort)),
-].sort();
+const hasHardMode = displayedSizes.includes(HARD_SIZE);
+const standardSizes = displayedSizes.filter((size) => size !== HARD_SIZE);
 const control =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
-const formatCost = (value: number) =>
-  value < 0.01 ? `$${value.toFixed(4)}` : `$${value.toFixed(2)}`;
 
-function IncompleteBadge({ model }: { model: Model }) {
+// Run progress per variant, for watching a benchmark wave locally. Shown in
+// `next dev`, or in a local production build with NEXT_PUBLIC_SHOW_PROGRESS=1.
+const showProgress =
+  process.env.NODE_ENV === "development" ||
+  process.env.NEXT_PUBLIC_SHOW_PROGRESS === "1";
+
+function IncompleteBadge({ model, size }: { model: Model; size?: string }) {
+  const runs = chartStats(model, size).runs;
+  const expected = size ? 10 : 30;
+  // Only while puzzles are still missing; timeouts are finished attempts.
+  const progress = showProgress && runs < expected ? ` ${runs}/${expected}` : "";
   return (
     <Popover>
       <PopoverTrigger
         type="button"
         className="shrink-0 cursor-pointer rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember hover:bg-ember/20 focus-visible:outline-2 focus-visible:outline-ember-bright"
       >
-        incomplete
+        incomplete{progress}
       </PopoverTrigger>
       <PopoverContent side="bottom">
         {model.timeouts > 0 ? (
@@ -120,7 +123,7 @@ function IncompleteBadge({ model }: { model: Model }) {
           </>
         ) : (
           <p>
-            Not every puzzle has a finished run yet; the score covers finished
+            Some puzzles don’t have a finished run yet. The score covers finished
             runs.
           </p>
         )}
@@ -149,7 +152,7 @@ function ModelName({ model }: { model: Model }) {
 }
 
 export default function ResultsPage({
-  filters,
+  filters: baseFilters,
   onFiltersChange,
   metric,
   onMetricChange,
@@ -167,36 +170,25 @@ export default function ResultsPage({
   perPuzzle: boolean;
   onPerPuzzleChange: (average: boolean) => void;
 }) {
-  const [search, setSearch] = useState("");
-  const [aboutOpen, setAboutOpen] = useState(false);
+  const isHard = baseFilters.size === HARD_SIZE;
+  // Hard mode shows every variant that ran it: 0/10 is information there.
+  const filters = useMemo(
+    () => (isHard ? { ...baseFilters, minCorrect: 0 } : baseFilters),
+    [isHard, baseFilters],
+  );
   const [sort, setSort] = useState<{ key: string; desc: boolean }>({
     key: "accuracy",
     desc: true,
   });
   const [copyDone, setCopyDone] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
-  const selectedFamilies = useMemo(
-    () =>
-      new Set(
-        allFamilies.filter(
-          (family) =>
-            (!filters.families || filters.families.includes(family)) &&
-            (!filters.providers ||
-              results.byModel.some(
-                (model) =>
-                  model.family === family &&
-                  filters.providers!.includes(model.provider),
-              )),
-        ),
-      ),
-    [filters.families, filters.providers],
-  );
   const chosen = useMemo(
     () => applyFilters(results.byModel, filters),
     [filters],
   );
   const hiddenCount = useMemo(() => {
-    const scope = { ...filters, effort: "all" };
+    // Count what the switch would reveal under the current effort setting.
+    const scope = { ...filters };
     return applyFilters(results.byModel, { ...scope, minCorrect: 0 }).length -
       applyFilters(results.byModel, { ...scope, minCorrect: 1 }).length;
   }, [filters]);
@@ -226,27 +218,6 @@ export default function ResultsPage({
       }),
     [chosen, size, sort, perPuzzle],
   );
-  const updateFamilySelection = (next: Set<string>) =>
-    onFiltersChange({
-      providers: undefined,
-      families: next.size === allFamilies.length ? undefined : [...next],
-    });
-  const toggleFamily = (family: string) => {
-    const next = new Set(selectedFamilies);
-    if (next.has(family)) next.delete(family);
-    else next.add(family);
-    updateFamilySelection(next);
-  };
-  const toggleProvider = (provider: string) => {
-    const next = new Set(selectedFamilies);
-    const group = providerGroups.find((entry) => entry.id === provider)!;
-    const all = group.families.every((family) => next.has(family));
-    for (const family of group.families) {
-      if (all) next.delete(family);
-      else next.add(family);
-    }
-    updateFamilySelection(next);
-  };
   const downloadChart = async () => {
     if (!chartRef.current) return;
     const { toPng } = await import("html-to-image");
@@ -285,323 +256,99 @@ export default function ResultsPage({
       <div className="noise-overlay" />
       <div className="pointer-events-none fixed inset-0 grid-pattern" />
       <div className="pointer-events-none fixed inset-0 atmosphere" />
-      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-        <header className="mb-8">
-          <div className="nono-trigger mb-4 flex w-fit items-end gap-4">
+      <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-12">
+        <header className="mb-6 sm:mb-8">
+          <div className="nono-trigger mb-3 flex w-fit items-end gap-2 sm:mb-4 sm:gap-4">
             <NonobenchMark />
-            <h1 className="pb-px font-display text-3xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
+            <h1 className="pb-px font-display text-2xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
               nonobench<span className="sr-only"> results</span>
             </h1>
+            <Link href="/how-it-works#whats-new" className="mb-0.5 rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link>
           </div>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Benchmark results for LLM performance on Nonogram puzzle solving.
-            Compare accuracy, speed, and cost across grid sizes.
+            How well LLMs solve nonogram puzzles. Compare accuracy, speed
+            and cost across grid sizes.
           </p>
-          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-dim">
-            <span>{allFamilies.length} model families</span>
-            <span>{results.byModel.length} variants</span>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-dim sm:mt-5 sm:gap-x-6">
+            <span>{familiesWithResults} models · {variantsWithResults} variants with solved results</span>
             <span>
               Updated {new Date(results.timestamp).toLocaleDateString()}
             </span>
           </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={control}
-              onClick={() => setAboutOpen(!aboutOpen)}
-              aria-expanded={aboutOpen}
-            >
-              <Question size={16} />
-              What are Nonograms?
-              <CaretDown size={13} />
-            </button>
-            <Link href="/puzzles" className={control}>
-              <Rows size={16} />
-              Explore puzzles
-            </Link>
-            <Link href="/puzzles/overview" className={control}>
-              <GridFour size={16} />
-              Puzzle insights
-            </Link>
-            <a href="/results-raw.json" download className={control}>
-              <DownloadSimple size={16} />
-              Raw results
-            </a>
-          </div>
-          {aboutOpen && (
-            <div className="mt-3 max-w-2xl rounded-lg border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
-              Nonograms are logic puzzles solved by filling cells according to
-              row and column clues. A model scores when its answer satisfies
-              every clue. The headline score covers 5×5, 10×10 and 15×15
-              puzzles.
-            </div>
-          )}
+          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 whitespace-nowrap sm:mt-5" aria-label="Site navigation">
+            <Link href="/how-it-works" className={control}><Question size={16} />How it works</Link>
+            <Link href="/puzzles" className={control}><Rows size={16} />Explore puzzles</Link>
+            <Link href="/puzzles/overview" className={control}><GridFour size={16} />Puzzle insights</Link>
+            <a href="/results-raw.json" download className={control}><DownloadSimple size={16} />Raw results</a>
+          </nav>
         </header>
         <div
           role="group"
           aria-label="Leaderboard filters"
-          className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-foreground/5 p-3"
+          className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-foreground/5 p-2.5"
         >
-          <Popover>
-            <PopoverTrigger type="button" className={control}>
-              Models{" "}
-              <span className="font-mono text-xs text-muted-foreground">
-                {selectedFamilies.size} of {allFamilies.length}
-              </span>
-              <CaretDown size={13} />
-            </PopoverTrigger>
-            <PopoverContent
-              side="bottom"
-              className="w-[min(24rem,calc(100vw-2rem))] p-0"
-            >
-              <div className="border-b border-border p-3">
-                <label htmlFor="model-search" className="sr-only">
-                  Search models
-                </label>
-                <input
-                  id="model-search"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search models or providers"
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ember"
-                />
-                <div className="mt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => updateFamilySelection(new Set(allFamilies))}
-                    className="text-ember hover:underline"
-                  >
-                    Select all
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateFamilySelection(new Set())}
-                    className="text-ember hover:underline"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onFiltersChange({
-                        providers: undefined,
-                        families: undefined,
-                        effort: "best",
-                        reasoning: undefined,
-                        openWeights: undefined,
-                        size: undefined,
-                      });
-                      setSearch("");
-                    }}
-                    className="text-ember hover:underline"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-              <div className="max-h-80 overflow-y-auto p-3">
-                {providerGroups.map((group) => {
-                  const families = group.families.filter((family) =>
-                    `${family} ${results.byModel.find((model) => model.family === family)?.familyDisplayName ?? ""} ${group.id}`
-                      .toLowerCase()
-                      .includes(search.toLowerCase()),
-                  );
-                  if (!families.length) return null;
-                  const selectedCount = group.families.filter((family) =>
-                    selectedFamilies.has(family),
-                  ).length;
-                  return (
-                    <div key={group.id} className="mb-3">
-                      <label className="flex items-center gap-2 py-1 text-sm font-medium text-foreground">
-                        <input
-                          type="checkbox"
-                          checked={selectedCount === group.families.length}
-                          ref={(node) => {
-                            if (node)
-                              node.indeterminate =
-                                selectedCount > 0 &&
-                                selectedCount < group.families.length;
-                          }}
-                          onChange={() => toggleProvider(group.id)}
-                        />
-                        <ProviderLogo provider={group.id} size={15} />
-                        {PROVIDERS[group.id]?.name ?? group.id}
-                        <span className="ml-auto font-mono text-xs text-dim">
-                          {selectedCount}/{group.families.length}
-                        </span>
-                      </label>
-                      {families.map((family) => (
-                        <label
-                          key={family}
-                          className="ml-5 flex items-center gap-2 py-1 text-xs text-muted-foreground"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedFamilies.has(family)}
-                            onChange={() => toggleFamily(family)}
-                          />
-                          <span className="truncate">
-                            {results.byModel.find(
-                              (model) => model.family === family,
-                            )?.familyDisplayName ?? family}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Popover>
-            <PopoverTrigger type="button" className={control}>
-              Filters
-              {(filters.reasoning !== undefined ||
-                filters.openWeights !== undefined) && (
-                <>
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 rounded-full bg-ember"
-                  />
-                  <span className="sr-only">Active filters</span>
-                </>
-              )}
-              <CaretDown size={13} />
-            </PopoverTrigger>
-            <PopoverContent side="bottom" className="w-56 space-y-3">
-              <label className="block text-sm text-foreground">
-                Reasoning
-                <select
-                  value={
-                    filters.reasoning === undefined
-                      ? "any"
-                      : String(filters.reasoning)
-                  }
-                  onChange={(event) =>
-                    onFiltersChange({
-                      reasoning:
-                        event.target.value === "any"
-                          ? undefined
-                          : event.target.value === "true",
-                    })
-                  }
-                  className="mt-1 w-full rounded border border-border bg-background p-2 text-sm"
-                >
-                  <option value="any">Any</option>
-                  <option value="true">Reasoning</option>
-                  <option value="false">Non-reasoning</option>
-                </select>
-              </label>
-              <label className="block text-sm text-foreground">
-                Weights
-                <select
-                  value={
-                    filters.openWeights === undefined
-                      ? "any"
-                      : String(filters.openWeights)
-                  }
-                  onChange={(event) =>
-                    onFiltersChange({
-                      openWeights:
-                        event.target.value === "any"
-                          ? undefined
-                          : event.target.value === "true",
-                    })
-                  }
-                  className="mt-1 w-full rounded border border-border bg-background p-2 text-sm"
-                >
-                  <option value="any">Any</option>
-                  <option value="true">Open weights</option>
-                  <option value="false">Proprietary</option>
-                </select>
-              </label>
-            </PopoverContent>
-          </Popover>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            Effort{" "}
-            <select
-              value={filters.effort ?? "best"}
-              onChange={(event) =>
-                onFiltersChange({ effort: event.target.value })
-              }
-              className={control + " appearance-none pr-8"}
-            >
-              <option value="best">Best</option>
-              <option value="all">All levels</option>
-              {effortLevels.map((level) => (
-                <option key={level} value={level}>
-                  {effortLabel(level)}
-                </option>
-              ))}
-            </select>
-            <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
-          </label>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            Size{" "}
-            <select
-              value={size ?? "all"}
-              onChange={(event) =>
-                onFiltersChange({
-                  size:
-                    event.target.value === "all"
-                      ? undefined
-                      : event.target.value,
-                })
-              }
-              className={control + " appearance-none pr-8"}
-            >
-              <option value="all">Core overall</option>
-              {displayedSizes.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-            <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
-          </label>
+          {hasHardMode && (
+            <>
+              <Segmented
+                label="Benchmark tier"
+                value={isHard ? "hard" : "standard"}
+                onChange={(value) => onFiltersChange({ size: value === "hard" ? HARD_SIZE : undefined })}
+                options={[{ value: "standard", label: "v1.2 Standard" }, { value: "hard", label: "v1.2 Hard" }]}
+              />
+              <span className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
+            </>
+          )}
+          <ModelsPopover filters={filters} change={onFiltersChange} sources={results.byModel} />
+          <EffortToggle filters={filters} change={onFiltersChange} />
+          {!isHard && (
+            <label className="relative inline-flex items-center">
+              <span className="sr-only">Grid size</span>
+              <select
+                value={size ?? "all"}
+                onChange={(event) => onFiltersChange({ size: event.target.value === "all" ? undefined : event.target.value })}
+                className={`${filterPill} appearance-none pr-8`}
+              >
+                <option value="all">All sizes</option>
+                {standardSizes.map((value) => (
+                  <option key={value} value={value}>{sizeLabel(value)}</option>
+                ))}
+              </select>
+              <CaretDown size={13} className="pointer-events-none absolute right-3" aria-hidden="true" />
+            </label>
+          )}
+          {!isHard && hiddenCount > 0 && (
+            <div className="sm:ml-auto">
+              <Switch
+                checked={includeUnsolved}
+                onChange={onIncludeUnsolvedChange}
+                label={`Unsolved (${hiddenCount})`}
+                hint="Show variants that solved no puzzles"
+              />
+            </div>
+          )}
         </div>
-        {hiddenCount > 0 && (
-          <p className="mb-5 -mt-2 text-xs text-muted-foreground">
-            {includeUnsolved
-              ? `${hiddenCount} variants that solved no puzzles are shown`
-              : `${hiddenCount} variants that solved no puzzles are hidden`}{" "}
-            ·{" "}
-            <button type="button" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={() => onIncludeUnsolvedChange(!includeUnsolved)}>
-              {includeUnsolved ? "Hide them" : "Show them"}
-            </button>
-          </p>
-        )}
+        {isHard && <HardModeIntro />}
         <section className="mb-10">
           <Card className="pb-0">
             <div ref={chartRef}>
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <CardTitle>
-                    <h2 className="font-display text-base font-medium lowercase">
-                      model accuracy
-                    </h2>
-                  </CardTitle>
-                  <span className="font-mono text-xs text-dim">
-                    {chosen.length} {allLevels ? "variants" : "models"} ·{" "}
-                    {size ?? "core overall"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <CardTitle><h2 className="font-display text-base font-medium lowercase">model accuracy</h2></CardTitle>
+                    <Popover>
+                      <PopoverTrigger type="button" aria-label="What do the thin lines mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={17} /></PopoverTrigger>
+                      <PopoverContent side="bottom">The thin lines show 95% Wilson intervals. With 30 Standard puzzles, small score differences may not mean much.</PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-dim">{chosen.length} {allLevels ? "variants" : "models"} · {size ? shortSizeLabel(size) : "Standard"}</span>
+                    <button type="button" title={copyDone ? "Copied" : "Copy link"} aria-label={copyDone ? "Copied" : "Copy link"} className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={copyLink}><Copy size={15} /></button>
+                    <button type="button" title="Download chart as PNG" aria-label="Download chart as PNG" className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={downloadChart}><DownloadSimple size={15} /></button>
+                  </div>
                 </div>
-                <Popover>
-                  <PopoverTrigger
-                    type="button"
-                    className="mt-2 text-left text-xs text-muted-foreground underline decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright"
-                  >
-                    What do the thin ranges mean?
-                  </PopoverTrigger>
-                  <PopoverContent side="bottom">
-                    The thin whiskers show 95% Wilson intervals. With 30
-                    puzzles, one puzzle is 3.3 points; overlapping ranges are
-                    statistically close.
-                  </PopoverContent>
-                </Popover>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1 pb-6">
+                <div className="space-y-1 pb-6 pt-4">
                   {chosen.length === 0 && (
                     <p className="py-10 text-center text-sm text-muted-foreground">
                       No models match these filters. Select more models or
@@ -618,12 +365,12 @@ export default function ResultsPage({
                       >
                         <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-1.5 text-xs sm:text-sm">
                           <ModelName model={model} />
-                          {!model.complete && <IncompleteBadge model={model} />}
+                          {!model.complete && <IncompleteBadge model={model} size={size} />}
                         </div>
                         <Tooltip>
                           <TooltipTrigger
                             type="button"
-                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(perPuzzle ? value.cost / value.runs : value.cost)} ${perPuzzle ? "cost per puzzle" : "total cost"}; ${formatDuration(perPuzzle ? value.time / value.runs : value.time)} ${perPuzzle ? "time per puzzle" : "total time"}`}
+                            aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)} ${perPuzzle ? "cost per puzzle" : "total cost"}; ${formatDuration(perPuzzle ? value.time / value.runs : value.time)} ${perPuzzle ? "time per puzzle" : "total time"}`}
                             className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ember-bright sm:col-span-1 sm:col-start-2 sm:row-start-1"
                           >
                             <span
@@ -659,16 +406,15 @@ export default function ResultsPage({
                               {(interval.high * 100).toFixed(0)}%
                             </p>
                             <p>
-                              {perPuzzle ? "Cost / puzzle" : "Total cost"} {formatCost(perPuzzle ? value.cost / value.runs : value.cost)} · {perPuzzle ? "Time / puzzle" : "Total time"}{" "}
+                              {perPuzzle ? "Cost / puzzle" : "Total cost"} {formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)} · {perPuzzle ? "Time / puzzle" : "Total time"}{" "}
                               {formatDuration(perPuzzle ? value.time / value.runs : value.time)}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                         <span className="col-start-2 row-start-1 text-right font-mono text-[10px] font-medium tabular-nums sm:col-start-3 sm:text-xs">
                           {value.accuracy.toFixed(1)}%{" "}
-                          <span className="text-muted-foreground">
-                            ({(interval.low * 100).toFixed(0)}–
-                            {(interval.high * 100).toFixed(0)}%)
+                          <span className="whitespace-nowrap text-muted-foreground">
+                            ({(interval.low * 100).toFixed(0)}–{(interval.high * 100).toFixed(0)}%)
                           </span>
                         </span>
                       </div>
@@ -677,26 +423,16 @@ export default function ResultsPage({
                 </div>
               </CardContent>
             </div>
-            <div className="flex flex-wrap gap-2 px-6 pb-5">
-              <button type="button" className={control} onClick={copyLink}>
-                <Copy size={15} />
-                {copyDone ? "Copied" : "Copy link"}
-              </button>
-              <button type="button" className={control} onClick={downloadChart}>
-                <DownloadSimple size={15} />
-                Download chart as PNG
-              </button>
-            </div>
           </Card>
         </section>
+        {isHard && <HardModeMisses models={chosen} />}
         <AccuracyScatter
           models={chosen}
           size={size}
           metric={metric}
           onMetricChange={onMetricChange}
         />
-        <EffortLadder models={results.byModel} filters={filters} />
-        <SizeBreakdown models={chosen} size={size} />
+        {!isHard && <EffortLadder models={results.byModel} filters={filters} />}
         <section className="mt-10 rounded-lg border border-border bg-card" aria-labelledby="details-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
             <div>
@@ -715,7 +451,7 @@ export default function ResultsPage({
             <table className="w-full min-w-[650px] text-sm">
               <thead>
                 <tr className="border-b border-border bg-foreground/5 text-left">
-                  <th className="sticky left-0 bg-card px-4 py-3">Model</th>
+                  <th className="sticky left-0 z-10 w-32 max-w-32 bg-card px-2 py-3 sm:w-56 sm:max-w-56 sm:px-4">Model</th>
                   <th
                     className="px-3 py-3"
                     aria-sort={
@@ -727,7 +463,7 @@ export default function ResultsPage({
                     }
                   >
                     {sortButton(
-                      size ? `${size} accuracy` : "Core accuracy",
+                      size ? `${shortSizeLabel(size)} accuracy` : "Standard accuracy",
                       "accuracy",
                     )}
                     <span className="block text-[10px] font-normal text-muted-foreground">
@@ -736,7 +472,7 @@ export default function ResultsPage({
                   </th>
                   {displayedSizes.map((value) => (
                     <th key={value} className="px-3 py-3">
-                      {value}
+                      {shortSizeLabel(value)}
                     </th>
                   ))}
                   <th
@@ -762,10 +498,6 @@ export default function ResultsPage({
                     }
                   >
                     {sortButton(perPuzzle ? "Time / puzzle" : "Total time", "time")}
-                    {/* Runs overlap in parallel, so this is summed solve time, not wall-clock. */}
-                    <span className="block text-[10px] font-normal text-dim">
-                      {perPuzzle ? "avg solve time" : "sum of solve times"}
-                    </span>
                   </th>
                 </tr>
               </thead>
@@ -778,17 +510,16 @@ export default function ResultsPage({
                       key={model.model}
                       className="border-b border-border/50 last:border-b-0 hover:bg-foreground/5"
                     >
-                      <td className="sticky left-0 max-w-64 bg-card px-4 py-3">
+                      <td className="sticky left-0 z-10 w-32 max-w-32 bg-card px-2 py-3 sm:w-56 sm:max-w-56 sm:px-4">
                         <div className="flex items-center gap-1">
                           <ModelName model={model} />
-                          {!model.complete && <IncompleteBadge model={model} />}
+                          {!model.complete && <IncompleteBadge model={model} size={size} />}
                         </div>
                       </td>
                       <td className="px-3 py-3 font-mono text-ember">
                         {value.accuracy.toFixed(1)}%{" "}
-                        <span className="text-xs text-muted-foreground">
-                          ({(interval.low * 100).toFixed(0)}–
-                          {(interval.high * 100).toFixed(0)}%)
+                        <span className="block whitespace-nowrap text-[10px] text-muted-foreground sm:inline sm:text-xs">
+                          ({(interval.low * 100).toFixed(0)}–{(interval.high * 100).toFixed(0)}%)
                         </span>
                       </td>
                       {displayedSizes.map((grid) => {
@@ -805,7 +536,7 @@ export default function ResultsPage({
                         );
                       })}
                       <td className="px-3 py-3 font-mono text-muted-foreground">
-                        {formatCost(perPuzzle ? value.cost / value.runs : value.cost)}
+                        {formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)}
                       </td>
                       <td className="px-3 py-3 font-mono text-muted-foreground">
                         {formatDuration(perPuzzle ? value.time / value.runs : value.time)}
@@ -819,9 +550,9 @@ export default function ResultsPage({
         </section>
         <section className="mt-10 rounded-lg border border-border bg-card p-4 sm:p-6" aria-labelledby="grid-stats-heading">
           <h2 id="grid-stats-heading" className="font-display text-base font-medium lowercase">statistics by grid size</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Combined results for the selected models.</p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {results.summary.sizes.map((grid, index) => {
+          <p className="mt-1 text-sm text-muted-foreground">Combined results for the models shown.</p>
+          <div className={`mt-5 grid gap-4 sm:grid-cols-2 ${displayedSizes.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
+            {displayedSizes.map((grid, index) => {
               const entries = chosen
                 .map((model) => model.bySize.find((row) => row.size === grid))
                 .filter((row): row is SizeData => !!row && row.runs > 0);
@@ -848,10 +579,10 @@ export default function ResultsPage({
                         className="rounded px-2 py-1 font-mono text-sm"
                         style={{ color, backgroundColor: `${color}20` }}
                       >
-                        {grid}
+                        {sizeLabel(grid)}
                       </span>
                       <span className="ml-3 text-sm font-normal text-muted-foreground">
-                        {entries.length} models
+                        {entries.length} {allLevels ? "variants" : "models"}
                       </span>
                     </CardTitle>
                   </CardHeader>
@@ -864,7 +595,7 @@ export default function ResultsPage({
                     </p>
                     <div className="mt-4 flex gap-4 border-t border-border pt-3 font-mono text-xs text-muted-foreground">
                       <span>{formatDuration(totalTime / runs)} avg time</span>
-                      <span>{formatCost(totalCost / runs)} avg cost</span>
+                      <span>{formatCost(totalCost / runs, true)} avg cost</span>
                     </div>
                   </CardContent>
                 </Card>

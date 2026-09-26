@@ -1,8 +1,19 @@
 import { selectBestVariants } from "./select-best-variants";
 
+export const VERSIONS = ["1.0", "1.1", "1.2"] as const;
+export type BenchmarkVersion = (typeof VERSIONS)[number];
+
+// Older exports only distinguish the original and September batches.
+// JSON imports type `version` as a plain string, so validate it here.
+export function variantVersion(model: { version?: string; legacy?: boolean }): BenchmarkVersion {
+  const version = VERSIONS.find((known) => known === model.version);
+  return version ?? (model.legacy === false ? "1.2" : "1.0");
+}
+
 export type Filters = {
   providers?: string[];
   families?: string[];
+  versions?: BenchmarkVersion[];
   effort?: "best" | "all" | string;
   reasoning?: boolean;
   openWeights?: boolean;
@@ -17,6 +28,8 @@ export type LeaderboardVariant = {
   provider: string;
   reasoning: boolean;
   openWeights?: boolean | null;
+  version?: string;
+  legacy?: boolean;
   complete?: boolean;
   overallAccuracy: number;
   overallRuns: number;
@@ -91,6 +104,7 @@ export function applyFilters<T extends LeaderboardVariant>(
     (model) =>
       (!filters.providers || filters.providers.includes(model.provider)) &&
       (!filters.families || filters.families.includes(model.family)) &&
+      (!filters.versions || filters.versions.includes(variantVersion(model))) &&
       (filters.reasoning === undefined ||
         model.reasoning === filters.reasoning) &&
       (filters.openWeights === undefined ||
@@ -100,10 +114,15 @@ export function applyFilters<T extends LeaderboardVariant>(
         filters.effort === "all" ||
         model.effort === filters.effort),
   );
+  // Hard mode ran one variant per family: pick among the variants that ran
+  // the size, so a family whose best Standard level changed later still shows.
+  const pool = filters.size && !CORE_SIZES.has(filters.size)
+    ? eligible.filter((model) => model.bySize.some((entry) => entry.size === filters.size && entry.runs > 0))
+    : eligible;
   const selected =
     !filters.effort || filters.effort === "best"
-      ? selectBestVariants(eligible)
-      : eligible;
+      ? selectBestVariants(pool)
+      : pool;
   return selected
     .filter(
       (model) =>
@@ -139,6 +158,9 @@ export function validateFilters(
   const providers = new Set(variants.map((model) => model.provider));
   const families = new Set(variants.map((model) => model.family));
   const efforts = new Set(variants.map((model) => model.effort));
+  for (const version of filters.versions ?? [])
+    if (!VERSIONS.includes(version))
+      return `Unknown version "${version}". Use one of: ${VERSIONS.join(", ")}.`;
   for (const provider of filters.providers ?? [])
     if (!providers.has(provider))
       return `Unknown provider "${provider}". Use one of: ${[...providers].sort().join(", ")}.`;
@@ -194,6 +216,7 @@ export function parseApiFilters(params: URLSearchParams): {
     filters: {
       providers: parseCommaList(params.get("provider")),
       families: parseCommaList(params.get("family")),
+      versions: parseCommaList(params.get("version")) as BenchmarkVersion[] | undefined,
       effort: params.get("effort")?.trim() || "all",
       reasoning,
       openWeights,
@@ -216,7 +239,7 @@ export function parseCommaList(
 }
 
 type UrlQuery = Record<
-  "p" | "f" | "e" | "r" | "w" | "s" | "levels",
+  "p" | "f" | "v" | "e" | "r" | "w" | "s" | "levels",
   string | null
 >;
 export function sanitizeUrlFilters(
@@ -227,6 +250,7 @@ export function sanitizeUrlFilters(
   const invalidKeys: (keyof UrlQuery)[] = [];
   const providers = parseCommaList(query.p);
   const families = query.f === "~" ? [] : parseCommaList(query.f);
+  const versions = query.v === "~" ? [] : parseCommaList(query.v) as BenchmarkVersion[] | undefined;
   const effort = query.e?.trim();
   const size = query.s?.trim();
   if (
@@ -245,6 +269,8 @@ export function sanitizeUrlFilters(
     (!effort || validateFilters(variants, { effort }, sizes))
   )
     invalidKeys.push("e");
+  if (query.v !== null && query.v !== "~" && (!versions || validateFilters(variants, { versions }, sizes)))
+    invalidKeys.push("v");
   if (query.s !== null && (!size || validateFilters(variants, { size }, sizes)))
     invalidKeys.push("s");
   if (query.r !== null && query.r !== "true" && query.r !== "false")
@@ -261,6 +287,7 @@ export function sanitizeUrlFilters(
     filters: {
       providers: invalidKeys.includes("p") ? undefined : providers,
       families: invalidKeys.includes("f") ? undefined : families,
+      versions: invalidKeys.includes("v") ? undefined : versions,
       effort: invalidKeys.includes("e")
         ? query.levels === "all"
           ? "all"

@@ -1,5 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
+import { PUZZLES } from "../visualizer/components/puzzles";
+import { parseClues } from "../visualizer/lib/nonogram";
+import { getPuzzleId } from "./db";
+import { solveByLines } from "./line-solver";
 
 type ExportedRun = {
 	model: string;
@@ -12,10 +16,12 @@ type ExportedRun = {
 };
 
 type ExportedPuzzle = {
+	id: string;
 	index: number;
 	size: string;
 	width: number;
 	height: number;
+	lineSolvable: boolean;
 	attempts: number;
 	solved: number;
 	runs: ExportedRun[];
@@ -35,6 +41,18 @@ const dashboardResults = JSON.parse(
 ) as DashboardResults;
 
 describe("puzzle results export", () => {
+	test("20x20 IDs and line solvability match the current puzzle set", () => {
+		const extended = puzzleResults.puzzles.slice(30);
+		expect(extended).toHaveLength(10);
+		expect(extended.filter((puzzle) => puzzle.lineSolvable)).toHaveLength(5);
+		for (const exported of extended) {
+			const source = PUZZLES[exported.index]!;
+			const clues = parseClues(source);
+			expect(exported.id).toBe(getPuzzleId(source));
+			expect(exported.lineSolvable).toBe(solveByLines(source.width, source.height, clues.rows, clues.columns).solved);
+		}
+	});
+
 	test("per-model core correct counts match results.json", () => {
 		const coreSizes = new Set(dashboardResults.summary.coreSizes);
 		for (const model of dashboardResults.byModel) {

@@ -1,8 +1,9 @@
 import {
   createOpenRouter,
-  type OpenRouterCompletionSettings,
+  type OpenRouterChatSettings,
 } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
+import effortEvidence from "./effort-levels.json";
 
 // Bun's fetch aborts after 300s without the response headers arriving, and some
 // providers stay silent while a model thinks, which failed every Muse Spark run
@@ -18,11 +19,46 @@ const openrouter = createOpenRouter({ fetch: fetchWithoutIdleTimeout });
 export const REQUEST_TIMEOUT_MS = 3 * 60 * 60 * 1000;
 export const MAX_PARALLEL_RUNS_PER_MODEL = 10;
 
-const defaultProviderOptions: OpenRouterCompletionSettings = {
+const defaultProviderOptions: OpenRouterChatSettings = {
   usage: {
     include: true,
   },
 };
+
+// OpenRouter endpoint tags are verified by refresh-provider-pins.ts. A base
+// provider slug includes its normal quantized endpoint variants.
+const firstPartyProviders: Record<string, string> = {
+  allenai: "allenai", anthropic: "anthropic", "bytedance-seed": "seed",
+  deepseek: "deepseek", google: "google-ai-studio", meta: "meta",
+  minimax: "minimax", mistralai: "mistral", moonshotai: "moonshotai",
+  openai: "openai", qwen: "alibaba", "x-ai": "xai",
+  xiaomi: "xiaomi", "z-ai": "z-ai",
+};
+
+export function pinnedSettings(id: string, settings: OpenRouterChatSettings = defaultProviderOptions): OpenRouterChatSettings {
+  const maker = id.split("/")[0] ?? "";
+  const slug = settings.provider?.only?.[0] ?? firstPartyProviders[maker];
+  if (!slug) throw new Error(`No first-party provider configured for ${id}`);
+  return { ...settings, provider: { order: [slug], allow_fallbacks: false } };
+}
+
+function pinnedModel(id: string, settings: OpenRouterChatSettings = defaultProviderOptions) {
+  return openrouter(id, pinnedSettings(id, settings));
+}
+
+export function pinnedProviderFor(model: Model): string {
+  const settings = (model.llm as { settings?: OpenRouterChatSettings }).settings;
+  const slug = settings?.provider?.order?.[0];
+  if (!slug) throw new Error(`Missing provider pin for ${model.name}`);
+  return slug;
+}
+
+export function requestProviderOptions(model: Model): { openrouter: { provider: { order: string[]; allow_fallbacks: false; require_parameters?: true } } } {
+  return { openrouter: { provider: {
+    order: [pinnedProviderFor(model)], allow_fallbacks: false,
+    ...(outputModeFor(model) === "json_schema" ? { require_parameters: true as const } : {}),
+  } } };
+}
 
 export type Model = {
   llm: LanguageModel & { readonly modelId: string };
@@ -32,7 +68,8 @@ export type Model = {
   reasoning: boolean;
   // How the answer is requested. "json_schema" (default for new runs) uses
   // strict structured output; "text" is the legacy free-text format, used for
-  // models whose schema-enforcing endpoints measurably degrade answers.
+  // models whose first-party endpoints lack schema support or whose answers
+  // measurably degrade with schema enforcement.
   outputMode?: OutputMode;
   // Stream the response (transport only) for endpoints that drop requests
   // which stay silent for more than five minutes.
@@ -62,7 +99,7 @@ const MUSE_TIME_LIMIT = {
 // A reasoning variant at an explicit effort, named "<family>-<effort>".
 function reasoningModel(id: string, family: string, effort: string): Model {
   return {
-    llm: openrouter(id, {
+    llm: pinnedModel(id, {
       ...defaultProviderOptions,
       extraBody: { reasoning: { effort, exclude: true } },
     }),
@@ -76,7 +113,7 @@ function reasoningModel(id: string, family: string, effort: string): Model {
 // Reasoning on at the provider's default, for models without effort control.
 function defaultReasoningModel(id: string, family: string): Model {
   return {
-    llm: openrouter(id, {
+    llm: pinnedModel(id, {
       ...defaultProviderOptions,
       extraBody: { reasoning: { enabled: true, exclude: true } },
     }),
@@ -87,16 +124,16 @@ function defaultReasoningModel(id: string, family: string): Model {
   };
 }
 
-export const MODELS: Model[] = [
+const configuredModels: Model[] = ([
   {
-    llm: openrouter("allenai/olmo-3.1-32b-think", defaultProviderOptions),
+    llm: pinnedModel("allenai/olmo-3.1-32b-think", defaultProviderOptions),
     name: "olmo-3.1-32b-think",
     family: "olmo-3.1-32b-think",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("anthropic/claude-opus-4.5", {
+    llm: pinnedModel("anthropic/claude-opus-4.5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "low", exclude: true },
@@ -108,7 +145,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("anthropic/claude-opus-4.5", {
+    llm: pinnedModel("anthropic/claude-opus-4.5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -120,7 +157,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("anthropic/claude-sonnet-4.5", {
+    llm: pinnedModel("anthropic/claude-sonnet-4.5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { enabled: false, exclude: true },
@@ -132,7 +169,7 @@ export const MODELS: Model[] = [
     reasoning: false,
   },
   {
-    llm: openrouter("anthropic/claude-sonnet-4.5", {
+    llm: pinnedModel("anthropic/claude-sonnet-4.5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { enabled: true, exclude: true },
@@ -144,7 +181,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("bytedance-seed/seed-1.6", {
+    llm: pinnedModel("bytedance-seed/seed-1.6", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -156,7 +193,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("bytedance-seed/seed-1.6-flash", {
+    llm: pinnedModel("bytedance-seed/seed-1.6-flash", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -168,14 +205,14 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("deepseek/deepseek-v3.2", defaultProviderOptions),
+    llm: pinnedModel("deepseek/deepseek-v3.2", defaultProviderOptions),
     name: "deepseek-v3.2",
     family: "deepseek-v3.2",
     effort: "none",
     reasoning: false,
   },
   {
-    llm: openrouter("deepseek/deepseek-v3.2", {
+    llm: pinnedModel("deepseek/deepseek-v3.2", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -187,14 +224,14 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("deepseek/deepseek-v3.2-speciale", defaultProviderOptions),
+    llm: pinnedModel("deepseek/deepseek-v3.2-speciale", defaultProviderOptions),
     name: "deepseek-v3.2-speciale",
     family: "deepseek-v3.2-speciale",
     effort: "none",
     reasoning: false,
   },
   {
-    llm: openrouter("deepseek/deepseek-v3.2-speciale", {
+    llm: pinnedModel("deepseek/deepseek-v3.2-speciale", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -206,7 +243,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("google/gemini-3-flash-preview", {
+    llm: pinnedModel("google/gemini-3-flash-preview", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { effort: "minimal", exclude: true } },
     }),
@@ -216,7 +253,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("google/gemini-3-flash-preview", {
+    llm: pinnedModel("google/gemini-3-flash-preview", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high" },
@@ -232,7 +269,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("google/gemini-3-pro-preview", {
+    llm: pinnedModel("google/gemini-3-pro-preview", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "low", exclude: true },
@@ -244,7 +281,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("google/gemini-3-pro-preview", {
+    llm: pinnedModel("google/gemini-3-pro-preview", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high" },
@@ -260,7 +297,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("google/gemini-3.1-pro-preview", {
+    llm: pinnedModel("google/gemini-3.1-pro-preview", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "low", exclude: true },
@@ -272,7 +309,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("google/gemini-3.1-pro-preview", {
+    llm: pinnedModel("google/gemini-3.1-pro-preview", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high" },
@@ -288,14 +325,14 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("minimax/minimax-m2.1", defaultProviderOptions),
+    llm: pinnedModel("minimax/minimax-m2.1", defaultProviderOptions),
     name: "minimax-m2.1",
     family: "minimax-m2.1",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("minimax/minimax-m2.1", {
+    llm: pinnedModel("minimax/minimax-m2.1", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -307,14 +344,14 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("minimax/minimax-m2.5", defaultProviderOptions),
+    llm: pinnedModel("minimax/minimax-m2.5", defaultProviderOptions),
     name: "minimax-m2.5",
     family: "minimax-m2.5",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("minimax/minimax-m2.5", {
+    llm: pinnedModel("minimax/minimax-m2.5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -326,35 +363,35 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("mistralai/ministral-14b-2512", defaultProviderOptions),
+    llm: pinnedModel("mistralai/ministral-14b-2512", defaultProviderOptions),
     name: "ministral-14b-2512",
     family: "ministral-14b-2512",
     effort: "none",
     reasoning: false,
   },
   {
-    llm: openrouter("mistralai/mistral-large-2512", defaultProviderOptions),
+    llm: pinnedModel("mistralai/mistral-large-2512", defaultProviderOptions),
     name: "mistral-large-2512",
     family: "mistral-large-2512",
     effort: "none",
     reasoning: false,
   },
   {
-    llm: openrouter("moonshotai/kimi-k2-0905", defaultProviderOptions),
+    llm: pinnedModel("moonshotai/kimi-k2-0905", defaultProviderOptions),
     name: "kimi-k2",
     family: "kimi-k2",
     effort: "none",
     reasoning: false,
   },
   {
-    llm: openrouter("moonshotai/kimi-k2-thinking", defaultProviderOptions),
+    llm: pinnedModel("moonshotai/kimi-k2-thinking", defaultProviderOptions),
     name: "kimi-k2-thinking",
     family: "kimi-k2-thinking",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("moonshotai/kimi-k2.5", {
+    llm: pinnedModel("moonshotai/kimi-k2.5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { enabled: false, exclude: true },
@@ -366,7 +403,7 @@ export const MODELS: Model[] = [
     reasoning: false,
   },
   {
-    llm: openrouter("moonshotai/kimi-k2.5", {
+    llm: pinnedModel("moonshotai/kimi-k2.5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -378,7 +415,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("openai/gpt-5.2", {
+    llm: pinnedModel("openai/gpt-5.2", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: {
@@ -393,7 +430,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("openai/gpt-5.2", {
+    llm: pinnedModel("openai/gpt-5.2", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: {
@@ -408,7 +445,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("openai/gpt-5.2", {
+    llm: pinnedModel("openai/gpt-5.2", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: {
@@ -423,7 +460,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   // {
-  // 	llm: openrouter("openai/gpt-5.2-pro", defaultProviderOptions),
+  // 	llm: pinnedModel("openai/gpt-5.2-pro", defaultProviderOptions),
   // 	name: "gpt-5.2-pro",
   // 	family: "gpt-5.2-pro",
   // 	effort: "default",
@@ -434,7 +471,7 @@ export const MODELS: Model[] = [
   // 	family: "gpt-5.2-pro",
   // 	effort: "high",
   // 	reasoning: true,
-  // 	llm: openrouter("openai/gpt-5.2-pro", {
+  // 	llm: pinnedModel("openai/gpt-5.2-pro", {
   // 		...defaultProviderOptions,
   // 		reasoning: {
   // 			effort: "high",
@@ -443,7 +480,7 @@ export const MODELS: Model[] = [
   // 	}),
   // },
   {
-    llm: openrouter("openai/gpt-5.4", {
+    llm: pinnedModel("openai/gpt-5.4", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: {
@@ -458,7 +495,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("openai/gpt-5.4", {
+    llm: pinnedModel("openai/gpt-5.4", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: {
@@ -473,7 +510,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("openai/gpt-5.4", {
+    llm: pinnedModel("openai/gpt-5.4", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: {
@@ -488,7 +525,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("openai/gpt-oss-120b", {
+    llm: pinnedModel("openai/gpt-oss-120b", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { effort: "low", exclude: true } },
     }),
@@ -498,7 +535,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("openai/gpt-oss-120b", {
+    llm: pinnedModel("openai/gpt-oss-120b", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -510,14 +547,14 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("qwen/qwen3-next-80b-a3b-thinking", defaultProviderOptions),
+    llm: pinnedModel("qwen/qwen3-next-80b-a3b-thinking", defaultProviderOptions),
     name: "qwen3-next-80b-a3b-thinking",
     family: "qwen3-next-80b-a3b-thinking",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("z-ai/glm-4.7", {
+    llm: pinnedModel("z-ai/glm-4.7", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { enabled: false, exclude: true } },
     }),
@@ -527,14 +564,14 @@ export const MODELS: Model[] = [
     reasoning: false,
   },
   {
-    llm: openrouter("z-ai/glm-4.7", defaultProviderOptions),
+    llm: pinnedModel("z-ai/glm-4.7", defaultProviderOptions),
     name: "glm-4.7-reasoning",
     family: "glm-4.7",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("z-ai/glm-4.7", {
+    llm: pinnedModel("z-ai/glm-4.7", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -546,7 +583,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("z-ai/glm-5", {
+    llm: pinnedModel("z-ai/glm-5", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { enabled: false, exclude: true } },
     }),
@@ -556,14 +593,14 @@ export const MODELS: Model[] = [
     reasoning: false,
   },
   {
-    llm: openrouter("z-ai/glm-5", defaultProviderOptions),
+    llm: pinnedModel("z-ai/glm-5", defaultProviderOptions),
     name: "glm-5-reasoning",
     family: "glm-5",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("z-ai/glm-5", {
+    llm: pinnedModel("z-ai/glm-5", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -575,14 +612,14 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("x-ai/grok-4", defaultProviderOptions),
+    llm: pinnedModel("x-ai/grok-4", defaultProviderOptions),
     name: "grok-4",
     family: "grok-4",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("x-ai/grok-4.1-fast", {
+    llm: pinnedModel("x-ai/grok-4.1-fast", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { enabled: false } },
     }),
@@ -592,14 +629,14 @@ export const MODELS: Model[] = [
     reasoning: false,
   },
   {
-    llm: openrouter("x-ai/grok-4.1-fast", defaultProviderOptions),
+    llm: pinnedModel("x-ai/grok-4.1-fast", defaultProviderOptions),
     name: "grok-4.1-fast-reasoning",
     family: "grok-4.1-fast",
     effort: "default",
     reasoning: true,
   },
   {
-    llm: openrouter("x-ai/grok-4.1-fast", {
+    llm: pinnedModel("x-ai/grok-4.1-fast", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -611,7 +648,7 @@ export const MODELS: Model[] = [
     reasoning: true,
   },
   {
-    llm: openrouter("xiaomi/mimo-v2-flash:free", {
+    llm: pinnedModel("xiaomi/mimo-v2-flash:free", {
       ...defaultProviderOptions,
       extraBody: { reasoning: { enabled: false } },
     }),
@@ -621,7 +658,7 @@ export const MODELS: Model[] = [
     reasoning: false,
   },
   {
-    llm: openrouter("xiaomi/mimo-v2-flash:free", {
+    llm: pinnedModel("xiaomi/mimo-v2-flash:free", {
       ...defaultProviderOptions,
       extraBody: {
         reasoning: { effort: "high", exclude: true },
@@ -645,29 +682,32 @@ export const MODELS: Model[] = [
   reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "low"),
   reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "low"),
   reasoningModel("x-ai/grok-4.7", "grok-4.7", "low"),
-  reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "low"),
-  reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "low"),
+  { ...reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "low"), outputMode: "text" },
+  { ...reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "low"), outputMode: "text" },
   { ...reasoningModel("qwen/qwen3.8-max-0902", "qwen3.8-max", "low"), outputMode: "text" },
-  reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"),
-  reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"),
-  reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"),
+  { ...reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"), outputMode: "text" },
+  { ...reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"), outputMode: "text" },
+  // Moonshot's endpoint answered 0/30 with schema-forced output (short reasoning); text mode like DeepSeek/GLM.
+  { ...reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"), outputMode: "text" },
   { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
   { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"), outputMode: "text" },
+  // Mistral Medium 3.5 only exposes "high" or "none" (bench/effort-levels.json);
+  // the earlier "low" request may have been served at the default (high).
+  { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "high"), outputMode: "text" },
   // Muse Spark: Meta caps non-streaming requests at ~5 minutes (504; streaming
   // is exempt per its docs), and schema-constrained responses still hit the
   // cap through OpenRouter, so it streams in text mode. Its 5x5 A/B showed no
   // format effect (10/10 either way).
   // Effort ladder, step 1: the cheapest promising models at medium effort.
-  reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "medium"),
+  // DeepSeek V4 and Kimi K3 expose only low/high/max (bench/effort-levels.json), so
+  // their earlier "medium" variants were retired when they moved to first-party.
   reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "medium"),
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "medium"),
   { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
-  reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "medium"),
   // Effort ladder, step 2: step 1 gained 2+ puzzles (Sol 17 to 21, Gemini
   // 3.8 Flash 11 to 20), plus a first step for the pricier leaders.
   reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "high"),
   reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "high"),
-  reasoningModel("moonshotai/kimi-k3", "kimi-k3", "medium"),
   reasoningModel("x-ai/grok-4.7", "grok-4.7", "medium"),
   reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "medium"),
   // Effort ladder, step 3: Sol gained 5 at high; Opus gets its first step.
@@ -682,4 +722,36 @@ export const MODELS: Model[] = [
   defaultReasoningModel("bytedance-seed/seed-2-1-turbo", "seed-2.1-turbo"),
   // minimax/minimax-m3 is left out: every endpoint that enforces the schema
   // (Together, CoreWeave) drops reasoning, so it cannot be measured fairly.
-];
+// These makers' advertised first-party endpoints do not support structured
+// outputs; text mode avoids require_parameters excluding the only legal route.
+] as Model[]).map((model) => model.llm.modelId.startsWith("deepseek/") || model.llm.modelId.startsWith("z-ai/")
+  || model.llm.modelId.startsWith("minimax/") || model.llm.modelId === "qwen/qwen3-next-80b-a3b-thinking"
+  ? { ...model, outputMode: "text" as const }
+  : model);
+
+const effortFamilies = effortEvidence.families as Record<string, { modelId: string; levels: string[] }>;
+const configuredNames = new Set(configuredModels.map((model) => model.name));
+const addedModels: Model[] = [];
+for (const [family, evidence] of Object.entries(effortFamilies)) {
+  const representative = configuredModels.find((model) => model.family === family && model.llm.modelId === evidence.modelId);
+  if (!representative) throw new Error(`No configured model for effort evidence: ${family}`);
+  const settings = (representative.llm as { settings?: OpenRouterChatSettings }).settings;
+  if (!settings) throw new Error(`Missing provider settings for ${family}`);
+  for (const effort of evidence.levels) {
+    const name = `${family}-${effort}`;
+    if (configuredNames.has(name)) continue;
+    addedModels.push({
+      ...representative,
+      llm: pinnedModel(evidence.modelId, {
+        ...settings,
+        extraBody: { ...settings.extraBody, reasoning: { effort, exclude: true } },
+      }),
+      name,
+      effort,
+      reasoning: true,
+    });
+    configuredNames.add(name);
+  }
+}
+export const NEW_VARIANT_NAMES = new Set(addedModels.map((model) => model.name));
+export const MODELS: Model[] = [...configuredModels, ...addedModels];

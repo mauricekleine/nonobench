@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { parseClues } from "../visualizer/lib/nonogram";
 import { getPuzzleId, openReadDb } from "./db";
-import { extractOutputSolution, gradeOutput } from "./grade";
+import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { solveByLines } from "./line-solver";
 import { MULTIPLE_SOLUTION_PUZZLE_NUMBERS } from "./puzzles-check";
 
@@ -14,6 +14,10 @@ type PuzzleRunRow = {
 	tokens: number;
 	cost: number;
 	duration_ms: number;
+	output_mode: string | null;
+	provider_name: string | null;
+	quantization: string | null;
+	generation_id: string | null;
 };
 
 type PuzzleResultRun = {
@@ -28,6 +32,10 @@ type PuzzleResultRun = {
 	tokens: number;
 	cost: number;
 	durationMs: number;
+	harness: "v1.0" | "v1.2";
+	providerName: string | null;
+	quantization: string | null;
+	generationId: string | null;
 };
 
 type PuzzleResult = {
@@ -50,6 +58,10 @@ type AnswerIssue = "no-solution-claimed" | "empty" | "no-grid" | "wrong-size";
 // the model actually did instead of a generic "no usable grid".
 function answerIssue(rawOutput: string | null, extracted: string | null, cells: number): { answerIssue: AnswerIssue; answerCells?: number } {
 	if (extracted && extracted.length !== cells) return { answerIssue: "wrong-size", answerCells: extracted.length };
+	if (claimsNoSolution(rawOutput)) return { answerIssue: "no-solution-claimed" };
+	// Malformed row arrays are never repaired into a grid; report their size.
+	const rows = structuredRows(rawOutput);
+	if (rows?.length) return { answerIssue: "wrong-size", answerCells: rows.join("").replace(/[^01]/g, "").length };
 	let text = rawOutput ?? "";
 	try {
 		const parsed: unknown = JSON.parse(text);
@@ -73,9 +85,11 @@ export async function writePuzzleResultsExport(): Promise<void> {
 	if (!db) throw new Error("Database does not exist");
 
 	try {
+		const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((column) => column.name));
+		const optionalColumn = (name: string) => columns.has(name) ? name : `NULL AS ${name}`;
 		const rows = db
 			.query<PuzzleRunRow, []>(
-				"SELECT model, puzzle_id, status, raw_output, tokens, cost, duration_ms FROM runs WHERE status IN ('success', 'timeout') ORDER BY model, puzzle_id",
+				`SELECT model, puzzle_id, status, raw_output, tokens, cost, duration_ms, ${optionalColumn("output_mode")}, ${optionalColumn("provider_name")}, ${optionalColumn("quantization")}, ${optionalColumn("generation_id")} FROM runs WHERE status IN ('success', 'timeout') ORDER BY model, puzzle_id`,
 			)
 			.all();
 		const rowsByPuzzleId = new Map<string, PuzzleRunRow[]>();
@@ -106,6 +120,10 @@ export async function writePuzzleResultsExport(): Promise<void> {
 					tokens: row.tokens,
 					cost: row.cost,
 					durationMs: row.duration_ms,
+					harness: row.output_mode === null ? "v1.0" : "v1.2",
+					providerName: row.provider_name,
+					quantization: row.quantization,
+					generationId: row.generation_id,
 				};
 			});
 			const solved = runs.reduce((count, run) => count + Number(run.correct), 0);

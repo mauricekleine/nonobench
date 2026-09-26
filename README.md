@@ -102,19 +102,19 @@ All of it is read from the same exported files as the dashboard (`visualizer/app
 
 ## Grading
 
-Each model receives the same system prompt and the puzzle's row and column clues, and must answer with the grid as a string of `1`s and `0`s. An answer is correct when it satisfies every row and column clue.
+Each model receives the same system prompt and the puzzle's row and column clues. Standard answers are the grid as one string of `1`s and `0`s. Hard mode answers are one row per line, because at 400 cells most models miscount a single string (see `LEARNINGS.md`). An answer is correct when it satisfies every row and column clue.
 
 Ten of the 30 puzzles (one 5x5, four 10x10, five 15x15) have more than one valid solution, so answers are checked against the clues rather than compared with the stored solution. Correctness is derived from the stored raw outputs at export time; the database is never rewritten. The puzzle test suite pins which puzzles are ambiguous, and any new puzzle must have a unique solution.
 
 ## Puzzle Data
 
-The core tier has 30 puzzles (10 each of 5x5, 10x10 and 15x15), defined in `visualizer/components/puzzles/` and shared by the runner and the dashboard. They were sourced from [nono-dataset](https://github.com/mauricekleine/nono-dataset). The extended tier has 10 generated 20x20 puzzles. A puzzle's ID is a hash of its solution, so changing a puzzle's solution creates a new puzzle.
+The core tier has 30 puzzles (10 each of 5x5, 10x10 and 15x15), defined in `visualizer/components/puzzles/` and shared by the runner and the dashboard. They were sourced from [nono-dataset](https://github.com/mauricekleine/nono-dataset). Hard mode has 10 generated 20x20 puzzles. A puzzle's ID is a hash of its solution, so changing a puzzle's solution creates a new puzzle.
 
 ## Tiers and generation
 
-Default benchmark runs cover the three core sizes. Use `--sizes 20x20` with a model selection to run the extended tier; comma-separated sizes also work. The runner's plan reports missing 20x20 work separately. Headline overall accuracy and best-variant selection use core runs only; 20x20 has its own size results.
+Default benchmark runs cover the three core sizes (Standard). Use `--sizes 20x20` with a model selection to run Hard mode; comma-separated sizes also work. The runner's plan reports missing 20x20 work separately. Headline overall accuracy and best-variant selection use Standard runs only; Hard mode has its own results. Hard-mode requests get a 128,000-token answer budget, capped at the endpoint's maximum (`bench/max-output-tokens.json`).
 
-From `bench/`, `bun run generate-puzzles` recreates the 20x20 set with a fixed seed. It combines geometric shapes and symmetric motifs, filters for 45–65% filled cells and nonempty lines, then keeps only grids fully solved by repeated row and column placement propagation. The generator selects ten distinct puzzles across the measured first-pass difficulty range. `bun test` verifies their clues and line solvability; the original ambiguity list remains pinned.
+From `bench/`, `bun run generate-puzzles` recreates the 20x20 set with a fixed seed. It fills grids at random (no pictures, so a model can't guess the image), keeps grids with at least three blocks per line and little mirror symmetry, and checks uniqueness with an exact solver (`NONOGRAM_SOLVER`). The set mixes five puzzles that row-and-column propagation solves with five where it stalls with 20–200 cells left. `bun test` verifies their clues, uniqueness flags and line solvability; the original ambiguity list remains pinned.
 
 ## Configuration
 

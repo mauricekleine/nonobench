@@ -1,8 +1,9 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { MODELS } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
-import { gradeOutput } from "./grade";
-import { CORE_SIZES, sortSizes } from "./sizes";
+import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
+import { checkClues } from "../visualizer/lib/nonogram";
+import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 import modelMetadata from "./model-metadata.json";
 import familyDisplayNames from "./family-display-names.json";
 import metadataOverrides from "./model-metadata-overrides.json";
@@ -50,6 +51,17 @@ const hasOutputMode = db
 	.query<{ name: string }, []>("PRAGMA table_info(runs)")
 	.all()
 	.some((column) => column.name === "output_mode");
+const runColumns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((column) => column.name));
+const optionalColumn = (name: string) => runColumns.has(name) ? name : `NULL AS ${name}`;
+const firstRunByModel = new Map(
+	db.query<{ model: string; first_run: string }, []>("SELECT model, MIN(timestamp) AS first_run FROM runs GROUP BY model")
+		.all().map((row) => [row.model, row.first_run]),
+);
+function versionFor(model: string): "1.0" | "1.1" | "1.2" {
+	const first = firstRunByModel.get(model);
+	if (!first) throw new Error(`Missing first run for ${model}`);
+	return first < "2026-02-01" ? "1.0" : first < "2026-09-01" ? "1.1" : "1.2";
+}
 const structuredModels = new Set(
 	hasOutputMode
 		? db
@@ -92,6 +104,8 @@ type ModelData = {
 	family: string;
 	effort: string;
 	legacy: boolean;
+	harness: "v1.0" | "v1.2";
+	version: "1.0" | "1.1" | "1.2";
 	// True when every core puzzle has a successful run; partial results must
 	// not be read as finished ones.
 	complete: boolean;
@@ -118,6 +132,20 @@ type ModelErrorData = {
 	errors: ErrorMessageData[];
 };
 
+// How close each Hard-mode answer came. Every Hard-mode puzzle has exactly
+// one solution, so "cells off" is well defined; misses without a complete
+// grid carry the reason instead.
+type HardModeOutcome = "solved" | "wrong-grid" | "no-grid";
+type HardModeReason = "timed-out" | "cut-off" | "wrong-size" | "gave-up" | "empty" | "no-grid";
+type HardModeData = {
+	size: string;
+	puzzles: number;
+	models: {
+		model: string;
+		runs: { puzzle: number; outcome: HardModeOutcome; cellsOff?: number; linesSatisfied?: number; reason?: HardModeReason }[];
+	}[];
+};
+
 type BenchmarkResults = {
 	timestamp: string;
 	summary: {
@@ -126,7 +154,8 @@ type BenchmarkResults = {
 		coreSizes: string[];
 	};
 	byModel: ModelData[];
-	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean } & SizeData>;
+	hardMode: HardModeData;
+	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean; harness: "v1.0" | "v1.2"; version: "1.0" | "1.1" | "1.2" } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
 
@@ -165,6 +194,12 @@ type RawRow = {
 	raw_input: string | null;
 	raw_output: string | null;
 	output_mode: string | null;
+	provider_name: string | null;
+	quantization: string | null;
+	generation_id: string | null;
+	reasoning_tokens: number | null;
+	finish_reason: string | null;
+	answer_format: string | null;
 };
 
 // Output type for raw results JSON
@@ -183,6 +218,15 @@ type RawResult = {
 	rawInput: string | null;
 	rawOutput: string | null;
 	outputMode: string;
+	harness: "v1.0" | "v1.2";
+	version: "1.0" | "1.1" | "1.2";
+	reasoningTokens: number | null;
+	finishReason: string | null;
+	// "flat" (one string) or "rows" (one line per row, Hard mode).
+	answerFormat: "flat" | "rows";
+	providerName: string | null;
+	quantization: string | null;
+	generationId: string | null;
 };
 
 type RawResults = {
@@ -355,6 +399,8 @@ for (const [model, sizeDatas] of modelMap) {
 			family: metadata.family,
 			effort: metadata.effort,
 			legacy: !structuredModels.has(model),
+			harness: structuredModels.has(model) ? "v1.2" : "v1.0",
+			version: versionFor(model),
 			...sizeData,
 		});
 	}
@@ -371,6 +417,8 @@ for (const [model, sizeDatas] of modelMap) {
 		family: metadata.family,
 		effort: metadata.effort,
 		legacy: !structuredModels.has(model),
+		harness: structuredModels.has(model) ? "v1.2" : "v1.0",
+		version: versionFor(model),
 		complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
 		timeouts: sortedSizeDatas
 			.filter((sizeData) => CORE_SIZES.some((size) => size === sizeData.size))
@@ -386,6 +434,53 @@ for (const [model, sizeDatas] of modelMap) {
 	});
 }
 
+const hardSize = EXTENDED_SIZES[0];
+const hardPuzzles = PUZZLES.filter((puzzle) => `${puzzle.width}x${puzzle.height}` === hardSize);
+const hardRows = db
+	.query<{ model: string; puzzle_id: string; status: string; raw_output: string | null; finish_reason: string | null }, [string]>(
+		`SELECT model, puzzle_id, status, raw_output, ${optionalColumn("finish_reason")} FROM runs WHERE size = ? AND status != 'failed'`,
+	)
+	.all(hardSize);
+const hardByModel = new Map<string, HardModeData["models"][number]["runs"]>();
+for (const row of hardRows) {
+	const puzzle = puzzlesById.get(row.puzzle_id);
+	if (!puzzle) continue;
+	const index = hardPuzzles.indexOf(puzzle) + 1;
+	const cells = puzzle.width * puzzle.height;
+	const grid = row.status === "success" ? extractOutputSolution(puzzle, row.raw_output) : null;
+	let run: HardModeData["models"][number]["runs"][number];
+	if (grid && grid.length === cells) {
+		const check = checkClues(puzzle, grid);
+		const violated = check.rowViolations.length + check.columnViolations.length;
+		const solution = puzzle.solution.replace(/\s/g, "");
+		run = check.correct
+			? { puzzle: index, outcome: "solved" }
+			: {
+				puzzle: index,
+				outcome: "wrong-grid",
+				cellsOff: [...grid].filter((cell, i) => cell !== solution[i]).length,
+				linesSatisfied: 1 - violated / (puzzle.width + puzzle.height),
+			};
+	} else {
+		const text = (row.raw_output ?? "").replace(/[\s{}"\[\]:]|solution/g, "");
+		const reason: HardModeReason = row.status === "timeout" ? "timed-out"
+			: row.finish_reason === "length" ? "cut-off"
+			: claimsNoSolution(row.raw_output) ? "gave-up"
+			: grid || (structuredRows(row.raw_output)?.length ?? 0) > 0 ? "wrong-size"
+			: text === "" ? "empty"
+			: "no-grid";
+		run = { puzzle: index, outcome: "no-grid", reason };
+	}
+	hardByModel.set(row.model, [...(hardByModel.get(row.model) ?? []), run]);
+}
+const hardMode: HardModeData = {
+	size: hardSize,
+	puzzles: hardPuzzles.length,
+	models: [...hardByModel]
+		.map(([model, runs]) => ({ model, runs: runs.sort((a, b) => a.puzzle - b.puzzle) }))
+		.sort((a, b) => a.model.localeCompare(b.model)),
+};
+
 // Sort byModel by overall accuracy descending
 byModel.sort((a, b) => b.overallAccuracy - a.overallAccuracy);
 
@@ -398,6 +493,7 @@ const results: BenchmarkResults = {
 		coreSizes: [...CORE_SIZES],
 	},
 	byModel,
+	hardMode,
 	chartData,
 	errorsByModel,
 };
@@ -443,7 +539,13 @@ const rawResults = db
       error_message,
       raw_input,
       raw_output,
-      ${hasOutputMode ? "output_mode" : "NULL AS output_mode"}
+      ${hasOutputMode ? "output_mode" : "NULL AS output_mode"},
+      ${optionalColumn("provider_name")},
+      ${optionalColumn("quantization")},
+      ${optionalColumn("generation_id")}
+      , ${optionalColumn("reasoning_tokens")}
+      , ${optionalColumn("finish_reason")}
+      , ${optionalColumn("answer_format")}
     FROM runs
     ORDER BY model, size, timestamp
   `,
@@ -468,6 +570,14 @@ const rawResultsOutput: RawResults = {
 		rawInput: row.raw_input,
 		rawOutput: row.raw_output,
 		outputMode: row.output_mode ?? "text",
+		harness: row.output_mode === null ? "v1.0" : "v1.2",
+		version: versionFor(row.model),
+		reasoningTokens: row.reasoning_tokens,
+		finishReason: row.finish_reason,
+		answerFormat: row.answer_format === "rows" ? "rows" : "flat",
+		providerName: row.provider_name,
+		quantization: row.quantization,
+		generationId: row.generation_id,
 	})),
 };
 

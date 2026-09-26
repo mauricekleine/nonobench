@@ -36,7 +36,7 @@ export function paretoFrontier<T extends FrontierPoint>(points: T[]): T[] {
 
 // Reasoning-effort levels from least to most thinking. "default" (provider
 // default, level unknown) and unknown values sort last.
-export const EFFORT_ORDER = ["none", "minimal", "low", "medium", "high", "xhigh"] as const;
+export const EFFORT_ORDER = ["none", "minimal", "low", "medium", "high", "xhigh", "max"] as const;
 
 export function effortRank(effort: string): number {
 	const index = (EFFORT_ORDER as readonly string[]).indexOf(effort);

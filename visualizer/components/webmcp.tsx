@@ -31,7 +31,7 @@ async function api(path: string, init?: RequestInit) {
 }
 
 const sizeSchema = { type: "string", enum: ["5x5", "10x10", "15x15", "20x20"], description: "Grid size to filter on" };
-const filterProperties = { size: sizeSchema, provider: { type: "string", description: "Comma-separated provider ids" }, family: { type: "string", description: "Comma-separated family ids" }, effort: { type: "string", description: "best, all, or an effort level" }, reasoning: { type: "boolean" }, open_weights: { type: "boolean" } };
+const filterProperties = { size: sizeSchema, provider: { type: "string", description: "Comma-separated provider ids" }, family: { type: "string", description: "Comma-separated family ids" }, version: { type: "string", description: "Comma-separated benchmark versions: 1.0, 1.1, 1.2" }, effort: { type: "string", description: "best, all, or an effort level" }, reasoning: { type: "boolean" }, open_weights: { type: "boolean" } };
 function query(input: Record<string, unknown>) { const params = new URLSearchParams(); for (const key of Object.keys(filterProperties)) if (input[key] !== undefined) params.set(key, String(input[key])); return params; }
 
 export function WebMcp() {
@@ -56,7 +56,7 @@ export function WebMcp() {
 				const response = await fetch(`/api/v1/leaderboard?${query(input)}`);
 				if (!response.ok) return text(await response.json());
 				const params = new URLSearchParams();
-				for (const [apiKey, urlKey] of [["provider", "p"], ["family", "f"], ["effort", "e"], ["reasoning", "r"], ["open_weights", "w"], ["size", "s"]]) if (input[apiKey] !== undefined && input[apiKey] !== "best") params.set(urlKey, String(input[apiKey]));
+				for (const [apiKey, urlKey] of [["provider", "p"], ["family", "f"], ["version", "v"], ["effort", "e"], ["reasoning", "r"], ["open_weights", "w"], ["size", "s"]]) if (input[apiKey] !== undefined && input[apiKey] !== "best") params.set(urlKey, String(input[apiKey]));
 				router.push(`/${params.size ? `?${params}` : ""}`);
 				return text(`Updated leaderboard filters: ${params}`);
 			} },
