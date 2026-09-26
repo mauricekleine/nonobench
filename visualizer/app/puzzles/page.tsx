@@ -3,9 +3,11 @@
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { Suspense, useCallback, useEffect, useMemo } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import { NonobenchMark } from "@/components/nonobench-mark";
 import { Nonogram } from "@/components/nonogram/nonogram";
+import { useNonogramStore } from "@/components/nonogram/store";
+import { ZoomControls } from "@/components/nonogram/zoom-controls";
 import { PUZZLES } from "@/components/puzzles";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { PuzzleFilters, puzzleModel, usePuzzleExport, usePuzzleFilters } from "@/components/puzzles/puzzle-filters";
@@ -37,6 +39,19 @@ function PuzzlesContent() {
   const inspection = selected?.answer ? inspectAnswer(puzzle, selected.answer, result?.multipleSolutions ?? false) : null;
   const violatedRows = inspection?.mode === "ambiguous-wrong" ? inspection.clues.rowViolations.map((line) => line.index) : undefined;
   const violatedColumns = inspection?.mode === "ambiguous-wrong" ? inspection.clues.columnViolations.map((line) => line.index) : undefined;
+  // Start each puzzle at the largest zoom level that fits the frame; the
+  // grid initialises in its own effect, which runs before this one.
+  const gridFrame = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const frame = gridFrame.current;
+    if (!frame) return;
+    const { clues } = useNonogramStore.getState();
+    const clueColumns = Math.max(0, ...clues.rows.map((row) => row.length));
+    const columns = puzzle.width + clueColumns;
+    const available = frame.clientWidth - 48;
+    const level = columns * 24 <= available ? "sm" : "xs";
+    useNonogramStore.getState().setZoomLevel(level);
+  }, [safeIndex, puzzle.width]);
   const goTo = useCallback((index: number) => { void setCurrentIndex(index); void setSelectedModel(null); }, [setCurrentIndex, setSelectedModel]);
   const previous = useCallback(() => goTo(safeIndex === 0 ? visiblePuzzles.length - 1 : safeIndex - 1), [goTo, safeIndex]);
   const next = useCallback(() => goTo(safeIndex === visiblePuzzles.length - 1 ? 0 : safeIndex + 1), [goTo, safeIndex]);
@@ -54,7 +69,7 @@ function PuzzlesContent() {
     <header className="relative border-b border-border bg-card/50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6"><div className="flex items-center gap-3"><NonobenchMark size="sm" /><div><h1 className="font-display text-lg font-semibold lowercase tracking-tight">nonobench <Link href="/how-it-works#whats-new" className="align-middle rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link></h1><p className="text-sm text-muted-foreground">Puzzle explorer · {visiblePuzzles.length} puzzles</p></div></div><nav className="flex gap-4 text-sm"><Link href="/how-it-works" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">How it works</Link><Link href="/puzzles/overview" className="text-ember underline focus-visible:outline-2 focus-visible:outline-ember">Puzzle insights</Link><Link href="/" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">Results</Link></nav></div></header>
     <main className="relative mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,24rem)]">
       <section aria-label={`Puzzle ${safeIndex + 1}`} className="flex min-w-0 flex-col items-center gap-5"><div className="flex w-full items-center justify-center gap-3"><button type="button" onClick={previous} aria-label="Previous puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretLeft size={20} /></button><div className="min-w-0 text-center"><span className="font-mono font-semibold">Puzzle {safeIndex + 1} of {visiblePuzzles.length}</span><span className="mx-2 text-muted-foreground">·</span><span className="font-mono text-[#FFCA16]">{puzzle.width === 20 ? sizeLabel("20x20") : `${puzzle.width}×${puzzle.height}`}</span></div><button type="button" onClick={next} aria-label="Next puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretRight size={20} /></button></div>
-        <div className="max-w-full overflow-x-auto rounded-2xl border border-border bg-card/70 p-3 sm:p-6"><div className={puzzle.width === 20 ? "[zoom:0.54] sm:[zoom:1]" : ""}><Nonogram key={safeIndex} height={puzzle.height} width={puzzle.width} solution={puzzle.solution.replace(/\s/g, "")} overlay={inspection?.cells} violatedRows={violatedRows} violatedColumns={violatedColumns} /></div></div>
+        <div className="min-w-0 max-w-full"><div className="mb-2 flex justify-end"><ZoomControls /></div><div ref={gridFrame} className="max-w-full overflow-x-auto rounded-2xl border border-border bg-card/70 p-3 sm:p-6"><Nonogram key={safeIndex} height={puzzle.height} width={puzzle.width} solution={puzzle.solution.replace(/\s/g, "")} overlay={inspection?.cells} violatedRows={violatedRows} violatedColumns={violatedColumns} /></div></div>
         {selectedModel && <div className="w-full max-w-xl rounded-lg border border-border bg-card/80 p-4 text-sm"><h2 className="font-semibold">{selectedMetadata?.displayName ?? selectedModel}’s answer</h2>{inspection ? <>
           {inspection.mode === "valid" && <p className="mt-1 text-muted-foreground">{inspection.referenceDifference ? `A valid alternative solution: differs from the reference grid in ${inspection.referenceDifference} cells but satisfies every clue.` : "This grid satisfies every row and column clue."}</p>}
           {inspection.mode === "unique-wrong" && <p className="mt-1 text-muted-foreground">{inspection.wrong} cells wrong: {inspection.wrongFilled} extra filled, {inspection.missed} missed.</p>}

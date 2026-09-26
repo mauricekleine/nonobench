@@ -75,6 +75,7 @@ type Actions = {
   redo: () => void;
   zoomIn: () => void;
   zoomOut: () => void;
+  setZoomLevel: (zoomLevel: ZoomLevel) => void;
 };
 
 type Store = State & Actions;
@@ -465,6 +466,11 @@ export const useNonogramStore = create<Store>()(
             for (const previousCell of previousState.cells) {
               state.cells[previousCell.id].userValue = previousCell.oldValue;
             }
+          });
+        },
+        setZoomLevel: (zoomLevel) => {
+          set((state) => {
+            state.zoomLevel = zoomLevel;
           });
         },
         zoomIn: () => {
