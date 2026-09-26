@@ -19,8 +19,9 @@ const effortOrder: Record<string, number> = {
 	medium: 3,
 	high: 4,
 	xhigh: 5,
+	max: 6,
 	// An unspecified provider default has no known level, so explicit levels win a tie.
-	default: 6,
+	default: 7,
 };
 
 function averageCost(model: Variant): number {
