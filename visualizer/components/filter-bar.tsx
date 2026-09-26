@@ -63,7 +63,7 @@ export function Switch({ checked, onChange, label, hint }: { checked: boolean; o
       aria-checked={checked}
       title={hint}
       onClick={() => onChange(!checked)}
-      className={`inline-flex items-center gap-2 rounded-full text-sm text-muted-foreground hover:text-foreground ${focus}`}
+      className={`inline-flex min-h-9 items-center gap-2 rounded-full text-sm text-muted-foreground hover:text-foreground ${focus}`}
     >
       <span className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${checked ? "bg-ember" : "bg-foreground/15"}`}>
         <span className={`absolute top-0.5 size-4 rounded-full bg-background transition-all ${checked ? "left-[18px]" : "left-0.5"}`} />
