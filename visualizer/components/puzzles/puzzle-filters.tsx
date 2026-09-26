@@ -3,16 +3,12 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import resultsData from "@/app/results.json";
-import { ProviderLogo } from "@/components/provider-logos/provider-logo";
+import { EffortToggle, ModelsPopover, Switch } from "@/components/filter-bar";
 import { applyFilters, VERSIONS, type BenchmarkVersion, type Filters, type LeaderboardVariant } from "@/lib/leaderboard";
-import { effortLabel } from "@/lib/display";
-import { PROVIDERS } from "@/lib/providers";
 
 export type DisplayModel = LeaderboardVariant & { displayName: string; familyDisplayName: string };
 const models = resultsData.byModel as DisplayModel[];
 export function puzzleModel(id: string) { return models.find((model) => model.model === id); }
-const families = [...new Map(models.map((model) => [model.family, model.familyDisplayName])).entries()];
-const providers = [...new Set(models.map((model) => model.provider))].sort();
 
 export function usePuzzleFilters() {
   const params = useSearchParams();
@@ -43,31 +39,14 @@ export function usePuzzleFilters() {
   return { filters, models: filtered, change, params };
 }
 
-const control = "rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember";
-export function PuzzleFilters({ filters, change, count }: { filters: Filters; change: (patch: Partial<Filters>) => void; count: number }) {
-  const [search, setSearch] = useState("");
-  const selected = filters.families === undefined ? new Set(families.map(([id]) => id)) : new Set(filters.families);
-  const selectedProviders = new Set(filters.providers ?? providers);
-  const selectedVersions = new Set(filters.versions ?? VERSIONS);
-  const toggleFamily = (id: string) => { const next = new Set(selected); if (next.has(id)) next.delete(id); else next.add(id); change({ families: [...next] }); };
-  const toggleProvider = (id: string) => { const next = new Set(selectedProviders); if (next.has(id)) next.delete(id); else next.add(id); change({ providers: next.size === providers.length ? undefined : [...next] }); };
-  return <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card/70 p-3" aria-label="Model filters">
-    <details className="relative"><summary className={`${control} cursor-pointer list-none`}>Models ({count})</summary>
-      <div className="absolute left-0 top-full z-30 mt-1 max-h-80 w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-border bg-card p-3 shadow-xl">
-        <input aria-label="Search model families" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search models" className={`${control} mb-2 w-full`} />
-        <div className="mb-2 flex gap-3 text-xs"><button onClick={() => change({ families: undefined, providers: undefined })} className="text-ember underline">All</button><button onClick={() => change({ families: [] })} className="text-ember underline">Clear</button></div>
-        {providers.map((provider) => { const group = families.filter(([id, name]) => models.some((model) => model.family === id && model.provider === provider) && `${id} ${name} ${provider}`.toLowerCase().includes(search.toLowerCase()));
-          return group.length ? <div key={provider} className="mb-3"><label className="mb-1 flex items-center gap-2 text-sm font-medium" style={{ color: PROVIDERS[provider]?.color }}><input type="checkbox" checked={selectedProviders.has(provider)} onChange={() => toggleProvider(provider)} /><ProviderLogo provider={provider} size={15} />{PROVIDERS[provider]?.name ?? provider}</label>
-            {group.map(([id, name]) => <label key={id} className="flex cursor-pointer items-center gap-2 py-1 pl-2 text-xs"><input type="checkbox" checked={selected.has(id)} onChange={() => toggleFamily(id)} />{name}</label>)}
-          </div> : null; })}
-      </div>
-    </details>
-    <details className="relative"><summary className={`${control} cursor-pointer list-none`}>Version ({selectedVersions.size} of {VERSIONS.length})</summary><div className="absolute left-0 top-full z-30 mt-1 min-w-36 rounded-lg border border-border bg-card p-3 shadow-xl">{VERSIONS.map((version) => <label key={version} className="flex cursor-pointer items-center gap-2 py-1 text-sm"><input type="checkbox" checked={selectedVersions.has(version)} onChange={() => { const next = new Set(selectedVersions); if (next.has(version)) next.delete(version); else next.add(version); change({ versions: next.size === VERSIONS.length ? undefined : [...next] }); }} />V{version}</label>)}</div></details>
-    <label className="text-xs text-muted-foreground">Effort <select className={control} value={filters.effort ?? "best"} onChange={(event) => change({ effort: event.target.value })}><option value="best">Best observed level</option><option value="all">All</option>{[...new Set(models.map((model) => model.effort))].sort().map((effort) => <option key={effort} value={effort}>{effortLabel(effort)}</option>)}</select></label>
-    <label className="text-xs text-muted-foreground">Reasoning <select className={control} value={filters.reasoning === undefined ? "any" : String(filters.reasoning)} onChange={(event) => change({ reasoning: event.target.value === "any" ? undefined : event.target.value === "true" })}><option value="any">Any</option><option value="true">Yes</option><option value="false">No</option></select></label>
-    <label className="text-xs text-muted-foreground">Weights <select className={control} value={filters.openWeights === undefined ? "any" : String(filters.openWeights)} onChange={(event) => change({ openWeights: event.target.value === "any" ? undefined : event.target.value === "true" })}><option value="any">Any</option><option value="true">Open</option><option value="false">Proprietary</option></select></label>
-    <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={filters.minCorrect === 0} onChange={(event) => change({ minCorrect: event.target.checked ? 0 : 1 })} />Include variants that solved no puzzles</label>
-    <button className="text-xs text-ember underline focus-visible:outline-2 focus-visible:outline-ember" onClick={() => change({ providers: undefined, families: undefined, versions: undefined, effort: "best", reasoning: undefined, openWeights: undefined, minCorrect: 1 })}>Reset</button>
+// Same controls as the leaderboard bar: Models popover, Best/All, unsolved switch.
+export function PuzzleFilters({ filters, change }: { filters: Filters; change: (patch: Partial<Filters>) => void; count?: number }) {
+  const scope = { ...filters, effort: filters.effort ?? "best" };
+  const hidden = applyFilters(models, { ...scope, minCorrect: 0 }).length - applyFilters(models, { ...scope, minCorrect: 1 }).length;
+  return <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Model filters">
+    <ModelsPopover filters={filters} change={change} sources={models} />
+    <EffortToggle filters={filters} change={change} />
+    {hidden > 0 && <Switch checked={filters.minCorrect === 0} onChange={(on) => change({ minCorrect: on ? 0 : 1 })} label={`Unsolved (${hidden})`} hint="Show variants that solved no puzzles" />}
   </div>;
 }
 

@@ -29,7 +29,6 @@ import { NonobenchMark } from "@/components/nonobench-mark";
 import {
   applyFilters,
   availableSizes,
-  VERSIONS,
   type BenchmarkVersion,
   type Filters,
 } from "@/lib/leaderboard";
@@ -39,6 +38,7 @@ import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
 import { AccuracyScatter, EffortLadder } from "./insight-charts";
 import { HardModeIntro, HardModeMisses } from "./hard-mode";
+import { EffortToggle, filterPill, ModelsPopover, Segmented, Switch } from "@/components/filter-bar";
 import resultsData from "./results.json";
 
 type SizeData = {
@@ -79,30 +79,14 @@ type Results = {
   byModel: Model[];
 };
 const results = resultsData as Results;
-const allFamilies = [...new Set(results.byModel.map((model) => model.family))];
 const familiesWithResults = new Set(results.byModel.filter((model) => model.overallCorrect > 0).map((model) => model.family)).size;
 const variantsWithResults = results.byModel.filter((model) => model.overallCorrect > 0).length;
-const providerGroups = [
-  ...new Set(results.byModel.map((model) => model.provider)),
-]
-  .sort()
-  .map((id) => ({
-    id,
-    families: allFamilies.filter((family) =>
-      results.byModel.some(
-        (model) => model.family === family && model.provider === id,
-      ),
-    ),
-  }));
 const HARD_SIZE = "20x20";
 const displayedSizes = results.summary.sizes.filter((size) =>
   availableSizes(results.byModel).includes(size),
 );
 const hasHardMode = displayedSizes.includes(HARD_SIZE);
 const standardSizes = displayedSizes.filter((size) => size !== HARD_SIZE);
-const effortLevels = [
-  ...new Set(results.byModel.map((model) => model.effort)),
-].sort();
 const control =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
 
@@ -192,35 +176,19 @@ export default function ResultsPage({
     () => (isHard ? { ...baseFilters, minCorrect: 0 } : baseFilters),
     [isHard, baseFilters],
   );
-  const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: string; desc: boolean }>({
     key: "accuracy",
     desc: true,
   });
   const [copyDone, setCopyDone] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
-  const selectedFamilies = useMemo(
-    () =>
-      new Set(
-        allFamilies.filter(
-          (family) =>
-            (!filters.families || filters.families.includes(family)) &&
-            (!filters.providers ||
-              results.byModel.some(
-                (model) =>
-                  model.family === family &&
-                  filters.providers!.includes(model.provider),
-              )),
-        ),
-      ),
-    [filters.families, filters.providers],
-  );
   const chosen = useMemo(
     () => applyFilters(results.byModel, filters),
     [filters],
   );
   const hiddenCount = useMemo(() => {
-    const scope = { ...filters, effort: "all" };
+    // Count what the switch would reveal under the current effort setting.
+    const scope = { ...filters };
     return applyFilters(results.byModel, { ...scope, minCorrect: 0 }).length -
       applyFilters(results.byModel, { ...scope, minCorrect: 1 }).length;
   }, [filters]);
@@ -250,27 +218,6 @@ export default function ResultsPage({
       }),
     [chosen, size, sort, perPuzzle],
   );
-  const updateFamilySelection = (next: Set<string>) =>
-    onFiltersChange({
-      providers: undefined,
-      families: next.size === allFamilies.length ? undefined : [...next],
-    });
-  const toggleFamily = (family: string) => {
-    const next = new Set(selectedFamilies);
-    if (next.has(family)) next.delete(family);
-    else next.add(family);
-    updateFamilySelection(next);
-  };
-  const toggleProvider = (provider: string) => {
-    const next = new Set(selectedFamilies);
-    const group = providerGroups.find((entry) => entry.id === provider)!;
-    const all = group.families.every((family) => next.has(family));
-    for (const family of group.families) {
-      if (all) next.delete(family);
-      else next.add(family);
-    }
-    updateFamilySelection(next);
-  };
   const downloadChart = async () => {
     if (!chartRef.current) return;
     const { toPng } = await import("html-to-image");
@@ -335,273 +282,52 @@ export default function ResultsPage({
             <a href="/results-raw.json" download className={control}><DownloadSimple size={16} />Raw results</a>
           </nav>
         </header>
-        {hasHardMode && (
-          <div role="tablist" aria-label="Benchmark tier" className="mb-3 flex w-fit gap-1 rounded-lg border border-border bg-foreground/5 p-1">
-            {[
-              { hard: false, label: "v1.2 Standard" },
-              { hard: true, label: "v1.2 Hard" },
-            ].map((tab) => (
-              <button
-                key={tab.label}
-                type="button"
-                role="tab"
-                aria-selected={isHard === tab.hard}
-                onClick={() => onFiltersChange({ size: tab.hard ? HARD_SIZE : undefined })}
-                className={`rounded-md px-4 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-ember-bright ${isHard === tab.hard ? "bg-ember text-background" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        )}
-        {isHard && <HardModeIntro />}
         <div
           role="group"
           aria-label="Leaderboard filters"
-          className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-foreground/5 p-3"
+          className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-foreground/5 p-2.5"
         >
-          <Popover>
-            <PopoverTrigger type="button" className={control}>
-              Model families{" "}
-              <span className="font-mono text-xs text-muted-foreground">
-                {selectedFamilies.size} of {allFamilies.length}
-              </span>
-              <CaretDown size={13} />
-            </PopoverTrigger>
-            <PopoverContent
-              side="bottom"
-              className="w-[min(24rem,calc(100vw-2rem))] p-0"
-            >
-              <div className="border-b border-border p-3">
-                <label htmlFor="model-search" className="sr-only">
-                  Search models
-                </label>
-                <input
-                  id="model-search"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search models or providers"
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ember"
-                />
-                <div className="mt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => updateFamilySelection(new Set(allFamilies))}
-                    className="text-ember hover:underline"
-                  >
-                    Select all
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateFamilySelection(new Set())}
-                    className="text-ember hover:underline"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onFiltersChange({
-                        providers: undefined,
-                        families: undefined,
-                        versions: undefined,
-                        effort: "best",
-                        reasoning: undefined,
-                        openWeights: undefined,
-                        size: undefined,
-                      });
-                      setSearch("");
-                    }}
-                    className="text-ember hover:underline"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-              <div className="max-h-80 overflow-y-auto p-3">
-                {providerGroups.map((group) => {
-                  const families = group.families.filter((family) =>
-                    `${family} ${results.byModel.find((model) => model.family === family)?.familyDisplayName ?? ""} ${group.id}`
-                      .toLowerCase()
-                      .includes(search.toLowerCase()),
-                  );
-                  if (!families.length) return null;
-                  const selectedCount = group.families.filter((family) =>
-                    selectedFamilies.has(family),
-                  ).length;
-                  return (
-                    <div key={group.id} className="mb-3">
-                      <label className="flex items-center gap-2 py-1 text-sm font-medium text-foreground">
-                        <input
-                          type="checkbox"
-                          checked={selectedCount === group.families.length}
-                          ref={(node) => {
-                            if (node)
-                              node.indeterminate =
-                                selectedCount > 0 &&
-                                selectedCount < group.families.length;
-                          }}
-                          onChange={() => toggleProvider(group.id)}
-                        />
-                        <ProviderLogo provider={group.id} size={15} />
-                        {PROVIDERS[group.id]?.name ?? group.id}
-                        <span className="ml-auto font-mono text-xs text-dim">
-                          {selectedCount}/{group.families.length}
-                        </span>
-                      </label>
-                      {families.map((family) => (
-                        <label
-                          key={family}
-                          className="ml-5 flex items-center gap-2 py-1 text-xs text-muted-foreground"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedFamilies.has(family)}
-                            onChange={() => toggleFamily(family)}
-                          />
-                          <span className="truncate">
-                            {results.byModel.find(
-                              (model) => model.family === family,
-                            )?.familyDisplayName ?? family}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Popover>
-            <PopoverTrigger type="button" className={control}>
-              Filters
-              {(filters.versions !== undefined ||
-                filters.reasoning !== undefined ||
-                filters.openWeights !== undefined) && (
-                <>
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 rounded-full bg-ember"
-                  />
-                  <span className="sr-only">Active filters</span>
-                </>
-              )}
-              <CaretDown size={13} />
-            </PopoverTrigger>
-            <PopoverContent side="bottom" className="w-56 space-y-3">
-              <fieldset>
-                <legend className="text-sm text-foreground">Version</legend>
-                <div className="mt-1 space-y-1">
-                  {VERSIONS.map((version) => (
-                    <label key={version} className="flex items-center gap-2 text-sm text-foreground">
-                      <input type="checkbox" checked={!filters.versions || filters.versions.includes(version)} onChange={() => {
-                        const selected = new Set(filters.versions ?? VERSIONS);
-                        if (selected.has(version)) selected.delete(version);
-                        else selected.add(version);
-                        onFiltersChange({ versions: selected.size === VERSIONS.length ? undefined : [...selected] });
-                      }} />
-                      V{version}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <label className="block text-sm text-foreground">
-                Reasoning
-                <select
-                  value={
-                    filters.reasoning === undefined
-                      ? "any"
-                      : String(filters.reasoning)
-                  }
-                  onChange={(event) =>
-                    onFiltersChange({
-                      reasoning:
-                        event.target.value === "any"
-                          ? undefined
-                          : event.target.value === "true",
-                    })
-                  }
-                  className="mt-1 w-full rounded border border-border bg-background p-2 text-sm"
-                >
-                  <option value="any">Any</option>
-                  <option value="true">Reasoning</option>
-                  <option value="false">Non-reasoning</option>
-                </select>
-              </label>
-              <label className="block text-sm text-foreground">
-                Weights
-                <select
-                  value={
-                    filters.openWeights === undefined
-                      ? "any"
-                      : String(filters.openWeights)
-                  }
-                  onChange={(event) =>
-                    onFiltersChange({
-                      openWeights:
-                        event.target.value === "any"
-                          ? undefined
-                          : event.target.value === "true",
-                    })
-                  }
-                  className="mt-1 w-full rounded border border-border bg-background p-2 text-sm"
-                >
-                  <option value="any">Any</option>
-                  <option value="true">Open weights</option>
-                  <option value="false">Proprietary</option>
-                </select>
-              </label>
-            </PopoverContent>
-          </Popover>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            Effort{" "}
-            <select
-              value={filters.effort ?? "best"}
-              onChange={(event) =>
-                onFiltersChange({ effort: event.target.value })
-              }
-              className={control + " appearance-none pr-8"}
-            >
-              <option value="best">Best observed level</option>
-              <option value="all">All levels</option>
-              {effortLevels.map((level) => (
-                <option key={level} value={level}>
-                  {effortLabel(level)}
-                </option>
-              ))}
-            </select>
-            <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
-          </label>
-          {!isHard && <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            Size{" "}
-            <select
-              value={size ?? "all"}
-              onChange={(event) =>
-                onFiltersChange({
-                  size:
-                    event.target.value === "all"
-                      ? undefined
-                      : event.target.value,
-                })
-              }
-              className={control + " appearance-none pr-8"}
-            >
-              <option value="all">Standard</option>
-              {standardSizes.map((value) => (
-                <option key={value} value={value}>
-                  {sizeLabel(value)}
-                </option>
-              ))}
-            </select>
-            <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
-          </label>}
+          {hasHardMode && (
+            <>
+              <Segmented
+                label="Benchmark tier"
+                value={isHard ? "hard" : "standard"}
+                onChange={(value) => onFiltersChange({ size: value === "hard" ? HARD_SIZE : undefined })}
+                options={[{ value: "standard", label: "v1.2 Standard" }, { value: "hard", label: "v1.2 Hard" }]}
+              />
+              <span className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
+            </>
+          )}
+          <ModelsPopover filters={filters} change={onFiltersChange} sources={results.byModel} />
+          <EffortToggle filters={filters} change={onFiltersChange} />
+          {!isHard && (
+            <label className="relative inline-flex items-center">
+              <span className="sr-only">Grid size</span>
+              <select
+                value={size ?? "all"}
+                onChange={(event) => onFiltersChange({ size: event.target.value === "all" ? undefined : event.target.value })}
+                className={`${filterPill} appearance-none pr-8`}
+              >
+                <option value="all">All sizes</option>
+                {standardSizes.map((value) => (
+                  <option key={value} value={value}>{sizeLabel(value)}</option>
+                ))}
+              </select>
+              <CaretDown size={13} className="pointer-events-none absolute right-3" aria-hidden="true" />
+            </label>
+          )}
           {!isHard && hiddenCount > 0 && (
-            <p className="w-full text-xs text-muted-foreground sm:ml-auto sm:w-auto">
-              {hiddenCount} variants with no solved puzzles {includeUnsolved ? "shown" : "hidden"} ·{" "}
-              <button type="button" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={() => onIncludeUnsolvedChange(!includeUnsolved)}>{includeUnsolved ? "Hide" : "Show"} them</button>
-            </p>
+            <div className="sm:ml-auto">
+              <Switch
+                checked={includeUnsolved}
+                onChange={onIncludeUnsolvedChange}
+                label={`Unsolved (${hiddenCount})`}
+                hint="Show variants that solved no puzzles"
+              />
+            </div>
           )}
         </div>
+        {isHard && <HardModeIntro />}
         <section className="mb-10">
           <Card className="pb-0">
             <div ref={chartRef}>
