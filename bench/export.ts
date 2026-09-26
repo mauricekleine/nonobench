@@ -1,8 +1,9 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { MODELS } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
-import { gradeOutput } from "./grade";
-import { CORE_SIZES, sortSizes } from "./sizes";
+import { extractOutputSolution, gradeOutput } from "./grade";
+import { checkClues } from "../visualizer/lib/nonogram";
+import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 import modelMetadata from "./model-metadata.json";
 import familyDisplayNames from "./family-display-names.json";
 import metadataOverrides from "./model-metadata-overrides.json";
@@ -131,6 +132,20 @@ type ModelErrorData = {
 	errors: ErrorMessageData[];
 };
 
+// How close each Hard-mode answer came. Every Hard-mode puzzle has exactly
+// one solution, so "cells off" is well defined; misses without a complete
+// grid carry the reason instead.
+type HardModeOutcome = "solved" | "wrong-grid" | "no-grid";
+type HardModeReason = "timed-out" | "cut-off" | "wrong-size" | "gave-up" | "empty" | "no-grid";
+type HardModeData = {
+	size: string;
+	puzzles: number;
+	models: {
+		model: string;
+		runs: { puzzle: number; outcome: HardModeOutcome; cellsOff?: number; linesSatisfied?: number; reason?: HardModeReason }[];
+	}[];
+};
+
 type BenchmarkResults = {
 	timestamp: string;
 	summary: {
@@ -139,6 +154,7 @@ type BenchmarkResults = {
 		coreSizes: string[];
 	};
 	byModel: ModelData[];
+	hardMode: HardModeData;
 	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean; harness: "v1.0" | "v1.2"; version: "1.0" | "1.1" | "1.2" } & SizeData>;
 	errorsByModel: ModelErrorData[];
 };
@@ -418,6 +434,54 @@ for (const [model, sizeDatas] of modelMap) {
 	});
 }
 
+const hardSize = EXTENDED_SIZES[0];
+const hardPuzzles = PUZZLES.filter((puzzle) => `${puzzle.width}x${puzzle.height}` === hardSize);
+const hardRows = db
+	.query<{ model: string; puzzle_id: string; status: string; raw_output: string | null; finish_reason: string | null }, [string]>(
+		`SELECT model, puzzle_id, status, raw_output, ${optionalColumn("finish_reason")} FROM runs WHERE size = ? AND status != 'failed'`,
+	)
+	.all(hardSize);
+const hardByModel = new Map<string, HardModeData["models"][number]["runs"]>();
+for (const row of hardRows) {
+	const puzzle = puzzlesById.get(row.puzzle_id);
+	if (!puzzle) continue;
+	const index = hardPuzzles.indexOf(puzzle) + 1;
+	const cells = puzzle.width * puzzle.height;
+	const grid = row.status === "success" ? extractOutputSolution(puzzle, row.raw_output) : null;
+	let run: HardModeData["models"][number]["runs"][number];
+	if (grid && grid.length === cells) {
+		const check = checkClues(puzzle, grid);
+		const violated = check.rowViolations.length + check.columnViolations.length;
+		const solution = puzzle.solution.replace(/\s/g, "");
+		run = check.correct
+			? { puzzle: index, outcome: "solved" }
+			: {
+				puzzle: index,
+				outcome: "wrong-grid",
+				cellsOff: [...grid].filter((cell, i) => cell !== solution[i]).length,
+				linesSatisfied: 1 - violated / (puzzle.width + puzzle.height),
+			};
+	} else {
+		const text = (row.raw_output ?? "").replace(/[\s{}"\[\]:]|solution/g, "");
+		const reason: HardModeReason = row.status === "timeout" ? "timed-out"
+			: row.finish_reason === "length" ? "cut-off"
+			: grid ? "wrong-size"
+			// "0", or an empty structured answer, is the prompt's "no solution".
+			: text === "0" || /^\s*\{\s*"solution"\s*:\s*(\[\s*\]|"0"|\[\s*"0"\s*\])\s*\}\s*$/.test(row.raw_output ?? "") ? "gave-up"
+			: text === "" ? "empty"
+			: "no-grid";
+		run = { puzzle: index, outcome: "no-grid", reason };
+	}
+	hardByModel.set(row.model, [...(hardByModel.get(row.model) ?? []), run]);
+}
+const hardMode: HardModeData = {
+	size: hardSize,
+	puzzles: hardPuzzles.length,
+	models: [...hardByModel]
+		.map(([model, runs]) => ({ model, runs: runs.sort((a, b) => a.puzzle - b.puzzle) }))
+		.sort((a, b) => a.model.localeCompare(b.model)),
+};
+
 // Sort byModel by overall accuracy descending
 byModel.sort((a, b) => b.overallAccuracy - a.overallAccuracy);
 
@@ -430,6 +494,7 @@ const results: BenchmarkResults = {
 		coreSizes: [...CORE_SIZES],
 	},
 	byModel,
+	hardMode,
 	chartData,
 	errorsByModel,
 };

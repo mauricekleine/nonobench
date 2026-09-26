@@ -114,10 +114,15 @@ export function applyFilters<T extends LeaderboardVariant>(
         filters.effort === "all" ||
         model.effort === filters.effort),
   );
+  // Hard mode ran one variant per family: pick among the variants that ran
+  // the size, so a family whose best Standard level changed later still shows.
+  const pool = filters.size && !CORE_SIZES.has(filters.size)
+    ? eligible.filter((model) => model.bySize.some((entry) => entry.size === filters.size && entry.runs > 0))
+    : eligible;
   const selected =
     !filters.effort || filters.effort === "best"
-      ? selectBestVariants(eligible)
-      : eligible;
+      ? selectBestVariants(pool)
+      : pool;
   return selected
     .filter(
       (model) =>

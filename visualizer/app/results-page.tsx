@@ -38,6 +38,7 @@ import { effortLabel, effortTitle, formatCost, formatDuration, shortSizeLabel, s
 import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
 import { AccuracyScatter, EffortLadder } from "./insight-charts";
+import { HardModeIntro, HardModeMisses } from "./hard-mode";
 import resultsData from "./results.json";
 
 type SizeData = {
@@ -93,9 +94,12 @@ const providerGroups = [
       ),
     ),
   }));
+const HARD_SIZE = "20x20";
 const displayedSizes = results.summary.sizes.filter((size) =>
   availableSizes(results.byModel).includes(size),
 );
+const hasHardMode = displayedSizes.includes(HARD_SIZE);
+const standardSizes = displayedSizes.filter((size) => size !== HARD_SIZE);
 const effortLevels = [
   ...new Set(results.byModel.map((model) => model.effort)),
 ].sort();
@@ -164,7 +168,7 @@ function ModelName({ model }: { model: Model }) {
 }
 
 export default function ResultsPage({
-  filters,
+  filters: baseFilters,
   onFiltersChange,
   metric,
   onMetricChange,
@@ -182,6 +186,12 @@ export default function ResultsPage({
   perPuzzle: boolean;
   onPerPuzzleChange: (average: boolean) => void;
 }) {
+  const isHard = baseFilters.size === HARD_SIZE;
+  // Hard mode shows every variant that ran it: 0/10 is information there.
+  const filters = useMemo(
+    () => (isHard ? { ...baseFilters, minCorrect: 0 } : baseFilters),
+    [isHard, baseFilters],
+  );
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<{ key: string; desc: boolean }>({
     key: "accuracy",
@@ -325,6 +335,26 @@ export default function ResultsPage({
             <a href="/results-raw.json" download className={control}><DownloadSimple size={16} />Raw results</a>
           </nav>
         </header>
+        {hasHardMode && (
+          <div role="tablist" aria-label="Benchmark tier" className="mb-3 flex w-fit gap-1 rounded-lg border border-border bg-foreground/5 p-1">
+            {[
+              { hard: false, label: "v1.2 Standard" },
+              { hard: true, label: "v1.2 Hard" },
+            ].map((tab) => (
+              <button
+                key={tab.label}
+                type="button"
+                role="tab"
+                aria-selected={isHard === tab.hard}
+                onClick={() => onFiltersChange({ size: tab.hard ? HARD_SIZE : undefined })}
+                className={`rounded-md px-4 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-ember-bright ${isHard === tab.hard ? "bg-ember text-background" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {isHard && <HardModeIntro />}
         <div
           role="group"
           aria-label="Leaderboard filters"
@@ -542,7 +572,7 @@ export default function ResultsPage({
             </select>
             <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
           </label>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          {!isHard && <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Size{" "}
             <select
               value={size ?? "all"}
@@ -557,15 +587,15 @@ export default function ResultsPage({
               className={control + " appearance-none pr-8"}
             >
               <option value="all">Standard</option>
-              {displayedSizes.map((value) => (
+              {standardSizes.map((value) => (
                 <option key={value} value={value}>
                   {sizeLabel(value)}
                 </option>
               ))}
             </select>
             <CaretDown size={13} className="-ml-8 mr-3 pointer-events-none text-foreground" aria-hidden="true" />
-          </label>
-          {hiddenCount > 0 && (
+          </label>}
+          {!isHard && hiddenCount > 0 && (
             <p className="w-full text-xs text-muted-foreground sm:ml-auto sm:w-auto">
               {hiddenCount} variants with no solved puzzles {includeUnsolved ? "shown" : "hidden"} ·{" "}
               <button type="button" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={() => onIncludeUnsolvedChange(!includeUnsolved)}>{includeUnsolved ? "Hide" : "Show"} them</button>
@@ -669,13 +699,14 @@ export default function ResultsPage({
             </div>
           </Card>
         </section>
+        {isHard && <HardModeMisses models={chosen} />}
         <AccuracyScatter
           models={chosen}
           size={size}
           metric={metric}
           onMetricChange={onMetricChange}
         />
-        <EffortLadder models={results.byModel} filters={filters} />
+        {!isHard && <EffortLadder models={results.byModel} filters={filters} />}
         <section className="mt-10 rounded-lg border border-border bg-card" aria-labelledby="details-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
             <div>
