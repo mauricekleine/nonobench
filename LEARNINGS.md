@@ -259,6 +259,54 @@ code revision, provider, output mode and raw output.
 
 ---
 
+## 12. "Solved" hides how a model misses
+
+**Assumed.** A miss is a wrong grid, and a binary score says enough.
+
+**Saw.** Breaking down the misses of 14 current models on the ten 15x15s
+(best observed level each), only 2 of about 70 misses were complete grids
+that broke some clues. The rest were:
+- answers with the wrong number of cells;
+- "no solution" give-ups;
+- answers cut off by the output limit;
+- empty answers.
+
+Each model misses in its own way:
+- Grok 4.7 gives up (4 of 10).
+- Gemini 3.8 Flash miscounts (5 of 10).
+- Muse Spark 1.3 and Claude Fable 5.1 run out of tokens (6 and 3 of 10).
+
+Where models do return full grids, as in Hard mode with the row format, the
+distance to the solution separates them further:
+- Claude Opus 5.5 missed by 2 cells (twice) and GPT-6 Astra by 1.
+- Gemini 3.8 Flash's grids had 33% of the 400 cells wrong.
+- Qwen 3.8 Max's grids had 45% wrong, close to chance on puzzles that are
+  about half filled.
+
+**Changed.** "Solved" stays the headline. Beside it:
+- a per-model breakdown of how misses happen;
+- for complete wrong grids, the cells off and the share of clue lines
+  satisfied. "Cells off" only applies to puzzles with a single solution;
+  "lines satisfied" works everywhere.
+
+"Wrong size" is labelled as miscounted cells: section 4 shows some of these
+are formatting slips, not logic failures.
+
+## 13. One attempt per puzzle is the largest source of noise
+
+**Saw.** In the 15x15 flat vs rows experiment (section 4), puzzles flipped
+between solved, gave up, cut off and wrong for reasons unrelated to the
+format. GPT-6 Sol gave up on three puzzles in one run that it solved in the
+other. Opus 5.5 solved puzzle 24 flat and returned a wrong grid for it in
+rows. The effort ladders are not monotonic either (section 8), and the 95%
+ranges at n = 30 span about 30 points in the middle of the scale.
+
+**Open.** Repeated attempts per puzzle (e.g. three, reporting the mean or the
+share of puzzles solved at least once) would show whether a single miss is
+bad luck or a pattern. They would also tighten the ranges and make the
+format and effort-level comparisons measurable. The cost is about three
+times as much per variant: a candidate for a V2.0 Standard.
+
 ## Measurement notes
 
 - **Single attempt per puzzle.** n = 30 per Standard score; the Wilson 95%
