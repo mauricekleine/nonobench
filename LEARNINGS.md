@@ -23,7 +23,9 @@ missed when a model restated its grid several times while reasoning.
 **Changed (V1.2).** An answer is correct when it satisfies every clue. When a
 text answer contains several grids, the last complete grid counts. A regrade
 of all historical runs moved 43 answers from wrong to right and none the
-other way.
+other way. The database keeps each run's original `correct` flag as history.
+The exports regrade every stored answer with the current grader, so the
+site, API and exported files are the reference.
 
 **Open.** Puzzles with several solutions are slightly easier, since more
 grids count as correct. A uniqueness-checked puzzle set removes this; Hard
