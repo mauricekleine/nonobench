@@ -32,7 +32,7 @@ export function NonogramRowClues({ shouldHighlightMistakes, violatedRows }: Prop
   }, [cluesGrid]);
 
   return (
-    <div className="grid min-w-max grid-flow-row overflow-hidden rounded-l-md border-2 border-foreground border-r-0">
+    <div className="grid grid-flow-row overflow-hidden rounded-l-md border-2 border-foreground border-r-0">
       {clues.map((row, index) => (
         <div
           className={cn(

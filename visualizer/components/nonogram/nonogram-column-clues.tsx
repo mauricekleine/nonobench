@@ -34,7 +34,7 @@ export function NonogramColumnClues({ shouldHighlightMistakes, violatedColumns }
   }, [cluesGrid]);
 
   return (
-    <div className="grid min-h-max grid-flow-col overflow-hidden rounded-t-md border-2 border-foreground border-b-0">
+    <div className="grid grid-flow-col overflow-hidden rounded-t-md border-2 border-foreground border-b-0">
       {clues.map((column, index) => (
         <div
           className={cn(
