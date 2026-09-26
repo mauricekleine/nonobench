@@ -113,9 +113,19 @@ four models): 23/40 solved with the flat string, 21/40 with rows. Per model:
 - Gemini 3.8 Flash: 5 → 5
 - DeepSeek V4.1 Flash: 3 → 5
 
-Those shifts are within single-run noise. At 225 cells, the wrong-length
-answers mostly come from models that are lost on the logic, not from
-miscounting.
+Per puzzle, the picture is mixed:
+- Of the 14 answers with the wrong number of cells in the flat format, four
+  became solves with rows. Examples: Claude Opus 5.5 on puzzle 28 (219 cells
+  instead of 225 on an easy puzzle), and DeepSeek V4.1 Flash on 28 and 29.
+  Those were counting failures.
+- Four of Gemini's wrong-size answers became complete but wrong grids, so
+  the miscount was hiding a wrong solution.
+- Other puzzles flipped both ways for reasons unrelated to format. GPT-6 Sol
+  gave up on three puzzles in rows that it had solved flat.
+
+The net totals match within single-run noise. The format costs individual
+answers at 15x15, but a single attempt per puzzle adds more noise than the
+format does.
 
 **Changed.** Hard mode asks for one row per line. Standard keeps the flat
 string: it is not the bottleneck at 15x15, and changing it would break
