@@ -81,16 +81,13 @@ export function HardModeIntro() {
   return (
     <div className="mb-5 max-w-3xl space-y-2 text-sm leading-relaxed text-muted-foreground">
       <p>
-        The Standard set stopped separating the best models: the top three
-        solve 26 to 30 of its 30 puzzles. Hard mode adds ten 20×20 puzzles
-        filled at random, so there is no picture to guess from. Every puzzle
-        has exactly one solution, and five of them can&apos;t be solved one
-        row or column at a time.
+        Standard no longer separates the top models: the best three solve 26
+        to 30 of 30. Hard mode adds ten random 20×20 puzzles, each with one
+        solution. Five can&apos;t be solved one row or column at a time.
       </p>
       <p>
-        Each model family runs Hard mode once, at the effort level that
-        scored best on Standard when these runs were made. Answers are written
-        one row per line, with a 128,000-token answer budget.{" "}
+        Each family runs it once, at its best Standard effort level at the
+        time.{" "}
         <Link href="/how-it-works" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright">
           How it works
         </Link>
