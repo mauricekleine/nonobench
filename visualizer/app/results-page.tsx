@@ -317,7 +317,7 @@ export default function ResultsPage({
             </label>
           )}
           {!isHard && hiddenCount > 0 && (
-            <div className="sm:ml-auto">
+            <div className="flex sm:ml-auto">
               <Switch
                 checked={includeUnsolved}
                 onChange={onIncludeUnsolvedChange}
