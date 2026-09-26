@@ -40,7 +40,8 @@ const metricValue = (value: number, metric: XMetric) =>
       ? `${(value / 1000).toFixed(1)}s`
       : `${Math.round(value).toLocaleString()} tokens`;
 const logTickLabel = (value: number, metric: XMetric) => {
-  if (metric === "cost") return `$${value}`;
+  // Currency style: always at least two decimals ($0.10, $1.00), more below a cent.
+  if (metric === "cost") return `$${value.toFixed(Math.max(2, -Math.floor(Math.log10(value))))}`;
   if (metric === "tokens")
     return value >= 1_000_000
       ? `${value / 1_000_000}m`
