@@ -45,6 +45,17 @@ export function shapeHeatmap(puzzles: PuzzleResult[], models: string[]) {
   })) }));
 }
 
+// One- or two-word version of describeMissingAnswer, for list rows.
+export function shortMissingAnswer(run: PuzzleRun): string {
+	if (run.status === "timeout") return "timed out";
+	switch (run.answerIssue) {
+		case "wrong-size": return "wrong size";
+		case "no-solution-claimed": return "gave up";
+		case "empty": return "empty";
+		default: return "no grid";
+	}
+}
+
 // Plain-language reason a run has no answer to overlay on the grid.
 export function describeMissingAnswer(run: PuzzleRun | undefined, cells: number): string {
 	if (!run) return "This model has not run this puzzle.";
