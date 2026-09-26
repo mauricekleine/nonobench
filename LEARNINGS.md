@@ -245,6 +245,11 @@ answers cut off in the pilot were rerun under that budget; answers that
 finished below the old limit are unaffected by it. Standard keeps the
 provider defaults and lists them under Limitations.
 
+**Then saw.** More effort can mean fewer solves under a fixed budget. On
+Hard mode, Claude Fable 5.1 solved 5/10 at high (2 cut off) but 1/10 at
+xhigh, with 6 of its 9 misses cut off at 128,000 tokens. At a fixed budget,
+extra effort helps only when the model can finish inside it.
+
 **Open.** Whether to rerun Standard's cut-off answers under the same budget.
 Needing more than 65k tokens is itself a result about efficiency, but the
 limit differed by provider.
