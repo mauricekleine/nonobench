@@ -150,6 +150,22 @@ model can complete the picture instead of solving the clues. Uniqueness and
 enough: the picture must not give the answer away. The noisier 15x15s stay
 much harder (Sol 7/10, Opus 8/10).
 
+**Changed.** Hard mode was regenerated from random fills: about 5 blocks per
+line, mirror symmetry near 50%, all unique. Five puzzles are line-solvable
+and five stall line logic with 28–174 cells left. On this set:
+
+| Variant | Solved | Notes |
+|---|---|---|
+| Claude Opus 5.5 high | 8/10 | all five deep puzzles |
+| GPT-6 Astra xhigh | 5/10 | all five line-solvable, none of the deep ones |
+| Claude Fable 5.1 high | 5/10 | |
+| 11 other families | 0/10 | |
+
+The other families mostly ran out of the 128k budget, gave up with "no
+solution", or returned a wrong or malformed grid; Muse Spark hit Meta's
+5-minute limit on every puzzle. The tier now separates the frontier, and
+it measures the difference between line logic and deeper search.
+
 **Open.** Hard puzzles need low visual regularity as well as logical depth,
 e.g. random fills at a density that keeps them unique. A principled
 difficulty scale (search depth, branching needed) would make tiers
