@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import {
   chartStats,
-  decadeTicks,
+  logTicks,
   effortInsight,
   effortLadders,
   effortRowDomain,
@@ -94,8 +94,8 @@ export function AccuracyScatter({
         : `M ${xPosition(point.x)} ${yPosition(point.y)}`,
     )
     .join(" ");
-  const decades = decadeTicks(lower, upper);
-  const ticks = decades.length ? decades : [Math.sqrt(lower * upper)];
+  const scale = logTicks(lower, upper);
+  const ticks = scale.length ? scale : [{ value: Math.sqrt(lower * upper), major: true }];
   // Place frontier labels beside their point, choosing the least crowded side.
   // Labels are anchored on the point and nudged by a few pixels, so they stay
   // attached to their dot at any chart width; the % boxes below are only an
@@ -160,7 +160,7 @@ export function AccuracyScatter({
       </div>
       {points.length ? (
         <>
-          <div className="mt-5 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-5 flex items-center justify-between text-sm text-muted-foreground">
             <span>Accuracy ↑</span>
             <span>↖ cheaper &amp; more accurate</span>
           </div>
@@ -209,25 +209,28 @@ export function AccuracyScatter({
             >
               {ticks.map((tick) => (
                 <line
-                  key={`x${tick}`}
-                  x1={xPosition(tick)}
-                  x2={xPosition(tick)}
+                  key={`x${tick.value}`}
+                  x1={xPosition(tick.value)}
+                  x2={xPosition(tick.value)}
                   y1="0"
                   y2="100"
-                  stroke="var(--border)"
-                  strokeWidth="0.12"
+                  stroke="var(--muted-foreground)"
+                  strokeOpacity={tick.major ? 0.35 : 0.14}
+                  strokeWidth="1"
+                  strokeDasharray={tick.major ? undefined : "3 4"}
                   vectorEffect="non-scaling-stroke"
                 />
               ))}
-              {[5, 50, 95].map((position) => (
+              {[0, 25, 50, 75, 100].map((value) => (
                 <line
-                  key={`y${position}`}
+                  key={`y${value}`}
                   x1="0"
                   x2="100"
-                  y1={position}
-                  y2={position}
-                  stroke="var(--border)"
-                  strokeWidth="0.12"
+                  y1={yPosition(value)}
+                  y2={yPosition(value)}
+                  stroke="var(--muted-foreground)"
+                  strokeOpacity={value % 50 === 0 ? 0.3 : 0.14}
+                  strokeWidth="1"
                   vectorEffect="non-scaling-stroke"
                 />
               ))}
@@ -240,10 +243,10 @@ export function AccuracyScatter({
                 opacity="0.8"
               />
             </svg>
-            {[100, 50, 0].map((value) => (
+            {[100, 75, 50, 25, 0].map((value) => (
               <span
                 key={value}
-                className="absolute left-1 font-mono text-[10px] text-muted-foreground"
+                className="absolute left-1.5 bg-card px-0.5 font-mono text-xs text-muted-foreground sm:text-[13px]"
                 style={{
                   top: `${yPosition(value)}%`,
                   transform: "translateY(-50%)",
@@ -337,19 +340,19 @@ export function AccuracyScatter({
               </div>
             )}
           </div>
-          <div className="relative mt-1 h-5 font-mono text-[10px] text-muted-foreground">
+          <div className="relative mt-1.5 h-6 font-mono text-xs text-muted-foreground sm:text-[13px]">
             {ticks.map((tick) => (
               <span
-                key={tick}
-                className="absolute -translate-x-1/2 whitespace-nowrap"
-                style={{ left: `${xPosition(tick)}%` }}
+                key={tick.value}
+                className={`absolute -translate-x-1/2 whitespace-nowrap ${tick.major ? "text-foreground" : "hidden text-dim sm:inline"}`}
+                style={{ left: `${xPosition(tick.value)}%` }}
               >
-                {logTickLabel(tick, metric)}
+                {logTickLabel(tick.value, metric)}
               </span>
             ))}
           </div>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            {metricLabels[metric]} (log scale) →
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            {metricLabels[metric]} → <span className="text-dim">(log scale: each solid line is 10× the last)</span>
           </p>
           {points.length < models.length && (
             <p className="mt-1 text-center font-mono text-[10px] text-dim">

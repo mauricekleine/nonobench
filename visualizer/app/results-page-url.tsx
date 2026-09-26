@@ -79,17 +79,15 @@ export function UrlResultsPage() {
   };
   const metric: XMetric =
     query.x === "time" || query.x === "tokens" ? query.x : "cost";
-  const includeUnsolved = query.z === "1";
   return (
     <ResultsPage
-      filters={{ ...filters, minCorrect: includeUnsolved ? 0 : 1 }}
+      // Standard hides variants that solved nothing; Hard mode shows every run.
+      filters={{ ...filters, minCorrect: 1 }}
       onFiltersChange={change}
       metric={metric}
       onMetricChange={(x) => {
         void setQuery({ x: x === "cost" ? null : x });
       }}
-      includeUnsolved={includeUnsolved}
-      onIncludeUnsolvedChange={(include) => void setQuery({ z: include ? "1" : null })}
       perPuzzle={query.u === "avg"}
       onPerPuzzleChange={(average) => void setQuery({ u: average ? "avg" : null })}
     />
@@ -103,8 +101,6 @@ export function DefaultResultsPage() {
       onFiltersChange={() => {}}
       metric="cost"
       onMetricChange={() => {}}
-      includeUnsolved={false}
-      onIncludeUnsolvedChange={() => {}}
       perPuzzle={false}
       onPerPuzzleChange={() => {}}
     />

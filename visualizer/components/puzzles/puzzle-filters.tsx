@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import resultsData from "@/app/results.json";
-import { EffortToggle, ModelsPopover, Switch } from "@/components/filter-bar";
+import { EffortToggle, ModelsPopover } from "@/components/filter-bar";
 import { applyFilters, VERSIONS, type BenchmarkVersion, type Filters, type LeaderboardVariant } from "@/lib/leaderboard";
 
 export type DisplayModel = LeaderboardVariant & { displayName: string; familyDisplayName: string };
@@ -21,8 +21,8 @@ export function usePuzzleFilters() {
     effort: params.get("e") ?? "best",
     reasoning: params.has("r") ? params.get("r") === "true" : undefined,
     openWeights: params.has("w") ? params.get("w") === "true" : undefined,
-    // Like the homepage: variants that solved no puzzles are hidden unless z=1.
-    minCorrect: params.get("z") === "1" ? 0 : 1,
+    // Like the homepage: variants that solved no puzzles are hidden.
+    minCorrect: 1,
   }), [params]);
   const filtered = useMemo(() => applyFilters(models, filters), [filters]);
   const change = (patch: Partial<Filters>) => {
@@ -39,14 +39,11 @@ export function usePuzzleFilters() {
   return { filters, models: filtered, change, params };
 }
 
-// Same controls as the leaderboard bar: Models popover, Best/All, unsolved switch.
+// Same controls as the leaderboard bar: Models popover and Best/All.
 export function PuzzleFilters({ filters, change }: { filters: Filters; change: (patch: Partial<Filters>) => void; count?: number }) {
-  const scope = { ...filters, effort: filters.effort ?? "best" };
-  const hidden = applyFilters(models, { ...scope, minCorrect: 0 }).length - applyFilters(models, { ...scope, minCorrect: 1 }).length;
   return <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Model filters">
     <ModelsPopover filters={filters} change={change} sources={models} />
     <EffortToggle filters={filters} change={change} />
-    {hidden > 0 && <Switch checked={filters.minCorrect === 0} onChange={(on) => change({ minCorrect: on ? 0 : 1 })} label={`Unsolved (${hidden})`} hint="Show variants that solved no puzzles" />}
   </div>;
 }
 
