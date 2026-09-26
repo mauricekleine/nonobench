@@ -79,7 +79,7 @@ function PuzzlesContent() {
             {inspection.mode === "unique-wrong" && <><span className="flex items-center gap-1"><span className="flex size-4 items-center justify-center bg-[#FFCA16] font-bold text-black">×</span> Extra filled</span><span className="flex items-center gap-1"><span className="flex size-4 items-center justify-center border-2 border-[#C69CFF] font-bold text-[#C69CFF]">·</span> Missed</span></>}
             {inspection.mode === "ambiguous-wrong" && <span className="flex items-center gap-1"><span className="size-4 border-2 border-dashed border-[#D871A1]" /> Row/column clue not satisfied</span>}</div>
         </> : <p className="mt-1 text-muted-foreground">{describeMissingAnswer(selected, puzzle.width * puzzle.height)}</p>}</div>}
-        <p className="text-xs text-muted-foreground">Use ← and → to change puzzles when focus is outside a control.</p>
+        <p className="text-xs text-muted-foreground">Use ← and → to switch puzzles.</p>
       </section>
       <aside aria-label="Model answers" className="min-w-0" onKeyDown={(event) => {
         if (!(event.target instanceof HTMLButtonElement) || !event.target.closest("ul")) return;

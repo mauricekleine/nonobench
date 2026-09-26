@@ -18,5 +18,5 @@ export const effortDescription = (effort: string) =>
   effort === "default" ? "reasoning on" : effort === "none" ? "reasoning off" : `${effort} effort`;
 export const effortTitle = (effort: string) =>
   effort === "default"
-    ? "Reasoning on — this model has no adjustable reasoning levels"
+    ? "Reasoning on: this model has no adjustable effort levels"
     : undefined;

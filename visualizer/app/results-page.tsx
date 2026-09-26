@@ -123,7 +123,7 @@ function IncompleteBadge({ model, size }: { model: Model; size?: string }) {
           </>
         ) : (
           <p>
-            Not every puzzle has a finished run yet; the score covers finished
+            Some puzzles don’t have a finished run yet. The score covers finished
             runs.
           </p>
         )}
@@ -266,8 +266,8 @@ export default function ResultsPage({
             <Link href="/how-it-works#whats-new" className="mb-0.5 rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link>
           </div>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Benchmark results for LLM performance on Nonogram puzzle solving.
-            Compare accuracy, speed, and cost across grid sizes.
+            How well LLMs solve nonogram puzzles. Compare accuracy, speed
+            and cost across grid sizes.
           </p>
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-dim sm:mt-5 sm:gap-x-6">
             <span>{familiesWithResults} models · {variantsWithResults} variants with solved results</span>
@@ -336,8 +336,8 @@ export default function ResultsPage({
                   <div className="flex items-center gap-2">
                     <CardTitle><h2 className="font-display text-base font-medium lowercase">model accuracy</h2></CardTitle>
                     <Popover>
-                      <PopoverTrigger type="button" aria-label="What do the thin ranges mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={17} /></PopoverTrigger>
-                      <PopoverContent side="bottom">The thin ranges show 95% Wilson intervals: uncertainty from 30 Standard puzzles. Small score differences may not be meaningful.</PopoverContent>
+                      <PopoverTrigger type="button" aria-label="What do the thin lines mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={17} /></PopoverTrigger>
+                      <PopoverContent side="bottom">The thin lines show 95% Wilson intervals. With 30 Standard puzzles, small score differences may not mean much.</PopoverContent>
                     </Popover>
                   </div>
                   <div className="flex items-center gap-2">
@@ -550,7 +550,7 @@ export default function ResultsPage({
         </section>
         <section className="mt-10 rounded-lg border border-border bg-card p-4 sm:p-6" aria-labelledby="grid-stats-heading">
           <h2 id="grid-stats-heading" className="font-display text-base font-medium lowercase">statistics by grid size</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Combined results for the selected models.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Combined results for the models shown.</p>
           <div className={`mt-5 grid gap-4 sm:grid-cols-2 ${displayedSizes.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
             {displayedSizes.map((grid, index) => {
               const entries = chosen
