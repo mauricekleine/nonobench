@@ -161,3 +161,21 @@ test("minimum solved filter uses the selected tier and keeps zero as the API def
   expect(parseApiFilters(new URLSearchParams()).filters.minCorrect).toBe(0);
   expect(parseApiFilters(new URLSearchParams("min_correct=1.5")).error).toContain("min_correct");
 });
+
+test("Hard mode best is each family's best Hard result, not its best Standard level", () => {
+  const family = (model: string, effort: string, overallAccuracy: number, hardCorrect: number) => ({
+    model,
+    family: "fable",
+    provider: "anthropic",
+    effort,
+    reasoning: true,
+    openWeights: false,
+    complete: true,
+    overallAccuracy,
+    overallRuns: 30,
+    bySize: [{ size: "20x20", runs: 10, correct: hardCorrect, accuracy: hardCorrect * 10, totalCost: 40 }],
+  });
+  const fable = [family("fable-high", "high", 66.7, 5), family("fable-xhigh", "xhigh", 76.7, 1)];
+  expect(applyFilters(fable, { effort: "best", size: "20x20" }).map((model) => model.model)).toEqual(["fable-high"]);
+  expect(applyFilters(fable, { effort: "best" }).map((model) => model.model)).toEqual(["fable-xhigh"]);
+});

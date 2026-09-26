@@ -95,6 +95,27 @@ function costForSize(model: LeaderboardVariant, size?: string) {
     .reduce((sum, entry) => sum + entry.totalCost, 0);
 }
 
+// Per family, the variant with the most solves at one size; ties go to the
+// cheaper run, then the name.
+function bestAtSize<T extends LeaderboardVariant>(variants: T[], size: string): T[] {
+  const stats = (model: T) => {
+    const entry = model.bySize.find((row) => row.size === size);
+    return {
+      correct: entry?.correct ?? Math.round(((entry?.accuracy ?? 0) * (entry?.runs ?? 0)) / 100),
+      cost: entry?.totalCost ?? 0,
+    };
+  };
+  const byFamily = new Map<string, T>();
+  for (const model of variants) {
+    const current = byFamily.get(model.family);
+    if (!current) { byFamily.set(model.family, model); continue; }
+    const a = stats(model), b = stats(current);
+    if (a.correct > b.correct || (a.correct === b.correct && (a.cost < b.cost || (a.cost === b.cost && model.model < current.model))))
+      byFamily.set(model.family, model);
+  }
+  return [...byFamily.values()];
+}
+
 // Select before size ranking: best effort is defined by the core overall result.
 export function applyFilters<T extends LeaderboardVariant>(
   variants: T[],
@@ -114,15 +135,14 @@ export function applyFilters<T extends LeaderboardVariant>(
         filters.effort === "all" ||
         model.effort === filters.effort),
   );
-  // Hard mode ran one variant per family: pick among the variants that ran
-  // the size, so a family whose best Standard level changed later still shows.
-  const pool = filters.size && !CORE_SIZES.has(filters.size)
-    ? eligible.filter((model) => model.bySize.some((entry) => entry.size === filters.size && entry.runs > 0))
+  // Hard mode is its own tier: "best" there is each family's best Hard
+  // result among the variants that ran it, not its best Standard level.
+  const extended = filters.size && !CORE_SIZES.has(filters.size) ? filters.size : undefined;
+  const pool = extended
+    ? eligible.filter((model) => model.bySize.some((entry) => entry.size === extended && entry.runs > 0))
     : eligible;
-  const selected =
-    !filters.effort || filters.effort === "best"
-      ? selectBestVariants(pool)
-      : pool;
+  const best = !filters.effort || filters.effort === "best";
+  const selected = !best ? pool : extended ? bestAtSize(pool, extended) : selectBestVariants(pool);
   return selected
     .filter(
       (model) =>

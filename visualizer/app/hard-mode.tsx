@@ -92,7 +92,8 @@ export function HardModeIntro() {
         solution. Five can&apos;t be solved one row or column at a time.
       </p>
       <p>
-        Each family runs it once, at its best Standard effort level.{" "}
+        Each family runs it at its best Standard effort level, and Best
+        shows its best Hard result.{" "}
         <Link href="/how-it-works" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright">
           How it works
         </Link>
