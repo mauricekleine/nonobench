@@ -11,6 +11,6 @@ test("durations use readable units and rounded boundaries", () => {
 test("provider default reasoning is presented as on", () => {
   expect(effortLabel("default")).toBe("on");
   expect(effortDescription("default")).toBe("reasoning on");
-  expect(effortTitle("default")).toContain("no adjustable reasoning levels");
+  expect(effortTitle("default")).toContain("no adjustable effort levels");
   expect(effortLabel("high")).toBe("high");
 });

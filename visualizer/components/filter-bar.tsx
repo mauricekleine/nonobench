@@ -8,6 +8,7 @@ import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
 import { useState } from "react";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { effortLabel } from "@/lib/display";
 import { VERSIONS, type Filters } from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
 
@@ -23,14 +24,27 @@ export function Segmented<T extends string>({ value, options, onChange, label, s
   label: string;
   size?: "sm" | "md";
 }) {
+  // Radio-group keyboard behaviour: one tab stop, arrows move the selection.
+  const move = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const index = options.findIndex((option) => option.value === value);
+    const next = options[(index + step + options.length) % options.length];
+    onChange(next.value);
+    const buttons = event.currentTarget.querySelectorAll<HTMLButtonElement>("[role=radio]");
+    buttons[options.indexOf(next)]?.focus();
+  };
+  const selected = options.some((option) => option.value === value);
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-full border border-border bg-foreground/5 p-0.5">
-      {options.map((option) => (
+    <div role="radiogroup" aria-label={label} onKeyDown={move} className="inline-flex rounded-full border border-border bg-foreground/5 p-0.5">
+      {options.map((option, index) => (
         <button
           key={option.value}
           type="button"
           role="radio"
           aria-checked={value === option.value}
+          tabIndex={value === option.value || (!selected && index === 0) ? 0 : -1}
           onClick={() => onChange(option.value)}
           className={`rounded-full ${size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-sm"} ${focus} ${value === option.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
         >
@@ -60,13 +74,19 @@ export function Switch({ checked, onChange, label, hint }: { checked: boolean; o
 }
 
 export function EffortToggle({ filters, change }: { filters: Filters; change: (patch: Partial<Filters>) => void }) {
-  const all = filters.effort === "all";
+  const effort = filters.effort ?? "best";
+  // Older links can pin one level (?e=low); show it as the active option.
+  const pinned = effort !== "best" && effort !== "all" ? effort : null;
   return (
     <Segmented
       label="Effort levels"
-      value={all ? "all" : "best"}
+      value={effort}
       onChange={(value) => change({ effort: value })}
-      options={[{ value: "best", label: "Best" }, { value: "all", label: "All effort levels" }]}
+      options={[
+        { value: "best", label: "Best" },
+        { value: "all", label: "All effort levels" },
+        ...(pinned ? [{ value: pinned, label: `${effortLabel(pinned)} only` }] : []),
+      ]}
     />
   );
 }

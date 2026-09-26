@@ -95,3 +95,22 @@ describe("row-format answers (Hard mode)", () => {
     expect(gradeOutput(puzzle, grid)).toBe(true);
   });
 });
+
+describe("row-format answers pick the final answer and never repair rows", () => {
+  const puzzle = PUZZLES.find((candidate) => candidate.width === 20)!;
+  const grid = puzzle.solution.replace(/\s+/g, "");
+  const rows = grid.match(/.{20}/g)!;
+  const wrong = grid.replace(/^./, (cell) => (cell === "1" ? "0" : "1"));
+
+  test("a later flat answer overrides an earlier row draft, both ways", () => {
+    expect(gradeOutput(puzzle, `${rows.join("\n")}\n\nFinal: ${wrong}`)).toBe(false);
+    expect(gradeOutput(puzzle, `${wrong.match(/.{20}/g)!.join("\n")}\n\nFinal: ${grid}`)).toBe(true);
+  });
+
+  test("a structured array with misshapen rows is not graded, even at 400 cells", () => {
+    const misshapen = [rows[0].slice(0, 19), `${rows[0].slice(19)}${rows[1]}`, ...rows.slice(2)];
+    expect(misshapen.join("")).toBe(grid);
+    expect(gradeOutput(puzzle, JSON.stringify({ solution: misshapen }))).toBe(false);
+    expect(extractOutputSolution(puzzle, JSON.stringify({ solution: misshapen }))).toBeNull();
+  });
+});

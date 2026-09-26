@@ -53,6 +53,13 @@ function wrongFill(cellsOff: number) {
   return "#D9480F";
 }
 
+// Median that averages the two middle values for even counts.
+function median(values: number[]) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
 function summary(runs: HardRun[]) {
   const solved = runs.filter((run) => run.outcome === "solved").length;
   const wrong = runs.filter((run) => run.outcome === "wrong-grid").map((run) => run.cellsOff ?? 0).sort((a, b) => a - b);
@@ -63,7 +70,7 @@ function summary(runs: HardRun[]) {
     parts.push(
       wrong.length <= 3
         ? `${wrong.join(", ")} ${wrong.length === 1 && wrong[0] === 1 ? "cell" : "cells"} off`
-        : `grids ${Math.round((100 * wrong[Math.floor(wrong.length / 2)]) / CELLS)}% off (median)`,
+        : `grids ${Math.round((100 * median(wrong)) / CELLS)}% off (median)`,
     );
   }
   for (const [reason, count] of [...reasons].sort((a, b) => b[1] - a[1])) parts.push(`${count} ${reasonText[reason]}`);
@@ -73,8 +80,7 @@ function summary(runs: HardRun[]) {
 function rank(runs: HardRun[]) {
   const solved = runs.filter((run) => run.outcome === "solved").length;
   const wrong = runs.filter((run) => run.outcome === "wrong-grid").map((run) => run.cellsOff ?? CELLS);
-  const median = wrong.length ? [...wrong].sort((a, b) => a - b)[Math.floor(wrong.length / 2)] : CELLS + 1;
-  return { solved, grids: solved + wrong.length, median };
+  return { solved, grids: solved + wrong.length, median: wrong.length ? median(wrong) : CELLS + 1 };
 }
 
 export function HardModeIntro() {
