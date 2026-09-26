@@ -450,7 +450,7 @@ export function EffortLadder({
   const ordered = ladders.filter((group) => group.kind === "ordered");
   const reasoning = ladders.filter((group) => group.kind === "reasoning");
   const size = filters.size;
-  const insight = effortInsight(ladders, size).split(". ")[0];
+  const insight = effortInsight(ladders, size);
   return (
     <section className={sectionClass} aria-labelledby="effort-heading">
       <h2 id="effort-heading" className={headingClass}>
