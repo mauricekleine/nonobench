@@ -31,7 +31,7 @@ export function NonogramCluesCell({
   return (
     <div
       className={cn(
-        "relative flex aspect-square items-center justify-center border-foreground p-px",
+        "relative flex aspect-square shrink-0 items-center justify-center border-foreground p-px",
         className,
         {
           "text-red-500": !cell.isValid && shouldHighlightMistakes,
