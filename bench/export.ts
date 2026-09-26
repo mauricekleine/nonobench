@@ -1,7 +1,7 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { MODELS } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
-import { extractOutputSolution, gradeOutput, structuredRows } from "./grade";
+import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { checkClues } from "../visualizer/lib/nonogram";
 import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
 import modelMetadata from "./model-metadata.json";
@@ -465,9 +465,8 @@ for (const row of hardRows) {
 		const text = (row.raw_output ?? "").replace(/[\s{}"\[\]:]|solution/g, "");
 		const reason: HardModeReason = row.status === "timeout" ? "timed-out"
 			: row.finish_reason === "length" ? "cut-off"
+			: claimsNoSolution(row.raw_output) ? "gave-up"
 			: grid || (structuredRows(row.raw_output)?.length ?? 0) > 0 ? "wrong-size"
-			// "0", or an empty structured answer, is the prompt's "no solution".
-			: text === "0" || /^\s*\{\s*"solution"\s*:\s*(\[\s*\]|"0"|\[\s*"0"\s*\])\s*\}\s*$/.test(row.raw_output ?? "") ? "gave-up"
 			: text === "" ? "empty"
 			: "no-grid";
 		run = { puzzle: index, outcome: "no-grid", reason };

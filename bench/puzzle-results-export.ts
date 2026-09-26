@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { parseClues } from "../visualizer/lib/nonogram";
 import { getPuzzleId, openReadDb } from "./db";
-import { extractOutputSolution, gradeOutput, structuredRows } from "./grade";
+import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { solveByLines } from "./line-solver";
 import { MULTIPLE_SOLUTION_PUZZLE_NUMBERS } from "./puzzles-check";
 
@@ -58,6 +58,7 @@ type AnswerIssue = "no-solution-claimed" | "empty" | "no-grid" | "wrong-size";
 // the model actually did instead of a generic "no usable grid".
 function answerIssue(rawOutput: string | null, extracted: string | null, cells: number): { answerIssue: AnswerIssue; answerCells?: number } {
 	if (extracted && extracted.length !== cells) return { answerIssue: "wrong-size", answerCells: extracted.length };
+	if (claimsNoSolution(rawOutput)) return { answerIssue: "no-solution-claimed" };
 	// Malformed row arrays are never repaired into a grid; report their size.
 	const rows = structuredRows(rawOutput);
 	if (rows?.length) return { answerIssue: "wrong-size", answerCells: rows.join("").replace(/[^01]/g, "").length };

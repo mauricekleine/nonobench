@@ -24,6 +24,14 @@ export function structuredRows(rawOutput: string | null): string[] | null {
   return Array.isArray(solution) && solution.every((row) => typeof row === "string") ? solution : null;
 }
 
+// The prompt's "no solution" answer: "0", or an empty or ["0"] structured answer.
+export function claimsNoSolution(rawOutput: string | null): boolean {
+  const solution = parseStructured(rawOutput ?? "");
+  if (Array.isArray(solution)) return solution.length === 0 || (solution.length === 1 && String(solution[0]).trim() === "0");
+  const text = typeof solution === "string" ? solution : rawOutput ?? "";
+  return /^\s*0\s*$/.test(text);
+}
+
 function answerText(rawOutput: string): string {
   const solution = parseStructured(rawOutput);
   return typeof solution === "string" ? solution : rawOutput;
