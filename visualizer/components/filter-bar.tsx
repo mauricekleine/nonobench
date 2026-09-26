@@ -1,8 +1,8 @@
 "use client";
 
 // Shared filter controls for the leaderboard and the puzzle explorer: one
-// Models popover (families scroll, version/reasoning/weights pinned below),
-// Best/All effort, and small switches.
+// Models popover (families scroll, version/reasoning/weights pinned below)
+// and Best/All effort.
 
 import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
 import { useState } from "react";
@@ -52,24 +52,6 @@ export function Segmented<T extends string>({ value, options, onChange, label, s
         </button>
       ))}
     </div>
-  );
-}
-
-export function Switch({ checked, onChange, label, hint }: { checked: boolean; onChange: (checked: boolean) => void; label: string; hint?: string }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      title={hint}
-      onClick={() => onChange(!checked)}
-      className={`inline-flex min-h-9 items-center gap-2 rounded-full text-sm text-muted-foreground hover:text-foreground ${focus}`}
-    >
-      <span className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${checked ? "bg-ember" : "bg-foreground/15"}`}>
-        <span className={`absolute top-0.5 size-4 rounded-full bg-background transition-all ${checked ? "left-[18px]" : "left-0.5"}`} />
-      </span>
-      {label}
-    </button>
   );
 }
 

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   chartStats,
   decadeTicks,
+  logTicks,
   effortInsight,
   effortLadders,
   effortRowDomain,
@@ -193,4 +194,17 @@ describe("chart data", () => {
       effortInsight(groups.filter((group) => group.kind === "reasoning")),
     ).toContain("Reasoning solved 7 more puzzles with reasoning on than off");
   });
+});
+
+test("log ticks mark each decade with 2x and 5x steps between", () => {
+  expect(logTicks(0.004, 0.6)).toEqual([
+    { value: 0.005, major: false },
+    { value: 0.01, major: true },
+    { value: 0.02, major: false },
+    { value: 0.05, major: false },
+    { value: 0.1, major: true },
+    { value: 0.2, major: false },
+    { value: 0.5, major: false },
+  ]);
+  expect(logTicks(0, 1)).toEqual([]);
 });

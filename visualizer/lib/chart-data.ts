@@ -39,6 +39,20 @@ export function decadeTicks(lower: number, upper: number): number[] {
   return ticks;
 }
 
+// 1-2-5 steps per decade, so a log axis reads as one: every tenfold step is a
+// major gridline, with 2x and 5x as minor lines in between.
+export function logTicks(lower: number, upper: number): { value: number; major: boolean }[] {
+  if (!Number.isFinite(lower) || !Number.isFinite(upper) || !(lower > 0) || !(upper >= lower)) return [];
+  const ticks: { value: number; major: boolean }[] = [];
+  for (let power = Math.floor(Math.log10(lower)); power <= Math.ceil(Math.log10(upper)); power++) {
+    for (const step of [1, 2, 5]) {
+      const value = Number((step * 10 ** power).toPrecision(12));
+      if (value >= lower && value <= upper) ticks.push({ value, major: step === 1 });
+    }
+  }
+  return ticks;
+}
+
 export function chartStats(model: ChartVariant, size?: string) {
   const entries = model.bySize.filter((entry) =>
     size ? entry.size === size : ["5x5", "10x10", "15x15"].includes(entry.size),

@@ -38,7 +38,7 @@ import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
 import { AccuracyScatter, EffortLadder } from "./insight-charts";
 import { HardModeIntro, HardModeMisses } from "./hard-mode";
-import { EffortToggle, filterPill, ModelsPopover, Segmented, Switch } from "@/components/filter-bar";
+import { EffortToggle, filterPill, ModelsPopover, Segmented } from "@/components/filter-bar";
 import resultsData from "./results.json";
 
 type SizeData = {
@@ -156,8 +156,6 @@ export default function ResultsPage({
   onFiltersChange,
   metric,
   onMetricChange,
-  includeUnsolved,
-  onIncludeUnsolvedChange,
   perPuzzle,
   onPerPuzzleChange,
 }: {
@@ -165,8 +163,6 @@ export default function ResultsPage({
   onFiltersChange: (patch: Partial<Filters>) => void;
   metric: XMetric;
   onMetricChange: (metric: XMetric) => void;
-  includeUnsolved: boolean;
-  onIncludeUnsolvedChange: (include: boolean) => void;
   perPuzzle: boolean;
   onPerPuzzleChange: (average: boolean) => void;
 }) {
@@ -186,12 +182,6 @@ export default function ResultsPage({
     () => applyFilters(results.byModel, filters),
     [filters],
   );
-  const hiddenCount = useMemo(() => {
-    // Count what the switch would reveal under the current effort setting.
-    const scope = { ...filters };
-    return applyFilters(results.byModel, { ...scope, minCorrect: 0 }).length -
-      applyFilters(results.byModel, { ...scope, minCorrect: 1 }).length;
-  }, [filters]);
   const size = filters.size;
   const allLevels = filters.effort === "all";
   const rows = useMemo(
@@ -315,16 +305,6 @@ export default function ResultsPage({
               </select>
               <CaretDown size={13} className="pointer-events-none absolute right-3" aria-hidden="true" />
             </label>
-          )}
-          {!isHard && hiddenCount > 0 && (
-            <div className="flex sm:ml-auto">
-              <Switch
-                checked={includeUnsolved}
-                onChange={onIncludeUnsolvedChange}
-                label={`Unsolved (${hiddenCount})`}
-                hint="Show variants that solved no puzzles"
-              />
-            </div>
           )}
         </div>
         {isHard && <HardModeIntro />}
