@@ -9,6 +9,8 @@ export type ChartVariant = Omit<LeaderboardVariant, "bySize"> & {
   displayName: string;
   familyDisplayName: string;
   overallCorrect: number;
+  // When the model appeared on OpenRouter: a stand-in for its release date.
+  addedAt?: string | null;
   bySize: (LeaderboardVariant["bySize"][number] & {
     correct: number;
     totalDurationMs: number;
@@ -98,29 +100,14 @@ export function effortLadders<T extends ChartVariant>(
       const on = variants.find((model) => model.effort === "default");
       return off && on ? [{ kind: "reasoning", variants: [off, on] }] : [];
     })
-    .sort((a, b) => {
-      const change = (group: EffortGroup<T>) => {
-        const first = chartStats(group.variants[0], filters.size).accuracy;
-        const last = chartStats(
-          group.variants[group.variants.length - 1],
-          filters.size,
-        ).accuracy;
-        return Math.abs(last - first);
-      };
-      const best = (group: EffortGroup<T>) =>
-        Math.max(
-          ...group.variants.map(
-            (model) => chartStats(model, filters.size).accuracy,
-          ),
-        );
-      return (
-        (Math.abs(change(b) - change(a)) >= 0.05 ? change(b) - change(a) : 0) ||
-        best(b) - best(a) ||
+    // Newest models first, so the current generation leads.
+    .sort(
+      (a, b) =>
+        (b.variants[0].addedAt ?? "").localeCompare(a.variants[0].addedAt ?? "") ||
         a.variants[0].familyDisplayName.localeCompare(
           b.variants[0].familyDisplayName,
-        )
-      );
-    });
+        ),
+    );
 }
 
 export function effortRowDomain<T extends ChartVariant>(
@@ -144,69 +131,24 @@ export function effortInsight<T extends ChartVariant>(
   size?: string,
 ) {
   const ordered = ladders.filter((group) => group.kind === "ordered");
-  const gains = ordered
-    .flatMap((group) => {
-      const first = group.variants[0];
-      const last = group.variants[group.variants.length - 1];
-      const start = chartStats(first, size);
-      const end = chartStats(last, size);
-      return end.accuracy > start.accuracy + 0.05
-        ? [{ first, last, start, end, change: end.accuracy - start.accuracy }]
-        : [];
-    })
-    .sort(
-      (a, b) =>
-        (Math.abs(b.change - a.change) >= 0.05 ? b.change - a.change : 0) ||
-        b.end.accuracy - a.end.accuracy,
-    );
-  const gain = gains[0];
-  const findings: string[] = [];
-  if (gain) {
-    const amount =
-      gain.start.runs === gain.end.runs && gain.start.runs > 0
-        ? `${gain.end.correct - gain.start.correct} more puzzles`
-        : `${gain.change.toFixed(1)} percentage points higher`;
-    findings.push(
-      `${gain.first.familyDisplayName} scored ${amount} at ${gain.last.effort} than at ${gain.first.effort}.`,
-    );
+  // Describe the whole selection rather than singling out one family.
+  const scores = ordered.map((group) =>
+    group.variants.map((model) => chartStats(model, size).accuracy),
+  );
+  const improved = scores.filter(
+    (row) => row[row.length - 1] > row[0] + 0.05,
+  ).length;
+  const topNotBest = scores.filter(
+    (row) => Math.max(...row) > row[row.length - 1] + 0.05,
+  ).length;
+  if (improved || topNotBest) {
+    const families = (count: number) =>
+      `${count} ${count === 1 ? "family" : "families"}`;
+    const first = `${improved} of ${families(ordered.length)} scored higher at their top effort level than at their lowest.`;
+    return topNotBest
+      ? `${first} For ${families(topNotBest)}, the top level was not their best.`
+      : first;
   }
-
-  const dips = ordered
-    .flatMap((group) =>
-      group.variants.slice(1).flatMap((model, index) => {
-        const prior = group.variants[index];
-        const change =
-          chartStats(model, size).accuracy - chartStats(prior, size).accuracy;
-        return change < -0.05
-          ? [
-              {
-                name: model.familyDisplayName,
-                from: prior.effort,
-                to: model.effort,
-                change,
-              },
-            ]
-          : [];
-      }),
-    )
-    .sort(
-      (a, b) =>
-        Number(b.from === "low" && b.to === "medium") -
-          Number(a.from === "low" && a.to === "medium") ||
-        (Math.abs(a.change - b.change) >= 0.05 ? a.change - b.change : 0) ||
-        a.name.localeCompare(b.name),
-    );
-  if (dips.length) {
-    const lead = dips[0];
-    const paired = dips.find(
-      (dip) =>
-        dip.name !== lead.name && dip.from === lead.from && dip.to === lead.to,
-    );
-    findings.push(
-      `${lead.name}${paired ? ` and ${paired.name}` : ""} scored lower at ${lead.to} than at ${lead.from}.`,
-    );
-  }
-  if (findings.length) return findings.join(" ");
   if (ordered.length)
     return "Scores held steady across the ordered effort levels in this selection.";
   if (ladders.length) {

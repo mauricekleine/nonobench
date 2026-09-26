@@ -98,13 +98,21 @@ describe("chart data", () => {
     expect(effortLadders(group, { minCorrect: 1 })).toHaveLength(0);
   });
 
-  test("orders the biggest endpoint change first, then the best score", () => {
-    const groups = effortLadders(variants, {});
-    expect(groups.map((group) => group.variants[0].family)).toEqual([
-      "Beta",
+  test("orders ladders by release date, newest first, then by name", () => {
+    const dated = variants.map((model) => ({
+      ...model,
+      addedAt: model.family === "Alpha" ? "2026-09-01" : "2026-01-01",
+    }));
+    expect(effortLadders(dated, {}).map((group) => group.variants[0].family)).toEqual([
       "Alpha",
+      "Beta",
     ]);
-    expect(effortRowDomain(groups[0])).toEqual({ low: 42, high: 98 });
+    expect(effortLadders(variants, {}).map((group) => group.variants[0].family)).toEqual([
+      "Alpha",
+      "Beta",
+    ]);
+    // Beta's row: scores span 50–90, padded to 42–98.
+    expect(effortRowDomain(effortLadders(variants, {})[1])).toEqual({ low: 42, high: 98 });
     const tied = effortLadders(
       [
         variant("Higher", "low", 50),
@@ -118,22 +126,9 @@ describe("chart data", () => {
       "Higher",
       "Lower",
     ]);
-    const thirds = effortLadders(
-      [
-        variant("Opus", "low", 60),
-        variant("Opus", "high", (28 / 30) * 100),
-        variant("Gemini", "low", (13 / 30) * 100),
-        variant("Gemini", "high", (23 / 30) * 100),
-      ],
-      {},
-    );
-    expect(thirds.map((group) => group.variants[0].family)).toEqual([
-      "Opus",
-      "Gemini",
-    ]);
   });
 
-  test("insight leads with the biggest gain and a measured regression", () => {
+  test("insight summarises the selection without singling out a family", () => {
     const score = (family: string, effort: string, correct: number) => {
       const model = variant(family, effort, (correct / 30) * 100);
       return { ...model, overallCorrect: correct, overallRuns: 30 };
@@ -152,22 +147,18 @@ describe("chart data", () => {
       ],
       {},
     );
-    const insight = effortInsight(groups);
-    expect(insight).toContain(
-      "Gemini 3 Pro scored 17 more puzzles at high than at low.",
-    );
-    expect(insight).toContain(
-      "Grok 4.7 and Kimi K3 scored lower at medium than at low.",
+    expect(effortInsight(groups)).toBe(
+      "2 of 4 families scored higher at their top effort level than at their lowest. For 2 families, the top level was not their best.",
     );
   });
 
   test("insight follows the active size and does not invent declines", () => {
     expect(
       effortInsight(effortLadders(variants, { families: ["Alpha"] }), "5x5"),
-    ).toContain("Alpha");
+    ).toMatch(/^\d of 1 family/);
     expect(
       effortInsight(effortLadders(variants, { providers: ["google"] }), "5x5"),
-    ).toContain("Beta scored 4 more puzzles");
+    ).toMatch(/^1 of 1 family scored higher/);
     expect(effortInsight([], "5x5")).toContain("Select families");
   });
 
