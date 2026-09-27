@@ -415,7 +415,7 @@ export default function ResultsPage({
           onMetricChange={onMetricChange}
         />
         {!isHard && <EffortLadder models={results.byModel} filters={filters} />}
-        <section className="mt-10 rounded-lg border border-border bg-card" aria-labelledby="details-heading">
+        <section className="defer-render mt-10 rounded-lg border border-border bg-card" aria-labelledby="details-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
             <div>
               <h2 id="details-heading" className="font-display text-base font-medium lowercase">detailed model statistics</h2>
@@ -530,7 +530,7 @@ export default function ResultsPage({
             </table>
           </div>
         </section>
-        <section className="mt-10 rounded-lg border border-border bg-card p-4 sm:p-6" aria-labelledby="grid-stats-heading">
+        <section className="defer-render mt-10 rounded-lg border border-border bg-card p-4 sm:p-6" aria-labelledby="grid-stats-heading">
           <h2 id="grid-stats-heading" className="font-display text-base font-medium lowercase">statistics by grid size</h2>
           <p className="mt-1 text-sm text-muted-foreground">Combined results for the models shown.</p>
           <div className={`mt-5 grid gap-4 sm:grid-cols-2 ${displayedSizes.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>

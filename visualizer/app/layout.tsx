@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree, Fragment_Mono, Unbounded } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { ProviderLogoSprite } from "@/components/provider-logos/provider-logo";
 import { WebMcp } from "@/components/webmcp";
 
 import "./globals.css";
@@ -98,6 +99,7 @@ export default function RootLayout({
 				className={`${display.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}
 			>
 				<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+				<ProviderLogoSprite />
 				<NuqsAdapter>{children}</NuqsAdapter>
 				<WebMcp />
 

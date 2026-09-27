@@ -78,10 +78,29 @@ export const providerLogoPaths: Record<string, ReactNode> = {
 
 type Props = SVGProps<SVGSVGElement> & { provider: string; size?: number };
 
+const symbolId = (provider: string) => `provider-logo-${provider}`;
+
+// Every logo once, as a <symbol>. ProviderLogo points at these with <use>, so
+// a page that shows a logo on every row carries each path only once. Rendered
+// in the root layout.
+export function ProviderLogoSprite() {
+	return (
+		<svg aria-hidden="true" width="0" height="0" style={{ position: "absolute", overflow: "hidden" }}>
+			{Object.entries(providerLogoPaths).map(([provider, paths]) => (
+				<symbol key={provider} id={symbolId(provider)} viewBox="0 0 24 24">
+					{paths}
+				</symbol>
+			))}
+		</svg>
+	);
+}
+
 export function ProviderLogo({ provider, size = 16, ...props }: Props) {
 	return (
 		<svg aria-hidden="true" fill="currentColor" fillRule="evenodd" width={size} height={size} viewBox="0 0 24 24" {...props}>
-			{providerLogoPaths[provider] ?? (
+			{provider in providerLogoPaths ? (
+				<use href={`#${symbolId(provider)}`} />
+			) : (
 				<>
 					<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
 					<text x="12" y="16" textAnchor="middle" fontSize="12" fontFamily="sans-serif">
