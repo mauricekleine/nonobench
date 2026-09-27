@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   applyFilters,
+  filtersForPuzzle,
   parseApiFilters,
   sanitizeUrlFilters,
   validateFilters,
@@ -178,4 +179,7 @@ test("Hard mode best is each family's best Hard result, not its best Standard le
   const fable = [family("fable-high", "high", 66.7, 5), family("fable-xhigh", "xhigh", 76.7, 1)];
   expect(applyFilters(fable, { effort: "best", size: "20x20" }).map((model) => model.model)).toEqual(["fable-high"]);
   expect(applyFilters(fable, { effort: "best" }).map((model) => model.model)).toEqual(["fable-xhigh"]);
+  // Puzzle views follow the same rule on a Hard puzzle, and leave Standard puzzles alone.
+  expect(applyFilters(fable, filtersForPuzzle({ effort: "best" }, "20x20")).map((model) => model.model)).toEqual(["fable-high"]);
+  expect(filtersForPuzzle({ effort: "best" }, "15x15")).toEqual({ effort: "best" });
 });

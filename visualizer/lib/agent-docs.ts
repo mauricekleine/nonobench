@@ -21,14 +21,17 @@ No authentication. Everything is read-only.
   - \`POST /api/v1/puzzles/{id}/check\` with \`{"grid": "0110..."}\`: check a grid against the clues
   - \`GET /api/v1/runs?model=&puzzle=&size=&include_output=true&limit=100&offset=0\`: individual runs
 - MCP server (Streamable HTTP, stateless): \`${SITE_URL}/mcp\`. Tools: get_leaderboard, list_providers, list_families, compare_models, get_model_results, get_model_puzzles, list_puzzles, get_puzzle, get_puzzle_results, check_solution, list_runs
-- Bulk downloads: ${SITE_URL}/results-raw.json (every run with prompt and output, ~4 MB)
+- Bulk downloads: ${SITE_URL}/results-raw.json (every run with prompt and output, ~11 MB)
 - Puzzle outcomes and parsed grids: ${SITE_URL}/puzzle-results.json
 - Source and benchmark runner: https://github.com/mauricekleine/nonobench
 - Made by [Maurice Kleine](https://www.mauricekleine.com/)`;
 
 const METHOD = `## Method
 
-Each model gets the same system prompt and a puzzle's row and column clues, and must answer with the grid as a string of \`1\` (filled) and \`0\` (empty), row by row. An answer is correct when it satisfies every row and column clue; some puzzles have more than one valid solution. There are 40 puzzles: 10 each of ${SIZES.join(", ")}. The 20x20 tier has not been run yet.`;
+Each model gets the same system prompt and a puzzle's row and column clues, and must answer with the filled grid. An answer is correct when it satisfies every row and column clue; some puzzles have more than one valid solution. There are 40 puzzles in two tiers:
+
+- Standard: 10 each of 5x5, 10x10 and 15x15. Answers are one string of \`1\` (filled) and \`0\` (empty), row by row. Overall accuracy covers these 30 puzzles.
+- Hard mode: 10 random 20x20 puzzles, each with a single solution. Answers are written one row per line. Each family runs it at its best Standard effort level, and its results stay separate from the overall score. Query it with \`size=20x20\`.`;
 
 export function llmsTxt() {
 	return `# Nonobench
@@ -64,7 +67,8 @@ ${ACCESS}
 - Prefer the MCP server when your client supports it; otherwise use the REST API.
 - The site defaults to each family's best observed level; the REST and MCP leaderboard default to all variants for existing callers. Set \`effort=best\` to match the site.
 - Versions mark when a variant was first measured: V1.0 January 2026, V1.1 February–March, V1.2 September. Older exports without \`version\` use \`legacy=false\` for V1.2 and otherwise V1.0; V1.1 becomes distinguishable when the export includes the field.
-- The site hides variants that solved no puzzles in the selected tier. REST and MCP include them by default; set \`min_correct=1\` to match the site.
+- On Standard, the site hides variants that solved no puzzles; the Hard mode tab shows every variant that ran it. REST and MCP include them by default; set \`min_correct=1\` to match Standard.
+- With \`size=20x20\`, \`effort=best\` picks each family's best Hard mode result, not its best Standard level.
 - An effort value of \`default\` means reasoning is on but the model has no adjustable reasoning levels.
 - Model names are ids such as \`gpt-5.4-xhigh\`; the suffix is the reasoning effort. Get the full list from the leaderboard.
 - Accuracy is a percentage (0-100). Costs are in USD, as billed through OpenRouter.

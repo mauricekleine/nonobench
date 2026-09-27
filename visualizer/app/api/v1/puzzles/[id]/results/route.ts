@@ -15,7 +15,7 @@ export async function GET(request: Request, { params }: RouteContext<"/api/v1/pu
   if (includeAnswers !== null && includeAnswers !== "true" && includeAnswers !== "false") return apiError(400, 'Invalid include_answers. Use "true" or "false".');
   const puzzle = (await loadPuzzleResults()).puzzles.find((entry) => entry.id === id);
   if (!puzzle) return apiError(404, `No results for puzzle "${id}".`);
-  const selected = filteredModelIds(filters);
+  const selected = filteredModelIds(filters, puzzle.size);
   const models = getVariants();
   const runs = puzzle.runs.filter((run) => selected.has(run.model)).map((run) => {
     const model = models.find((entry) => entry.model === run.model);

@@ -35,7 +35,7 @@ const size = z
 
 export function createMcpServer() {
 	const server = new McpServer(MCP_SERVER_INFO, {
-		instructions: `Nonobench measures how well LLMs solve nonogram (picross) puzzles: 40 puzzles across ${SIZES.join(", ")} grids. The 20x20 tier is not yet run. Accuracy is the share of puzzles where the model's grid satisfies every row and column clue. Results last updated ${RESULTS_TIMESTAMP}.`,
+		instructions: `Nonobench measures how well LLMs solve nonogram (picross) puzzles: 40 puzzles across ${SIZES.join(", ")} grids. Standard is 5x5, 10x10 and 15x15, and overall accuracy covers those 30 puzzles. Hard mode is ten 20x20 puzzles, reported only per size (size "20x20"). Accuracy is the share of puzzles where the model's grid satisfies every row and column clue. Results last updated ${RESULTS_TIMESTAMP}.`,
 	});
 
 	server.registerTool(
@@ -134,7 +134,7 @@ export function createMcpServer() {
 		if (invalid) return failure(invalid);
 		const puzzle = (await loadPuzzleResults()).puzzles.find((entry) => entry.id === id);
 		if (!puzzle) return failure(`No results for puzzle "${id}".`);
-		const selected = filteredModelIds(filters);
+		const selected = filteredModelIds(filters, puzzle.size);
 		const runs = puzzle.runs.filter((run) => selected.has(run.model)).map((run) => {
 			const model = getVariants().find((entry) => entry.model === run.model);
 			const { answer, ...rest } = run;

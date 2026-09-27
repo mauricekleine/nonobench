@@ -4,7 +4,7 @@ const sizeParam = {
 	name: "size",
 	in: "query",
 	required: false,
-	description: "Only include this grid size.",
+	description: "Only include this grid size. 20x20 is Hard mode, where effort=best picks each family's best Hard result.",
 	schema: { type: "string", enum: SIZES },
 };
 const leaderboardParams = [
@@ -178,7 +178,7 @@ const spec = {
 								addedAt: { type: ["string", "null"], format: "date-time" },
 								version: { type: "string", enum: ["1.0", "1.1", "1.2"], description: "Benchmark release in which this variant was first measured." },
 								family: { type: "string", description: "Underlying model; variants differ only in reasoning effort." },
-								effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default). default means reasoning on without adjustable levels." },
+								effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, max, default). default means reasoning on without adjustable levels." },
 								provider: { type: ["string", "null"], description: "OpenRouter provider prefix, e.g. openai or anthropic." },
 								earlierBatch: { type: "boolean", description: "True for variants measured before the September batch." },
 								complete: { type: "boolean", description: "False when not every core puzzle has a finished run." },
@@ -205,7 +205,7 @@ const spec = {
 					addedAt: { type: ["string", "null"], format: "date-time" },
 					version: { type: "string", enum: ["1.0", "1.1", "1.2"], description: "Benchmark release in which this variant was first measured." },
 					family: { type: "string", description: "Underlying model; variants differ only in reasoning effort." },
-					effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, default). default means reasoning on without adjustable levels." },
+					effort: { type: ["string", "null"], description: "Reasoning effort of this variant (none, minimal, low, medium, high, xhigh, max, default). default means reasoning on without adjustable levels." },
 					provider: { type: ["string", "null"], description: "OpenRouter provider prefix, e.g. openai or anthropic." },
 					earlierBatch: { type: "boolean", description: "True for variants measured before the September batch." },
 					complete: { type: "boolean", description: "False when not every core puzzle has a finished run." },

@@ -22,10 +22,10 @@ const visiblePuzzles = hasHardRuns ? PUZZLES : PUZZLES.filter((puzzle) => puzzle
 function PuzzlesContent() {
   const [currentIndex, setCurrentIndex] = useQueryState("puzzle", parseAsInteger.withDefault(0));
   const [selectedModel, setSelectedModel] = useQueryState("model", parseAsString);
-  const { filters, models, change } = usePuzzleFilters();
-  const { data, error } = usePuzzleExport();
   const safeIndex = Math.max(0, Math.min(currentIndex, visiblePuzzles.length - 1));
   const puzzle = visiblePuzzles[safeIndex];
+  const { filters, models, change } = usePuzzleFilters(`${puzzle.width}x${puzzle.height}`);
+  const { data, error } = usePuzzleExport();
   const result = data?.puzzles.find((entry) => entry.index === safeIndex);
   const visible = useMemo(() => new Set(models.map((model) => model.model)), [models]);
   const runs = result?.runs.filter((run) => visible.has(run.model)) ?? [];

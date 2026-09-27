@@ -87,6 +87,13 @@ export function scoreForSize(model: LeaderboardVariant, size?: string) {
     : model.overallAccuracy;
 }
 const CORE_SIZES = new Set(["5x5", "10x10", "15x15"]);
+
+// A puzzle's runs follow its tier: on a Hard puzzle, "best" is each family's
+// best Hard result, as on the Hard leaderboard.
+export function filtersForPuzzle(filters: Filters, size: string): Filters {
+  return CORE_SIZES.has(size) ? filters : { ...filters, size };
+}
+
 function costForSize(model: LeaderboardVariant, size?: string) {
   return model.bySize
     .filter((entry) =>

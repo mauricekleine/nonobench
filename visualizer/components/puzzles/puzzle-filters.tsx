@@ -4,13 +4,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import resultsData from "@/app/results.json";
 import { EffortToggle, ModelsPopover } from "@/components/filter-bar";
-import { applyFilters, VERSIONS, type BenchmarkVersion, type Filters, type LeaderboardVariant } from "@/lib/leaderboard";
+import { applyFilters, filtersForPuzzle, VERSIONS, type BenchmarkVersion, type Filters, type LeaderboardVariant } from "@/lib/leaderboard";
 
 export type DisplayModel = LeaderboardVariant & { displayName: string; familyDisplayName: string };
 const models = resultsData.byModel as DisplayModel[];
 export function puzzleModel(id: string) { return models.find((model) => model.model === id); }
 
-export function usePuzzleFilters() {
+export function usePuzzleFilters(puzzleSize?: string) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -24,7 +24,11 @@ export function usePuzzleFilters() {
     // Like the homepage: variants that solved no puzzles are hidden.
     minCorrect: 1,
   }), [params]);
-  const filtered = useMemo(() => applyFilters(models, filters), [filters]);
+  // On a Hard puzzle, list every variant that ran it, with Best picked by Hard result.
+  const filtered = useMemo(() => {
+    const applied = puzzleSize ? filtersForPuzzle(filters, puzzleSize) : filters;
+    return applyFilters(models, applied.size ? { ...applied, minCorrect: 0 } : applied);
+  }, [filters, puzzleSize]);
   const change = (patch: Partial<Filters>) => {
     const next = new URLSearchParams(params.toString());
     if (Object.hasOwn(patch, "providers")) { if (patch.providers) next.set("p", patch.providers.length ? patch.providers.join(",") : "~"); else next.delete("p"); }
