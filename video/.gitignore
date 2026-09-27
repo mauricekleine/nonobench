@@ -1,0 +1,12 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# Music candidates stay local; the chosen one is public/music/soundtrack.mp3.
+# Keep its metadata (song id) so single sections can be regenerated later.
+public/music/candidate-*
+!public/music/candidate-c-drop.json

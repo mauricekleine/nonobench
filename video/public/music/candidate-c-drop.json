@@ -1,0 +1,90 @@
+{
+	"songId": "6ax72OBQz96x7MNBvw4R",
+	"plan": {
+		"chunks": [
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 0,
+					"end_ms": 6000
+				}
+			},
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 6000,
+					"end_ms": 12000
+				}
+			},
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 12000,
+					"end_ms": 22000
+				}
+			},
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 22000,
+					"end_ms": 26000
+				}
+			},
+			{
+				"text": "[Drop]",
+				"duration_ms": 6000,
+				"positive_styles": [
+					"the drop",
+					"full energy",
+					"big warm chords",
+					"euphoric but tasteful",
+					"driving beat",
+					"loudest part so far"
+				],
+				"negative_styles": [
+					"vocals",
+					"singing",
+					"lyrics",
+					"ukulele",
+					"handclaps",
+					"whistling",
+					"stock corporate music",
+					"dubstep",
+					"orchestral trailer",
+					"quiet",
+					"sparse",
+					"build-up"
+				],
+				"context_adherence": "high"
+			},
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 32000,
+					"end_ms": 38000
+				}
+			},
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 38000,
+					"end_ms": 50000
+				}
+			},
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 50000,
+					"end_ms": 62000
+				}
+			},
+			{
+				"song_id": "HdENZ96t6GKCNmtJyy1A",
+				"range": {
+					"start_ms": 62000,
+					"end_ms": 68000
+				}
+			}
+		]
+	}
+}
