@@ -718,6 +718,10 @@ const configuredModels: Model[] = ([
   // Reader request (r/LocalLLaMA, V1.2 launch): is GPT-5.6 Sol better than
   // GPT-6 Sol? Full ladder at the same levels, from effort-levels.json.
   reasoningModel("openai/gpt-5.6-sol", "gpt-5.6-sol", "low"),
+  // Reader run (r/LocalLLaMA): Qwen3.8 27B scored 7/10/16 at low/medium/xhigh
+  // on their machine. Re-run here so every answer is stored and inspectable.
+  // Its three OpenRouter levels are Qwen's native ones.
+  { ...reasoningModel("qwen/qwen3.8-27b", "qwen3.8-27b", "low"), outputMode: "text" },
   // No effort control on OpenRouter: reasoning on at the provider default.
   { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),

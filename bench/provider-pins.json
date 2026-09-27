@@ -1692,6 +1692,112 @@
         }
       ]
     },
+    "qwen/qwen3.8-27b": {
+      "pins": [
+        "alibaba"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": false,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Darkbloom",
+          "tag": "darkbloom/fp4",
+          "quantization": "fp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Reka",
+          "tag": "reka",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DekaLLM",
+          "tag": "dekallm",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Wafer",
+          "tag": "wafer",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Ionstream",
+          "tag": "ionstream/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "DeepInfra",
+          "tag": "deepinfra/bf16",
+          "quantization": "bf16",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Phala",
+          "tag": "phala",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Mancer 2",
+          "tag": "mancer/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Parasail",
+          "tag": "parasail/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Chutes",
+          "tag": "chutes/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "AkashML",
+          "tag": "akashml/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "CoreWeave",
+          "tag": "coreweave/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Novita",
+          "tag": "novita",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Alibaba",
+          "tag": "alibaba",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Cloudflare",
+          "tag": "cloudflare",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Venice",
+          "tag": "venice/fp8",
+          "quantization": "fp8",
+          "structuredOutputs": true
+        }
+      ]
+    },
     "qwen/qwen3.8-flash": {
       "pins": [
         "alibaba"

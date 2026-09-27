@@ -1,6 +1,6 @@
 {
   "source": "https://openrouter.ai/api/v1/models",
-  "fetchedAt": "2026-09-27T12:48:33.987Z",
+  "fetchedAt": "2026-09-27T14:19:07.836Z",
   "families": {
     "claude-opus-5.5": {
       "modelId": "anthropic/claude-opus-5.5",
@@ -208,6 +208,22 @@
         "low",
         "medium",
         "high",
+        "xhigh"
+      ]
+    },
+    "qwen3.8-27b": {
+      "modelId": "qwen/qwen3.8-27b",
+      "supportedEfforts": [
+        "xhigh",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "xhigh",
+      "mandatory": false,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
         "xhigh"
       ]
     },
