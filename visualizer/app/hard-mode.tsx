@@ -10,6 +10,7 @@ import {
 import { effortLabel } from "@/lib/display";
 import { PROVIDERS } from "@/lib/providers";
 import resultsData from "./results.json";
+import { LazyDetails } from "@/components/lazy-details";
 
 type Outcome = "solved" | "wrong-grid" | "no-grid";
 type Reason = "timed-out" | "cut-off" | "wrong-size" | "gave-up" | "empty" | "no-grid";
@@ -23,7 +24,7 @@ const LINES = 40;
 // Puzzles 1–5 fall to line logic; 6–10 need deeper deduction.
 const LINE_SOLVABLE = 5;
 
-const sectionClass = "mt-10 rounded-lg border border-border bg-card p-4 sm:p-6";
+const sectionClass = "defer-render mt-10 rounded-lg border border-border bg-card p-4 sm:p-6";
 const headingClass = "font-display text-base font-medium lowercase";
 
 const reasonText: Record<Reason, string> = {
@@ -173,10 +174,7 @@ export function HardModeMisses({ models }: { models: Variant[] }) {
         <LegendSwatch fill="var(--color-foreground)" faint label="no grid (gave up, cut off, timed out…)" />
       </div>
 
-      <details className="mt-5 border-t border-border pt-3 text-sm">
-        <summary className="cursor-pointer text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">
-          View data table
-        </summary>
+      <LazyDetails summary="View data table">
         <div className="mt-3 max-h-96 overflow-auto">
           <table className="w-full min-w-[560px] text-left text-xs">
             <thead>
@@ -209,7 +207,7 @@ export function HardModeMisses({ models }: { models: Variant[] }) {
             </tbody>
           </table>
         </div>
-      </details>
+      </LazyDetails>
     </section>
   );
 }

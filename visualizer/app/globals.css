@@ -87,6 +87,13 @@
   }
 }
 
+/* Sections below the fold: the browser skips their layout and paint until
+   they near the viewport, then remembers their real height. */
+@utility defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

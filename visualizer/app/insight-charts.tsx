@@ -25,6 +25,7 @@ import { EFFORT_ORDER, effortRank } from "@/lib/insights";
 import { effortDescription, effortLabel, effortTitle } from "@/lib/display";
 import { type Filters } from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
+import { LazyDetails } from "@/components/lazy-details";
 
 const metricLabels: Record<XMetric, string> = {
   cost: "Cost per puzzle",
@@ -55,7 +56,7 @@ const logTickLabel = (value: number, metric: XMetric) => {
   return `${minutes}m${remainder ? ` ${remainder}s` : ""}`;
 };
 const colorFor = (provider: string) => PROVIDERS[provider]?.color ?? "#D8A46B";
-const sectionClass = "mt-10 rounded-lg border border-border bg-card p-4 sm:p-6";
+const sectionClass = "defer-render mt-10 rounded-lg border border-border bg-card p-4 sm:p-6";
 const headingClass = "font-display text-base font-medium lowercase";
 
 export function AccuracyScatter({
@@ -371,10 +372,7 @@ export function AccuracyScatter({
           No measured points match these filters.
         </p>
       )}
-      <details className="mt-5 border-t border-border pt-3 text-sm">
-        <summary className="cursor-pointer text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">
-          View scatter data table
-        </summary>
+      <LazyDetails summary="View scatter data table">
         <div className="mt-3 max-h-96 overflow-auto">
           <table className="w-full min-w-[500px] text-left text-xs">
             <thead>
@@ -399,7 +397,7 @@ export function AccuracyScatter({
             </tbody>
           </table>
         </div>
-      </details>
+      </LazyDetails>
     </section>
   );
 }
@@ -474,10 +472,7 @@ export function EffortLadder({
           No families with comparable levels match these filters.
         </p>
       )}
-      <details className="mt-5 border-t border-border pt-3 text-sm">
-        <summary className="cursor-pointer text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">
-          View effort data table
-        </summary>
+      <LazyDetails summary="View effort data table">
         <div className="mt-3 max-h-96 overflow-auto">
           <table className="w-full min-w-[400px] text-left text-xs">
             <thead>
@@ -513,7 +508,7 @@ export function EffortLadder({
             </tbody>
           </table>
         </div>
-      </details>
+      </LazyDetails>
     </section>
   );
 }
