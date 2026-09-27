@@ -47,6 +47,10 @@ ${ACCESS}
 - [Leaderboard](${SITE_URL}/): results by model and grid size. Also available as markdown at ${SITE_URL}/index.md
 - [Puzzle explorer](${SITE_URL}/puzzles): browse the puzzles. Markdown: ${SITE_URL}/puzzles.md
 - [Puzzle insights](${SITE_URL}/puzzles/overview): difficulty ranking, model heatmap, and links to answer overlays
+
+## Credits
+
+- maker: [maurice kleine](https://www.mauricekleine.com/)
 `;
 }
 
