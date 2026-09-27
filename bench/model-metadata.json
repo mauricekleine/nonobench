@@ -169,6 +169,11 @@
     "openWeights": true,
     "addedAt": "2025-09-11T17:38:04.000Z"
   },
+  "qwen/qwen3.8-27b": {
+    "displayName": "Qwen3.8 27B",
+    "openWeights": true,
+    "addedAt": "2026-08-14T15:55:10.000Z"
+  },
   "qwen/qwen3.8-flash": {
     "displayName": "Qwen3.8 Flash",
     "openWeights": true,

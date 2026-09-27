@@ -4,7 +4,7 @@ const modelIds = [
   "openai/gpt-6-sol", "openai/gpt-6-luna", "openai/gpt-6-astra", "openai/gpt-5.6-sol",
   "google/gemini-3.8-flash", "x-ai/grok-4.7",
   "deepseek/deepseek-v4-pro-0813", "deepseek/deepseek-v4.1-flash",
-  "qwen/qwen3.8-max-0902", "z-ai/glm-5.3", "z-ai/glm-5.3-flash",
+  "qwen/qwen3.8-max-0902", "qwen/qwen3.8-27b", "z-ai/glm-5.3", "z-ai/glm-5.3-flash",
   "moonshotai/kimi-k3", "meta/muse-spark-1.3", "mistralai/mistral-medium-3-5",
   "qwen/qwen3.8-flash", "xiaomi/mimo-v2.6-pro", "xiaomi/mimo-v2.6-flash",
   "bytedance-seed/seed-2-1-turbo",
