@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { PuzzleExport } from "./puzzle-insights";
-import { applyFilters, type Filters } from "./leaderboard";
+import { applyFilters, filtersForPuzzle, type Filters } from "./leaderboard";
 import { getVariants } from "./data";
 
 let cached: Promise<PuzzleExport> | undefined;
@@ -10,6 +10,6 @@ export function loadPuzzleResults() {
   return cached;
 }
 
-export function filteredModelIds(filters: Filters) {
-  return new Set(applyFilters(getVariants().map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), filters).map((model) => model.model));
+export function filteredModelIds(filters: Filters, puzzleSize: string) {
+  return new Set(applyFilters(getVariants().map((model) => ({ ...model, family: model.family ?? model.model, effort: model.effort ?? "none", provider: model.provider ?? "" })), filtersForPuzzle(filters, puzzleSize)).map((model) => model.model));
 }
