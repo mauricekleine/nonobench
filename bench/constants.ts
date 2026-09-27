@@ -2,6 +2,8 @@ import {
   createOpenRouter,
   type OpenRouterChatSettings,
 } from "@openrouter/ai-sdk-provider";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import type { JSONObject } from "@ai-sdk/provider";
 import type { LanguageModel } from "ai";
 import effortEvidence from "./effort-levels.json";
 
@@ -47,13 +49,15 @@ function pinnedModel(id: string, settings: OpenRouterChatSettings = defaultProvi
 }
 
 export function pinnedProviderFor(model: Model): string {
+  if (model.local) return "local";
   const settings = (model.llm as { settings?: OpenRouterChatSettings }).settings;
   const slug = settings?.provider?.order?.[0];
   if (!slug) throw new Error(`Missing provider pin for ${model.name}`);
   return slug;
 }
 
-export function requestProviderOptions(model: Model): { openrouter: { provider: { order: string[]; allow_fallbacks: false; require_parameters?: true } } } {
+export function requestProviderOptions(model: Model): Record<string, JSONObject> {
+  if (model.local) return {};
   return { openrouter: { provider: {
     order: [pinnedProviderFor(model)], allow_fallbacks: false,
     ...(outputModeFor(model) === "json_schema" ? { require_parameters: true as const } : {}),
@@ -77,6 +81,10 @@ export type Model = {
   // A provider-side cap on request duration; runs cut off there count as
   // unsolved attempts (status "timeout") rather than being retried.
   providerTimeLimit?: { seconds: number; note: string };
+  // True for a model from the user's own OpenAI-compatible server, see
+  // localModels below. Such a model has no OpenRouter provider pin, no cost,
+  // and no endpoint availability to check.
+  local?: true;
 };
 
 export type OutputMode = "json_schema" | "text";
@@ -761,4 +769,34 @@ for (const [family, evidence] of Object.entries(effortFamilies)) {
   }
 }
 export const NEW_VARIANT_NAMES = new Set(addedModels.map((model) => model.name));
-export const MODELS: Model[] = [...configuredModels, ...addedModels];
+
+// A model that the user serves on their own machine: vLLM, SGLang, llama.cpp,
+// LM Studio, Ollama, or any other server with an OpenAI-compatible /v1
+// endpoint. The bench machine reaches it over the network:
+//
+//   NONOBENCH_LOCAL_BASE_URL=http://192.168.1.20:8000/v1 \
+//   NONOBENCH_LOCAL_MODEL=Qwen3-32B bun run bench --model Qwen3-32B
+//
+// Bind the server to an address the bench machine can reach, for example with
+// --host 0.0.0.0. Local runs cost $0. Text mode is the default, because many
+// local servers accept a JSON schema request and then ignore it. Set
+// NONOBENCH_OUTPUT_MODE=json_schema when the server enforces the schema.
+const localBaseUrl = process.env.NONOBENCH_LOCAL_BASE_URL;
+const localModelId = process.env.NONOBENCH_LOCAL_MODEL;
+const localModels: Model[] = localBaseUrl && localModelId
+  ? [{
+    llm: createOpenAICompatible({
+      name: "local",
+      baseURL: localBaseUrl,
+      apiKey: process.env.NONOBENCH_LOCAL_API_KEY ?? "local",
+      fetch: fetchWithoutIdleTimeout,
+    })(localModelId),
+    name: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
+    family: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
+    effort: "none",
+    reasoning: false,
+    outputMode: "text",
+    local: true,
+  }]
+  : [];
+export const MODELS: Model[] = [...configuredModels, ...addedModels, ...localModels];

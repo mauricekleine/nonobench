@@ -93,7 +93,8 @@ for (const model of MODELS) {
   const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const missing = plannedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
   const extendedMissing = extendedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  console.log(`  ${model.name}${NEW_VARIANT_NAMES.has(model.name) ? " [new variant]" : ""} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable"}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
+  const availability = model.local ? "" : firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable";
+  console.log(`  ${model.name}${NEW_VARIANT_NAMES.has(model.name) ? " [new variant]" : ""} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${availability}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
 }
 if (selectedModels.length === 0) {
   console.log("Select --model <name> (repeatable) or --all-missing to run.");
@@ -289,7 +290,7 @@ async function runBenchmark(
       correct = gradeOutput(puzzle, err.text);
       tokens = err.usage?.outputTokens ?? 0;
       reasoningTokens = err.usage?.outputTokenDetails?.reasoningTokens ?? null;
-      const generation = await fetchGenerationDetails(err.response?.id);
+      const generation = model.local ? null : await fetchGenerationDetails(err.response?.id);
       generationId = err.response?.id ?? null;
       finishReason = err.finishReason ?? null;
       providerName = generation?.providerName ?? null;
@@ -380,7 +381,7 @@ function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean
 
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
-  if (!firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model))) {
+  if (!model.local && !firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model))) {
     console.log(`[${model.name}] Skipping: no first-party endpoint in provider-pins.json. Run refresh-provider-pins after endpoint availability changes.`);
     return [];
   }
