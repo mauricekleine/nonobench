@@ -715,6 +715,9 @@ const configuredModels: Model[] = ([
   reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "medium"),
   // Step 4: Opus gained 9 at medium (18 to 27); Sol lost 2 at xhigh and stops.
   reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "high"),
+  // Reader request (r/LocalLLaMA, V1.2 launch): is GPT-5.6 Sol better than
+  // GPT-6 Sol? Full ladder at the same levels, from effort-levels.json.
+  reasoningModel("openai/gpt-5.6-sol", "gpt-5.6-sol", "low"),
   // No effort control on OpenRouter: reasoning on at the provider default.
   { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
