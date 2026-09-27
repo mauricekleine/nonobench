@@ -464,7 +464,7 @@ export function EffortLadder({
         {insight}{insight.endsWith(".") ? "" : "."}
       </p>
       <Popover>
-        <PopoverTrigger type="button" aria-label="About effort ladders" className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={14} /> How to read</PopoverTrigger>
+        <PopoverTrigger type="button" aria-label="How to read effort ladders" className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={14} /> How to read</PopoverTrigger>
         <PopoverContent>Every card shares the same effort axis, with its own score scale. Labels above the dots show puzzles solved, and the numbers between them show the change. The ladder always shows every measured level. “On” uses the provider’s default.</PopoverContent>
       </Popover>
       {ordered.length > 0 && <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-2">{ordered.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div>}

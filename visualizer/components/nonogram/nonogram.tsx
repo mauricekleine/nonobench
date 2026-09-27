@@ -26,11 +26,13 @@ export function Nonogram({
   violatedRows,
   violatedColumns,
 }: Props) {
-  const initialize = useNonogramStore((state) => state.initialize);
-
-  useEffect(() => {
-    initialize({ height, solution, width });
-  }, [height, initialize, solution, width]);
+  // Fill the store during the first render, not in an effect, so the grid is
+  // never painted empty and never shifts the page when it fills in.
+  const initialized = useRef<string>(null);
+  if (initialized.current !== solution) {
+    initialized.current = solution;
+    useNonogramStore.getState().initialize({ height, solution, width });
+  }
 
   const tooltipAnimationFrameReference = useRef<number>(null);
   const tooltipReference = useRef<HTMLDivElement>(null);

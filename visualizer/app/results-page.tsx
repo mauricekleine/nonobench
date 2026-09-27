@@ -272,6 +272,7 @@ export default function ResultsPage({
             <a href="/results-raw.json" download className={control}><DownloadSimple size={16} />Raw results</a>
           </nav>
         </header>
+        <main>
         <div
           role="group"
           aria-label="Leaderboard filters"
@@ -294,6 +295,7 @@ export default function ResultsPage({
             <label className="relative inline-flex items-center">
               <span className="sr-only">Grid size</span>
               <select
+                name="size"
                 value={size ?? "all"}
                 onChange={(event) => onFiltersChange({ size: event.target.value === "all" ? undefined : event.target.value })}
                 className={`${filterPill} appearance-none pr-8`}
@@ -583,6 +585,7 @@ export default function ResultsPage({
             })}
           </div>
         </section>
+        </main>
         <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground">
           <span className="flex flex-col gap-1">
             <span>Nonobench · Nonogram puzzle benchmark for LLMs</span>
