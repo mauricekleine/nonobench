@@ -3,7 +3,7 @@
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { NonobenchMark } from "@/components/nonobench-mark";
 import { Nonogram } from "@/components/nonogram/nonogram";
 import { useNonogramStore } from "@/components/nonogram/store";
@@ -13,11 +13,18 @@ import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import { PuzzleFilters, puzzleModel, usePuzzleExport, usePuzzleFilters } from "@/components/puzzles/puzzle-filters";
 import { describeMissingAnswer, inspectAnswer, shortMissingAnswer, type PuzzleRun } from "@/lib/puzzle-insights";
 import { effortLabel, formatDuration, sizeLabel } from "@/lib/display";
+import { parseClues } from "@/lib/nonogram";
 import { PROVIDERS } from "@/lib/providers";
 import resultsData from "@/app/results.json";
 
 const hasHardRuns = resultsData.byModel.some((model) => model.bySize.some((entry) => entry.size === "20x20" && entry.runs > 0));
 const visiblePuzzles = hasHardRuns ? PUZZLES : PUZZLES.filter((puzzle) => puzzle.width !== 20);
+
+// 24px cells when the grid and its row clues fit the width, else 16px.
+function fitZoom(puzzle: (typeof PUZZLES)[number], width: number) {
+  const clueColumns = Math.max(0, ...parseClues(puzzle).rows.map((row) => row.length));
+  return (puzzle.width + clueColumns) * 24 <= width - 48 ? "sm" : "xs";
+}
 
 function PuzzlesContent() {
   const [currentIndex, setCurrentIndex] = useQueryState("puzzle", parseAsInteger.withDefault(0));
@@ -39,19 +46,21 @@ function PuzzlesContent() {
   const inspection = selected?.answer ? inspectAnswer(puzzle, selected.answer, result?.multipleSolutions ?? false) : null;
   const violatedRows = inspection?.mode === "ambiguous-wrong" ? inspection.clues.rowViolations.map((line) => line.index) : undefined;
   const violatedColumns = inspection?.mode === "ambiguous-wrong" ? inspection.clues.columnViolations.map((line) => line.index) : undefined;
-  // Start each puzzle at the largest zoom level that fits the frame; the
-  // grid initialises in its own effect, which runs before this one.
-  const gridFrame = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const frame = gridFrame.current;
-    if (!frame) return;
-    const { clues } = useNonogramStore.getState();
-    const clueColumns = Math.max(0, ...clues.rows.map((row) => row.length));
-    const columns = puzzle.width + clueColumns;
-    const available = frame.clientWidth - 48;
-    const level = columns * 24 <= available ? "sm" : "xs";
-    useNonogramStore.getState().setZoomLevel(level);
-  }, [safeIndex, puzzle.width]);
+  // Start each puzzle at the largest zoom level that fits the column. The
+  // frame shrinks to the grid, so measure the section around it. On the first
+  // render the section isn't laid out yet, so estimate it from the viewport:
+  // the grid then paints at its final size instead of shifting the page.
+  const gridSection = useRef<HTMLElement>(null);
+  const zoomSet = useRef(false);
+  if (!zoomSet.current && typeof window !== "undefined") {
+    zoomSet.current = true;
+    const viewport = window.innerWidth;
+    const column = Math.min(viewport, 1280) - (viewport >= 640 ? 48 : 32) - (viewport >= 1024 ? 408 : 0);
+    useNonogramStore.getState().setZoomLevel(fitZoom(puzzle, column));
+  }
+  useLayoutEffect(() => {
+    if (gridSection.current) useNonogramStore.getState().setZoomLevel(fitZoom(puzzle, gridSection.current.clientWidth));
+  }, [puzzle]);
   const goTo = useCallback((index: number) => { void setCurrentIndex(index); void setSelectedModel(null); }, [setCurrentIndex, setSelectedModel]);
   const previous = useCallback(() => goTo(safeIndex === 0 ? visiblePuzzles.length - 1 : safeIndex - 1), [goTo, safeIndex]);
   const next = useCallback(() => goTo(safeIndex === visiblePuzzles.length - 1 ? 0 : safeIndex + 1), [goTo, safeIndex]);
@@ -68,8 +77,8 @@ function PuzzlesContent() {
   return <div className="relative min-h-screen overflow-x-clip bg-background text-foreground"><div className="noise-overlay" /><div className="fixed inset-0 grid-pattern pointer-events-none" /><div className="fixed inset-0 atmosphere pointer-events-none" />
     <header className="relative border-b border-border bg-card/50"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6"><div className="flex items-center gap-3"><NonobenchMark size="sm" /><div><h1 className="font-display text-lg font-semibold lowercase tracking-tight">nonobench <Link href="/how-it-works#whats-new" className="align-middle rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link></h1><p className="text-sm text-muted-foreground">Puzzle explorer · {visiblePuzzles.length} puzzles</p></div></div><nav className="flex gap-4 text-sm"><Link href="/how-it-works" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">How it works</Link><Link href="/puzzles/overview" className="text-ember underline focus-visible:outline-2 focus-visible:outline-ember">Puzzle insights</Link><Link href="/" className="text-muted-foreground underline focus-visible:outline-2 focus-visible:outline-ember">Results</Link></nav></div></header>
     <main className="relative mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,24rem)]">
-      <section aria-label={`Puzzle ${safeIndex + 1}`} className="flex min-w-0 flex-col items-center gap-5"><div className="flex w-full items-center justify-center gap-3"><button type="button" onClick={previous} aria-label="Previous puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretLeft size={20} /></button><div className="min-w-0 text-center"><span className="font-mono font-semibold">Puzzle {safeIndex + 1} of {visiblePuzzles.length}</span><span className="mx-2 text-muted-foreground">·</span><span className="font-mono text-[#FFCA16]">{puzzle.width === 20 ? sizeLabel("20x20") : `${puzzle.width}×${puzzle.height}`}</span></div><button type="button" onClick={next} aria-label="Next puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretRight size={20} /></button></div>
-        <div className="min-w-0 max-w-full"><div className="mb-2 flex justify-end"><ZoomControls /></div><div ref={gridFrame} className="max-w-full overflow-x-auto rounded-2xl border border-border bg-card/70 p-3 sm:p-6"><Nonogram key={safeIndex} height={puzzle.height} width={puzzle.width} solution={puzzle.solution.replace(/\s/g, "")} overlay={inspection?.cells} violatedRows={violatedRows} violatedColumns={violatedColumns} /></div></div>
+      <section ref={gridSection} aria-label={`Puzzle ${safeIndex + 1}`} className="flex min-w-0 flex-col items-center gap-5"><div className="flex w-full items-center justify-center gap-3"><button type="button" onClick={previous} aria-label="Previous puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretLeft size={20} /></button><div className="min-w-0 text-center"><span className="font-mono font-semibold">Puzzle {safeIndex + 1} of {visiblePuzzles.length}</span><span className="mx-2 text-muted-foreground">·</span><span className="font-mono text-[#FFCA16]">{puzzle.width === 20 ? sizeLabel("20x20") : `${puzzle.width}×${puzzle.height}`}</span></div><button type="button" onClick={next} aria-label="Next puzzle" className="rounded-full border border-border p-2 focus-visible:outline-2 focus-visible:outline-ember"><CaretRight size={20} /></button></div>
+        <div className="min-w-0 max-w-full"><div className="mb-2 flex justify-end"><ZoomControls /></div><div className="max-w-full overflow-x-auto rounded-2xl border border-border bg-card/70 p-3 sm:p-6"><Nonogram key={safeIndex} height={puzzle.height} width={puzzle.width} solution={puzzle.solution.replace(/\s/g, "")} overlay={inspection?.cells} violatedRows={violatedRows} violatedColumns={violatedColumns} /></div></div>
         {selectedModel && <div className="w-full max-w-xl rounded-lg border border-border bg-card/80 p-4 text-sm"><h2 className="font-semibold">{selectedMetadata?.displayName ?? selectedModel}’s answer</h2>{inspection ? <>
           {inspection.mode === "valid" && <p className="mt-1 text-muted-foreground">{inspection.referenceDifference ? `A valid alternative solution: differs from the reference grid in ${inspection.referenceDifference} cells but satisfies every clue.` : "This grid satisfies every row and column clue."}</p>}
           {inspection.mode === "unique-wrong" && <p className="mt-1 text-muted-foreground">{inspection.wrong} cells wrong: {inspection.wrongFilled} extra filled, {inspection.missed} missed.</p>}
@@ -89,10 +98,10 @@ function PuzzlesContent() {
         const next = buttons[buttons.indexOf(event.target) + delta];
         if (next) { event.preventDefault(); next.focus(); }
       }}><div className="rounded-xl border border-border bg-card/70 p-4"><h2 className="font-display text-xl font-semibold">Model answers</h2><p className="mt-1 text-sm text-muted-foreground">Select a model to compare its grid with the puzzle. Use ↑ and ↓ to move between models.</p><div className="mt-4"><PuzzleFilters filters={filters} change={change} count={models.length} /></div>
-        {error ? <p role="alert" className="mt-4 text-sm">Could not load model answers. Refresh to try again.</p> : !data ? <p role="status" className="mt-4 text-sm">Loading answers…</p> : runs.length ? <div className="mt-4 max-h-[38rem] overflow-y-auto">{answered.length > 0 && <ul className="space-y-1" aria-label="Models that returned a grid">{answered.map((run) => renderRun(run, false))}</ul>}{missing.length > 0 && <section aria-labelledby="no-grid-heading" className={answered.length ? "mt-5 border-t border-border/60 pt-4" : ""}><h3 id="no-grid-heading" className="px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">No grid to compare · {missing.length}</h3><p className="mt-1 px-2 text-xs text-dim">These models gave up, ran out of time or tokens, or returned a grid of the wrong size.</p><ul className="mt-2 space-y-1 opacity-60 transition-opacity hover:opacity-100 focus-within:opacity-100" aria-label="Models without a usable grid">{missing.map((run) => renderRun(run, true))}</ul></section>}</div> : <p className="mt-4 text-sm text-muted-foreground">No model results match these filters{result?.attempts === 0 ? "; this puzzle has not been run yet" : ""}.</p>}
+        {error ? <p role="alert" className="mt-4 text-sm">Could not load model answers. Refresh to try again.</p> : !data ? <p role="status" className="mt-4 min-h-[38rem] text-sm">Loading answers…</p> : runs.length ? <div className="mt-4 max-h-[38rem] overflow-y-auto">{answered.length > 0 && <ul className="space-y-1" aria-label="Models that returned a grid">{answered.map((run) => renderRun(run, false))}</ul>}{missing.length > 0 && <section aria-labelledby="no-grid-heading" className={answered.length ? "mt-5 border-t border-border/60 pt-4" : ""}><h3 id="no-grid-heading" className="px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">No grid to compare · {missing.length}</h3><p className="mt-1 px-2 text-xs text-dim">These models gave up, ran out of time or tokens, or returned a grid of the wrong size.</p><ul className="mt-2 space-y-1 opacity-75 transition-opacity hover:opacity-100 focus-within:opacity-100" aria-label="Models without a usable grid">{missing.map((run) => renderRun(run, true))}</ul></section>}</div> : <p className="mt-4 text-sm text-muted-foreground">No model results match these filters{result?.attempts === 0 ? "; this puzzle has not been run yet" : ""}.</p>}
       </div></aside>
     </main>
-    <footer className="relative border-t border-border bg-card/50 px-4 py-4"><div className="mx-auto flex max-w-7xl flex-wrap justify-center gap-1.5">{visiblePuzzles.map((entry, index) => <button type="button" key={index} onClick={() => goTo(index)} aria-label={`Go to puzzle ${index + 1}`} aria-current={index === safeIndex ? "step" : undefined} className={`size-3 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember ${index === safeIndex ? "ring-2 ring-white/30" : "opacity-60"} ${entry.width === 5 ? "bg-[#70B8FF]" : entry.width === 10 ? "bg-[#46FEA5]" : entry.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]"}`} />)}</div></footer>
+    <footer className="relative border-t border-border bg-card/50 px-4 py-4"><div className="mx-auto flex max-w-7xl flex-wrap justify-center">{visiblePuzzles.map((entry, index) => <button type="button" key={index} onClick={() => goTo(index)} aria-label={`Go to puzzle ${index + 1}`} aria-current={index === safeIndex ? "step" : undefined} className="grid size-6 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-ember"><span className={`size-3 rounded-full ${index === safeIndex ? "ring-2 ring-white/30" : "opacity-60"} ${entry.width === 5 ? "bg-[#70B8FF]" : entry.width === 10 ? "bg-[#46FEA5]" : entry.width === 15 ? "bg-[#FFCA16]" : "bg-[#C69CFF]"}`} /></button>)}</div></footer>
   </div>;
 }
 
