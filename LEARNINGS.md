@@ -314,6 +314,40 @@ bad luck or a pattern. They would also tighten the ranges and make the
 format and effort-level comparisons measurable. The cost is about three
 times as much per variant: a candidate for a V2.0 Standard.
 
+## 14. An effort level on OpenRouter may not be a level the model has
+
+**Assumed.** The levels in OpenRouter's `supported_efforts` are the levels
+the model has, so `bench/refresh-effort-levels.ts` builds each ladder from
+that list.
+
+**Saw.** Qwen documents three `reasoning_effort` levels for Qwen3.8-Max: low,
+medium and xhigh (default). OpenRouter lists five for
+`qwen/qwen3.8-max-0902` (minimal to xhigh), and its docs say an unsupported
+level maps "to the nearest supported level". Nothing in the API says which
+native level a request got: the endpoint's `reasoning` is null and the
+generation record only reports tokens. Our runs fall into three token
+groups, which fits minimal → low and high → xhigh:
+
+| Sent | Avg tokens 5x5 / 10x10 / 15x15 | Solved |
+|---|---|---|
+| minimal | 3.1k / 36.7k / 39.9k | 18/30 |
+| low | 3.1k / 34.4k / 45.1k | 18/30 |
+| medium | 4.2k / 38.5k / 38.3k | 14/30 |
+| high | 4.7k / 30.1k / 55.9k | 18/30 |
+| xhigh | 5.6k / 32.6k / 58.6k | 18/30 |
+
+A Reddit reader asked why "Best" showed Qwen3.8 Max at minimal. It was the
+cheapest of four levels tied at 18/30, and was most likely Qwen's low.
+
+**Implication.** The pairs are an accidental repeat: the same native setting
+twice gave the same total with different per-size splits (low: 10x10 7 vs 8,
+15x15 1 vs 0), which is section 13's noise, measured.
+
+**Open.** Confirm the mapping with OpenRouter. Before running an effort
+ladder, check `supported_efforts` against the lab's own docs, and only run
+native levels (or label mapped ones on the site). Audit the other families
+for the same gap.
+
 ## Measurement notes
 
 - **Single attempt per puzzle.** n = 30 per Standard score; the Wilson 95%
