@@ -15,8 +15,8 @@ export const contentType = "image/png";
 
 const fontFile = (file: string) => readFile(join(process.cwd(), "assets/fonts", file));
 
-const [panchang, supreme, supremeMedium, fragmentMono] = await Promise.all([
-	fontFile("panchang-600.woff"),
+const [unbounded, supreme, supremeMedium, fragmentMono] = await Promise.all([
+	fontFile("unbounded-600.woff"),
 	fontFile("supreme-400.woff"),
 	fontFile("supreme-500.woff"),
 	fontFile("fragment-mono-400.woff"),
@@ -103,7 +103,7 @@ export default function Image() {
 						</div>
 					))}
 				</div>
-				<div style={{ display: "flex", fontFamily: "Panchang", fontSize: 84, letterSpacing: -3, lineHeight: 1 }}>nonobench</div>
+				<div style={{ display: "flex", fontFamily: "Unbounded", fontSize: 84, letterSpacing: -3, lineHeight: 1 }}>nonobench</div>
 				<div style={{ display: "flex", marginBottom: 12, padding: "4px 14px", borderRadius: 999, border: `2px solid ${PRIMARY}88`, color: PRIMARY, fontFamily: "Fragment Mono", fontSize: 22 }}>
 					v1.2
 				</div>
@@ -165,7 +165,7 @@ export default function Image() {
 		{
 			...size,
 			fonts: [
-				{ name: "Panchang", data: panchang, weight: 600, style: "normal" },
+				{ name: "Unbounded", data: unbounded, weight: 600, style: "normal" },
 				{ name: "Supreme", data: supreme, weight: 400, style: "normal" },
 				{ name: "Supreme", data: supremeMedium, weight: 500, style: "normal" },
 				{ name: "Fragment Mono", data: fragmentMono, weight: 400, style: "normal" },
