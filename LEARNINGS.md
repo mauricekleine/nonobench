@@ -178,10 +178,17 @@ solution", or returned a wrong or malformed grid; Muse Spark hit Meta's
 5-minute limit on every puzzle. The tier now separates the frontier, and
 it measures the difference between line logic and deeper search.
 
-**Open.** Hard puzzles need low visual regularity as well as logical depth,
-e.g. random fills at a density that keeps them unique. A principled
-difficulty scale (search depth, branching needed) would make tiers
-comparable.
+**Then saw.** Foote and Krizanc also generate nonograms from random fills in
+"Nonogram: Complexity of Inference and Phase Transition Behavior" (2025,
+https://arxiv.org/abs/2507.07283), trying different probabilities for a
+cell to be filled. Krizanc confirmed by email (28 Sep 2026) that a
+probability of 0.5, which leaves about half the grid filled, fell in the
+hard region. Hard mode's grids are 49–60% filled, so they sit in that
+region.
+
+**Open.** Hard puzzles need low visual regularity as well as logical depth.
+Random fills near 50% density give both. A principled difficulty scale
+(search depth, branching needed) would make tiers comparable.
 
 ## 6. Provider limits become scores unless handled explicitly
 
