@@ -370,7 +370,7 @@ for (const [model, sizeDatas] of modelMap) {
 		llm: { modelId: model } as Model["llm"],
 		name: model,
 		family: model,
-		effort: "default",
+		effort: "none",
 		reasoning: false,
 		local: true,
 		provider: "local",

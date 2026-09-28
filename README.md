@@ -175,6 +175,7 @@ Make sure that the plan lists your model as `[local, text]`.
 | `NONOBENCH_LOCAL_BASE_URL` | The `/v1` endpoint of the server. Ollama uses port `11434`. |
 | `NONOBENCH_LOCAL_MODEL` | The model `id` that the server returns from `GET /v1/models`. |
 | `NONOBENCH_LOCAL_NAME` | The display name and the value for `--model`. Defaults to the model `id`. |
+| `NONOBENCH_LOCAL_EFFORT` | The reasoning effort your server is configured with (`none`, `low`, `xhigh`, …). Label only — the runner never sends reasoning settings to a local server. Defaults to `none`. |
 | `NONOBENCH_LOCAL_API_KEY` | The bearer token, when the server requires one. Defaults to `local`. |
 
 The runner adds the local model to the plan only when you set both `NONOBENCH_LOCAL_BASE_URL` and `NONOBENCH_LOCAL_MODEL`.

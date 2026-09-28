@@ -797,7 +797,9 @@ const localModels: Model[] = localBaseUrl && localModelId
     })(localModelId),
     name: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
     family: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
-    effort: "none",
+    // Label only: the runner never sends reasoning settings to a local
+    // server, so this records what the user configured there.
+    effort: process.env.NONOBENCH_LOCAL_EFFORT ?? "none",
     reasoning: false,
     outputMode: "text",
     local: true,
@@ -809,7 +811,7 @@ const localModels: Model[] = localBaseUrl && localModelId
 // so exports, the visualizer, and re-runs recognize them without env vars.
 // A bench run registers its local model automatically (see bench.ts).
 const localRegistryPath = new URL("./local-models.json", import.meta.url);
-export type LocalModelRegistryEntry = { baseURL: string; family: string };
+export type LocalModelRegistryEntry = { baseURL: string; family: string; effort: string };
 function readLocalRegistry(): Record<string, LocalModelRegistryEntry> {
   try {
     return JSON.parse(readFileSync(localRegistryPath, "utf8"));
@@ -820,7 +822,7 @@ function readLocalRegistry(): Record<string, LocalModelRegistryEntry> {
 export function registerLocalModel(model: Model): void {
   if (!model.localBaseURL) return;
   const registry = readLocalRegistry();
-  registry[model.name] = { baseURL: model.localBaseURL, family: model.family };
+  registry[model.name] = { baseURL: model.localBaseURL, family: model.family, effort: model.effort };
   Bun.write(localRegistryPath, JSON.stringify(registry, null, 2) + "\n");
 }
 const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, entry]) => ({
@@ -832,7 +834,7 @@ const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, 
   })(name),
   name,
   family: entry.family,
-  effort: "none",
+  effort: entry.effort ?? "none",
   reasoning: false,
   outputMode: "text",
   local: true,
