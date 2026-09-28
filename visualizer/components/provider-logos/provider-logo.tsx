@@ -103,7 +103,7 @@ export function ProviderLogo({ provider, size = 16, ...props }: Props) {
 			) : (
 				<>
 					<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
-					<text x="12" y="16" textAnchor="middle" fontSize="12" fontFamily="sans-serif">
+					<text x="12" y="16" textAnchor="middle" fontSize="12" className="font-sans">
 						{provider[0]?.toUpperCase() ?? "?"}
 					</text>
 				</>

@@ -95,7 +95,7 @@ export function HardModeIntro() {
       <p>
         Each family runs it at its best Standard effort level, and Best
         shows its best Hard result.{" "}
-        <Link href="/how-it-works" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright">
+        <Link href="/how-it-works" className="text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ring">
           How it works
         </Link>
       </p>
@@ -131,7 +131,7 @@ export function HardModeMisses({ models }: { models: Variant[] }) {
 
       <div className="mt-5 overflow-x-auto">
         <div className="min-w-[640px]">
-          <div className="grid grid-cols-[minmax(10rem,14rem)_auto_minmax(12rem,1fr)] items-end gap-x-4 pb-2 text-[11px] text-dim">
+          <div className="grid grid-cols-[minmax(10rem,14rem)_auto_minmax(12rem,1fr)] items-end gap-x-4 pb-2 text-[11px] text-muted-foreground">
             <span />
             <div className="flex gap-3">
               <span className="w-[calc(5*1.75rem+4*2px)] text-center">line logic</span>
@@ -213,7 +213,7 @@ export function HardModeMisses({ models }: { models: Variant[] }) {
 }
 
 function Square({ puzzle, run }: { puzzle: number; run?: HardRun }) {
-  const base = "flex size-7 items-center justify-center rounded-[4px] font-mono text-[10px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-bright";
+  const base = "flex size-7 items-center justify-center rounded-[4px] font-mono text-[10px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring";
   const label = !run
     ? `Puzzle ${puzzle}: not run`
     : run.outcome === "solved"
@@ -229,7 +229,7 @@ function Square({ puzzle, run }: { puzzle: number; run?: HardRun }) {
         : <span className={`${base} bg-foreground/10`} />;
   return (
     <Tooltip>
-      <TooltipTrigger type="button" aria-label={label} className="rounded-[4px] focus-visible:outline-2 focus-visible:outline-ember-bright">
+      <TooltipTrigger type="button" aria-label={label} className="rounded-[4px] focus-visible:outline-2 focus-visible:outline-ring">
         {content ?? <span className={`${base} border border-dashed border-border`} />}
       </TooltipTrigger>
       <TooltipContent side="top">

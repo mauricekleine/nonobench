@@ -9,34 +9,28 @@ import { effortLabel } from "@/lib/display";
 import { PROVIDERS } from "@/lib/providers";
 import results from "./results.json";
 
-// Rendered at build time from results.json, so it follows every export. The
-// styling mirrors the site: night ground, Unbounded wordmark, Figtree text,
-// Fragment Mono numbers, provider-coloured bars and the ember v1.2 accent.
-
 export const alt = "Nonobench: how well LLMs solve nonogram puzzles";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const fontFile = (pkg: string, file: string) => readFile(join(process.cwd(), "node_modules/@fontsource", pkg, "files", file));
+const fontFile = (file: string) => readFile(join(process.cwd(), "assets/fonts", file));
 
-const [unbounded, figtree, figtreeMedium, fragmentMono] = await Promise.all([
-	fontFile("unbounded", "unbounded-latin-600-normal.woff"),
-	fontFile("figtree", "figtree-latin-400-normal.woff"),
-	fontFile("figtree", "figtree-latin-500-normal.woff"),
-	fontFile("fragment-mono", "fragment-mono-latin-400-normal.woff"),
+const [panchang, supreme, supremeMedium, fragmentMono] = await Promise.all([
+	fontFile("panchang-600.woff"),
+	fontFile("supreme-400.woff"),
+	fontFile("supreme-500.woff"),
+	fontFile("fragment-mono-400.woff"),
 ]);
 
-// The dark theme's oklch tokens in sRGB (Satori has no oklch support).
-const NIGHT = "#0b0e1e";
-const PANEL = "#121426";
-const LINE = "#2a2c3d";
-const STARLIGHT = "#eeebe4";
-const MUTED = "#adb0be";
-const DIM = "#8f929c";
-const EMBER = "#ed9658";
+// Void theme tokens converted from oklch for Satori.
+const BACKGROUND = "#0b0e1e";
+const CARD = "#121426";
+const BORDER = "#2a2c3d";
+const FOREGROUND = "#eeebe4";
+const MUTED_FOREGROUND = "#adb0be";
+const PRIMARY = "#ed9658";
 const TRACK = "#eeebe40f";
 
-// The Nonobench mark: a solved 3x3 nonogram with its clues.
 const MARK = [
 	["#70B8FF", "#70B8FF", null],
 	[null, "#46FEA5", "#46FEA5"],
@@ -64,7 +58,7 @@ const flatten = (node: ReactNode): ReactNode[] =>
 function Logo({ provider }: { provider: string }) {
 	const paths = providerLogoPaths[provider];
 	if (!paths) return <div style={{ display: "flex", width: 24, height: 24 }} />;
-	return <svg width={24} height={24} viewBox="0 0 24 24" fill={STARLIGHT} fillRule="evenodd">{flatten(paths)}</svg>;
+	return <svg width={24} height={24} viewBox="0 0 24 24" fill={FOREGROUND} fillRule="evenodd">{flatten(paths)}</svg>;
 }
 
 type HardMode = { models: { model: string; runs: { outcome: string }[] }[] };
@@ -84,15 +78,15 @@ export default function Image() {
 				display: "flex",
 				flexDirection: "column",
 				padding: "48px 64px 44px",
-				backgroundColor: NIGHT,
-				backgroundImage: `linear-gradient(${LINE}55 1px, transparent 1px), linear-gradient(90deg, ${LINE}55 1px, transparent 1px)`,
+				backgroundColor: BACKGROUND,
+				backgroundImage: `linear-gradient(${BORDER}55 1px, transparent 1px), linear-gradient(90deg, ${BORDER}55 1px, transparent 1px)`,
 				backgroundSize: "48px 48px",
-				color: STARLIGHT,
-				fontFamily: "Figtree",
+				color: FOREGROUND,
+				fontFamily: "Supreme",
 			}}
 		>
 			<div style={{ display: "flex", alignItems: "flex-end", gap: 26 }}>
-				<div style={{ display: "flex", flexDirection: "column", gap: GAP, fontFamily: "Fragment Mono", fontSize: 15, color: DIM }}>
+				<div style={{ display: "flex", flexDirection: "column", gap: GAP, fontFamily: "Fragment Mono", fontSize: 15, color: MUTED_FOREGROUND }}>
 					<div style={{ display: "flex", gap: GAP, paddingLeft: CLUE_WIDTH + GAP }}>
 						{COLUMN_CLUES.map((clues, x) => (
 							<div key={x} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", width: CELL, height: 38 }}>
@@ -109,13 +103,13 @@ export default function Image() {
 						</div>
 					))}
 				</div>
-				<div style={{ display: "flex", fontFamily: "Unbounded", fontSize: 84, letterSpacing: -3, lineHeight: 1 }}>nonobench</div>
-				<div style={{ display: "flex", marginBottom: 12, padding: "4px 14px", borderRadius: 999, border: `2px solid ${EMBER}88`, color: EMBER, fontFamily: "Fragment Mono", fontSize: 22 }}>
+				<div style={{ display: "flex", fontFamily: "Panchang", fontSize: 84, letterSpacing: -3, lineHeight: 1 }}>nonobench</div>
+				<div style={{ display: "flex", marginBottom: 12, padding: "4px 14px", borderRadius: 999, border: `2px solid ${PRIMARY}88`, color: PRIMARY, fontFamily: "Fragment Mono", fontSize: 22 }}>
 					v1.2
 				</div>
 			</div>
 
-			<div style={{ display: "flex", marginTop: 18, fontSize: 30, color: MUTED }}>
+			<div style={{ display: "flex", marginTop: 18, fontSize: 30, color: MUTED_FOREGROUND }}>
 				How well LLMs solve nonogram puzzles
 			</div>
 
@@ -127,8 +121,8 @@ export default function Image() {
 					marginTop: 28,
 					padding: "22px 28px",
 					borderRadius: 16,
-					border: `2px solid ${LINE}`,
-					backgroundColor: PANEL,
+					border: `2px solid ${BORDER}`,
+					backgroundColor: CARD,
 				}}
 			>
 				{top.map((row) => (
@@ -136,7 +130,7 @@ export default function Image() {
 						<div style={{ display: "flex", alignItems: "center", gap: 12, width: 380, flexShrink: 0 }}>
 							<Logo provider={row.provider ?? ""} />
 							<div style={{ display: "flex", fontSize: 26, fontWeight: 500, whiteSpace: "nowrap" }}>{row.familyDisplayName}</div>
-							<div style={{ display: "flex", padding: "1px 8px", borderRadius: 5, border: `1.5px solid ${LINE}`, color: MUTED, fontFamily: "Fragment Mono", fontSize: 15 }}>
+							<div style={{ display: "flex", padding: "1px 8px", borderRadius: 5, border: `1.5px solid ${BORDER}`, color: MUTED_FOREGROUND, fontFamily: "Fragment Mono", fontSize: 15 }}>
 								{effortLabel(row.effort ?? "none")}
 							</div>
 						</div>
@@ -147,7 +141,7 @@ export default function Image() {
 									width: Math.round((row.accuracy / 100) * TRACK_WIDTH),
 									height: "100%",
 									borderRadius: 6,
-									backgroundColor: PROVIDERS[row.provider ?? ""]?.color ?? MUTED,
+									backgroundColor: PROVIDERS[row.provider ?? ""]?.color ?? MUTED_FOREGROUND,
 								}}
 							/>
 						</div>
@@ -158,11 +152,11 @@ export default function Image() {
 				))}
 			</div>
 
-			<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", fontFamily: "Fragment Mono", fontSize: 21, color: DIM }}>
+			<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", fontFamily: "Fragment Mono", fontSize: 21, color: MUTED_FOREGROUND }}>
 				<div style={{ display: "flex" }}>www.nonobench.com</div>
 				{hard && hardLeader && (
 					<div style={{ display: "flex", gap: 10 }}>
-						<span style={{ color: EMBER }}>Hard mode</span>
+						<span style={{ color: PRIMARY }}>Hard mode</span>
 						<span>{`${hardLeader.familyDisplayName} solves ${hard.solved} of ${hard.total}`}</span>
 					</div>
 				)}
@@ -171,9 +165,9 @@ export default function Image() {
 		{
 			...size,
 			fonts: [
-				{ name: "Unbounded", data: unbounded, weight: 600, style: "normal" },
-				{ name: "Figtree", data: figtree, weight: 400, style: "normal" },
-				{ name: "Figtree", data: figtreeMedium, weight: 500, style: "normal" },
+				{ name: "Panchang", data: panchang, weight: 600, style: "normal" },
+				{ name: "Supreme", data: supreme, weight: 400, style: "normal" },
+				{ name: "Supreme", data: supremeMedium, weight: 500, style: "normal" },
 				{ name: "Fragment Mono", data: fragmentMono, weight: 400, style: "normal" },
 			],
 		},

@@ -14,7 +14,7 @@ import { PROVIDERS } from "@/lib/providers";
 
 type FamilySource = { family: string; familyDisplayName: string; provider: string };
 
-const focus = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
+const focus = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 export const filterPill = `inline-flex min-h-9 items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 ${focus}`;
 
 export function Segmented<T extends string>({ value, options, onChange, label, size = "md" }: {
@@ -111,23 +111,23 @@ export function ModelsPopover({ filters, change, sources }: {
         Models
         <span className="font-mono text-xs text-muted-foreground">{selected.size}/{families.length}</span>
         {active > 0 && (
-          <span className="rounded-full bg-ember px-1.5 font-mono text-[10px] text-background">
+          <span className="rounded-full bg-primary px-1.5 font-mono text-[10px] text-primary-foreground">
             {active}<span className="sr-only"> active filters</span>
           </span>
         )}
         <CaretDown size={13} />
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" collisionAvoidance={{ side: "none" }} className="w-auto max-w-none p-0">
+      <PopoverContent side="bottom" align="start" className="w-auto max-w-none p-0">
         <div className="flex max-h-[min(34rem,max(18rem,calc(var(--available-height,80vh)-0.5rem)))] w-[min(24rem,calc(100vw-2rem))] flex-col text-sm text-foreground">
           <div className="border-b border-border p-3">
-            <label className="flex items-center gap-2 rounded-md border border-border bg-background px-2.5 focus-within:border-ember">
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background px-2.5 focus-within:border-ring">
               <MagnifyingGlass size={14} className="text-muted-foreground" aria-hidden="true" />
               <span className="sr-only">Search models or providers</span>
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search models or providers" className="w-full bg-transparent py-2 text-sm outline-none" />
             </label>
             <div className="mt-2 flex gap-3 text-xs">
-              <button type="button" className="text-ember hover:underline" onClick={() => setSelected(new Set(families.map((family) => family.family)))}>Select all</button>
-              <button type="button" className="text-ember hover:underline" onClick={() => setSelected(new Set())}>Clear</button>
+              <button type="button" className="text-primary hover:underline" onClick={() => setSelected(new Set(families.map((family) => family.family)))}>Select all</button>
+              <button type="button" className="text-primary hover:underline" onClick={() => setSelected(new Set())}>Clear</button>
             </div>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-2">
@@ -169,7 +169,7 @@ export function ModelsPopover({ filters, change, sources }: {
                         if (on) next.delete(version); else next.add(version);
                         change({ versions: next.size === VERSIONS.length ? undefined : [...next] });
                       }}
-                      className={`rounded-full border px-2.5 py-0.5 font-mono text-xs ${focus} ${on ? "border-ember/60 bg-ember/15 text-foreground" : "border-border text-muted-foreground"}`}
+                      className={`rounded-full border px-2.5 py-0.5 font-mono text-xs ${focus} ${on ? "border-primary/60 bg-primary/15 text-foreground" : "border-border text-muted-foreground"}`}
                     >
                       v{version}
                     </button>
@@ -199,7 +199,7 @@ export function ModelsPopover({ filters, change, sources }: {
             </div>
             <button
               type="button"
-              className="text-xs text-ember hover:underline"
+              className="text-xs text-primary hover:underline"
               onClick={() => change({ providers: undefined, families: undefined, versions: undefined, reasoning: undefined, openWeights: undefined })}
             >
               Reset model filters

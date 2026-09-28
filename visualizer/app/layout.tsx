@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Figtree, Fragment_Mono, Unbounded } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { ProviderLogoSprite } from "@/components/provider-logos/provider-logo";
@@ -7,25 +6,6 @@ import { WebMcp } from "@/components/webmcp";
 
 import "./globals.css";
 import Script from "next/script";
-
-// Superthread type roles, from Google Fonts: a wide, squared display face for the
-// wordmark and headings, a warm round sans for body, Fragment Mono for numbers and meta.
-const display = Unbounded({
-	subsets: ["latin"],
-	weight: ["500", "600"],
-	variable: "--font-display",
-});
-
-const sans = Figtree({
-	subsets: ["latin"],
-	variable: "--font-sans",
-});
-
-const mono = Fragment_Mono({
-	subsets: ["latin"],
-	weight: "400",
-	variable: "--font-mono",
-});
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://www.nonobench.com"),
@@ -96,7 +76,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="dark">
 			<body
-				className={`${display.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}
+				className="antialiased font-sans"
 			>
 				<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 				<ProviderLogoSprite />

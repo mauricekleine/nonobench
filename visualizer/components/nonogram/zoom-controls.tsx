@@ -5,7 +5,7 @@ import { MagnifyingGlassMinus, MagnifyingGlassPlus } from "@phosphor-icons/react
 import { useNonogramStore } from "./store";
 
 const button =
-  "rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright disabled:opacity-40 disabled:hover:text-muted-foreground";
+  "rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-40 disabled:hover:text-muted-foreground";
 
 export function ZoomControls() {
   const zoomLevel = useNonogramStore((state) => state.zoomLevel);

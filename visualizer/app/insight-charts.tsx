@@ -153,7 +153,7 @@ export function AccuracyScatter({
                 onMetricChange(value);
               }}
               aria-pressed={metric === value}
-              className={`rounded px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-ember-bright ${metric === value ? "bg-ember text-background" : "text-muted-foreground hover:text-foreground"}`}
+              className={`rounded px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-ring ${metric === value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               {metricLabels[value]}
             </button>
@@ -239,7 +239,7 @@ export function AccuracyScatter({
               <path
                 d={path}
                 fill="none"
-                stroke="var(--ember)"
+                stroke="var(--primary)"
                 strokeWidth="1.5"
                 vectorEffect="non-scaling-stroke"
                 opacity="0.8"
@@ -282,7 +282,7 @@ export function AccuracyScatter({
                       onFocus={() => setActiveFamily(point.model.family)}
                       onBlur={() => setActiveFamily(null)}
                       aria-label={`${point.model.displayName}, ${effortDescription(point.model.effort)}, ${point.y.toFixed(1)}% accuracy, ${metricValue(point.x, metric)} per puzzle`}
-                      className="pointer-events-none absolute -left-3 -top-3 flex size-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-bright"
+                      className="pointer-events-none absolute -left-3 -top-3 flex size-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring"
                       style={{
                         opacity:
                           activeFamily && activeFamily !== point.model.family
@@ -346,7 +346,7 @@ export function AccuracyScatter({
             {ticks.map((tick) => (
               <span
                 key={tick.value}
-                className={`absolute -translate-x-1/2 whitespace-nowrap ${tick.major ? "text-foreground" : "hidden text-dim sm:inline"}`}
+                className={`absolute -translate-x-1/2 whitespace-nowrap ${tick.major ? "text-foreground" : "hidden text-muted-foreground sm:inline"}`}
                 style={{ left: `${xPosition(tick.value)}%` }}
               >
                 {logTickLabel(tick.value, metric)}
@@ -354,10 +354,10 @@ export function AccuracyScatter({
             ))}
           </div>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            {metricLabels[metric]} → <span className="text-dim">(log scale: each solid line is 10× the last)</span>
+            {metricLabels[metric]} → <span className="text-muted-foreground">(log scale: each solid line is 10× the last)</span>
           </p>
           {points.length < models.length && (
-            <p className="mt-1 text-center font-mono text-[10px] text-dim">
+            <p className="mt-1 text-center font-mono text-[10px] text-muted-foreground">
               {models.length - points.length}{" "}
               {models.length - points.length === 1
                 ? "variant has"
@@ -426,7 +426,7 @@ function LadderRow({ group, size }: { group: EffortGroup<ChartVariant>; size?: s
         const value = chartStats(model, size), x = xPosition(model), y = yPosition(value.accuracy);
         return <div key={model.model}>
           <span aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-background/80 px-0.5 font-mono text-[10px] tabular-nums" style={{ left: `${x}%`, top: `calc(${y}% - 9px)` }}>{value.correct}/{value.runs}</span>
-          <Tooltip><TooltipTrigger type="button" className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ember-bright" style={{ left: `${x}%`, top: `${y}%` }} aria-label={`${model.familyDisplayName}, ${effortLabel(model.effort)}, ${value.correct} of ${value.runs} solved`}><span className="size-[10px] rounded-full border-2 border-card" style={{ backgroundColor: color }} /></TooltipTrigger><TooltipContent>{model.familyDisplayName} · {effortLabel(model.effort)}: {value.accuracy.toFixed(1)}% ({value.correct}/{value.runs} solved)</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger type="button" className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ring" style={{ left: `${x}%`, top: `${y}%` }} aria-label={`${model.familyDisplayName}, ${effortLabel(model.effort)}, ${value.correct} of ${value.runs} solved`}><span className="size-[10px] rounded-full border-2 border-card" style={{ backgroundColor: color }} /></TooltipTrigger><TooltipContent>{model.familyDisplayName} · {effortLabel(model.effort)}: {value.accuracy.toFixed(1)}% ({value.correct}/{value.runs} solved)</TooltipContent></Tooltip>
         </div>;
       })}
       {group.variants.slice(1).map((model, index) => {
@@ -462,7 +462,7 @@ export function EffortLadder({
         {insight}{insight.endsWith(".") ? "" : "."}
       </p>
       <Popover>
-        <PopoverTrigger type="button" aria-label="How to read effort ladders" className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={14} /> How to read</PopoverTrigger>
+        <PopoverTrigger type="button" aria-label="How to read effort ladders" className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"><Info size={14} /> How to read</PopoverTrigger>
         <PopoverContent>Every card shares the same effort axis, with its own score scale. Labels above the dots show puzzles solved, and the numbers between them show the change. The ladder always shows every measured level. “On” uses the provider’s default.</PopoverContent>
       </Popover>
       {ordered.length > 0 && <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-2">{ordered.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div>}

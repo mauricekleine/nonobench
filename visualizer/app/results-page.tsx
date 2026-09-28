@@ -88,7 +88,7 @@ const displayedSizes = results.summary.sizes.filter((size) =>
 const hasHardMode = displayedSizes.includes(HARD_SIZE);
 const standardSizes = displayedSizes.filter((size) => size !== HARD_SIZE);
 const control =
-  "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
+  "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 // Run progress per variant, for watching a benchmark wave locally. Shown in
 // `next dev`, or in a local production build with NEXT_PUBLIC_SHOW_PROGRESS=1.
@@ -105,7 +105,7 @@ function IncompleteBadge({ model, size }: { model: Model; size?: string }) {
     <Popover>
       <PopoverTrigger
         type="button"
-        className="shrink-0 cursor-pointer rounded-full bg-ember/13 px-1.5 py-0.5 font-mono text-[10px] text-ember hover:bg-ember/20 focus-visible:outline-2 focus-visible:outline-ember-bright"
+        className="shrink-0 cursor-pointer rounded-full bg-primary/13 px-1.5 py-0.5 font-mono text-[10px] text-primary hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-ring"
       >
         incomplete{progress}
       </PopoverTrigger>
@@ -144,7 +144,7 @@ function ModelName({ model }: { model: Model }) {
       <span className="min-w-0 truncate" title={model.displayName}>
         {model.familyDisplayName}
       </span>
-      <span title={effortTitle(model.effort)} className="shrink-0 rounded border border-line-strong px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">
+      <span title={effortTitle(model.effort)} className="shrink-0 rounded border border-input px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">
         {effortLabel(model.effort)}
       </span>
     </span>
@@ -213,7 +213,7 @@ export default function ResultsPage({
     const { toPng } = await import("html-to-image");
     const url = await toPng(chartRef.current, {
       pixelRatio: 2,
-      backgroundColor: "#11110f",
+      backgroundColor: "#0b0e1e",
     });
     const link = document.createElement("a");
     link.href = url;
@@ -228,7 +228,7 @@ export default function ResultsPage({
   const sortButton = (label: string, key: string) => (
     <button
       type="button"
-      className="hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"
+      className="hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
       onClick={() =>
         setSort((old) => ({
           key,
@@ -253,13 +253,13 @@ export default function ResultsPage({
             <h1 className="pb-px font-display text-2xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
               nonobench<span className="sr-only"> results</span>
             </h1>
-            <Link href="/how-it-works#whats-new" className="mb-0.5 rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link>
+            <Link href="/how-it-works#whats-new" className="mb-0.5 rounded-full border border-primary/50 px-2 py-0.5 font-mono text-[10px] text-primary focus-visible:outline-2 focus-visible:outline-ring">v1.2</Link>
           </div>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
             How well LLMs solve nonogram puzzles. Compare accuracy, speed
             and cost across grid sizes.
           </p>
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-dim sm:mt-5 sm:gap-x-6">
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground sm:mt-5 sm:gap-x-6">
             <span>{familiesWithResults} models · {variantsWithResults} variants with solved results</span>
             <span>
               Updated {new Date(results.timestamp).toLocaleDateString()}
@@ -318,14 +318,14 @@ export default function ResultsPage({
                   <div className="flex items-center gap-2">
                     <CardTitle><h2 className="font-display text-base font-medium lowercase">model accuracy</h2></CardTitle>
                     <Popover>
-                      <PopoverTrigger type="button" aria-label="What do the thin lines mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={17} /></PopoverTrigger>
+                      <PopoverTrigger type="button" aria-label="What do the thin lines mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"><Info size={17} /></PopoverTrigger>
                       <PopoverContent side="bottom">The thin lines show 95% Wilson intervals. With 30 Standard puzzles, small score differences may not mean much.</PopoverContent>
                     </Popover>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-dim">{chosen.length} {allLevels ? "variants" : "models"} · {size ? shortSizeLabel(size) : "Standard"}</span>
-                    <button type="button" title={copyDone ? "Copied" : "Copy link"} aria-label={copyDone ? "Copied" : "Copy link"} className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={copyLink}><Copy size={15} /></button>
-                    <button type="button" title="Download chart as PNG" aria-label="Download chart as PNG" className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ember-bright" onClick={downloadChart}><DownloadSimple size={15} /></button>
+                    <span className="font-mono text-xs text-muted-foreground">{chosen.length} {allLevels ? "variants" : "models"} · {size ? shortSizeLabel(size) : "Standard"}</span>
+                    <button type="button" title={copyDone ? "Copied" : "Copy link"} aria-label={copyDone ? "Copied" : "Copy link"} className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={copyLink}><Copy size={15} /></button>
+                    <button type="button" title="Download chart as PNG" aria-label="Download chart as PNG" className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={downloadChart}><DownloadSimple size={15} /></button>
                   </div>
                 </div>
               </CardHeader>
@@ -353,7 +353,7 @@ export default function ResultsPage({
                           <TooltipTrigger
                             type="button"
                             aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)} ${perPuzzle ? "cost per puzzle" : "total cost"}; ${formatDuration(perPuzzle ? value.time / value.runs : value.time)} ${perPuzzle ? "time per puzzle" : "total time"}`}
-                            className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ember-bright sm:col-span-1 sm:col-start-2 sm:row-start-1"
+                            className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ring sm:col-span-1 sm:col-start-2 sm:row-start-1"
                           >
                             <span
                               className="block h-full rounded-sm"
@@ -423,7 +423,7 @@ export default function ResultsPage({
             </div>
             <div role="group" aria-label="Cost and time units" className="inline-flex rounded-md border border-border bg-background p-1 text-xs">
               {([false, true] as const).map((average) => (
-                <button key={String(average)} type="button" aria-pressed={perPuzzle === average} onClick={() => onPerPuzzleChange(average)} className={`rounded px-2.5 py-1.5 focus-visible:outline-2 focus-visible:outline-ember-bright ${perPuzzle === average ? "bg-ember text-background" : "text-muted-foreground hover:text-foreground"}`}>
+                <button key={String(average)} type="button" aria-pressed={perPuzzle === average} onClick={() => onPerPuzzleChange(average)} className={`rounded px-2.5 py-1.5 focus-visible:outline-2 focus-visible:outline-ring ${perPuzzle === average ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                   {average ? "Per puzzle" : "Totals"}
                 </button>
               ))}
@@ -498,7 +498,7 @@ export default function ResultsPage({
                           {!model.complete && <IncompleteBadge model={model} size={size} />}
                         </div>
                       </td>
-                      <td className="px-3 py-3 font-mono text-ember">
+                      <td className="px-3 py-3 font-mono text-primary">
                         {value.accuracy.toFixed(1)}%{" "}
                         <span className="block whitespace-nowrap text-[10px] text-muted-foreground sm:inline sm:text-xs">
                           ({(interval.low * 100).toFixed(0)}–{(interval.high * 100).toFixed(0)}%)

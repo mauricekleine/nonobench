@@ -37,7 +37,7 @@ export function NonobenchMark({ size = "md", className }: { size?: "sm" | "md"; 
 		<div
 			aria-hidden="true"
 			className={cn(
-				"nono-mark grid shrink-0 grid-cols-[auto_repeat(3,auto)] gap-[3px] font-mono text-dim",
+				"nono-mark grid shrink-0 grid-cols-[auto_repeat(3,auto)] gap-[3px] font-mono text-muted-foreground",
 				size === "md" ? "text-[9px]" : "text-[8px]",
 				"leading-none",
 				className,
@@ -66,7 +66,7 @@ export function NonobenchMark({ size = "md", className }: { size?: "sm" | "md"; 
 							key={`${x}-${y}`}
 							className={cn(cell, "relative rounded-[2px] bg-foreground/[0.07] ring-1 ring-inset ring-foreground/10")}
 						>
-							<svg viewBox="0 0 10 10" className="nono-cross absolute inset-0 text-dim" style={{ ["--i" as string]: CROSS_ORDER.get(`${x}-${y}`) }}>
+							<svg viewBox="0 0 10 10" className="nono-cross absolute inset-0 text-muted-foreground" style={{ ["--i" as string]: CROSS_ORDER.get(`${x}-${y}`) }}>
 								<path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" />
 							</svg>
 						</span>
