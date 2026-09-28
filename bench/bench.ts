@@ -16,6 +16,7 @@ import {
   getPuzzleId,
   getSizeTally,
   getSuccessfulPuzzlesByModel,
+  openReadDb,
   saveRunToDb,
   codeRevision,
   type BenchmarkResult,
@@ -505,22 +506,28 @@ console.log(`Parallel runs per model: ${maxParallel}`);
 console.log(`Database: ${dbPath}`);
 console.log("=".repeat(60) + "\n");
 
-const allResults = await Promise.all(
-  selectedModels.map((model) => runModelBenchmark(model))
-);
-const flatResults = allResults.flat();
+await Promise.all(selectedModels.map((model) => runModelBenchmark(model)));
 
 // Aggregate results by model and size for display
 const statsMap = new Map<string, Map<string, ModelSizeStats>>();
 
-for (const result of flatResults) {
-  if (!statsMap.has(result.model)) {
-    statsMap.set(result.model, new Map());
+// Aggregate from the database, not just this session: when a run is stopped
+// and resumed, the report should reflect the full state of the selected models.
+const selectedModelNames = new Set(selectedModels.map((model) => model.name));
+const reportDb = openReadDb();
+if (!reportDb) throw new Error("Database does not exist");
+for (const row of reportDb
+  .query<{ model: string; size: string; correct: number; status: string; duration_ms: number; tokens: number; cost: number }, []>(
+    "SELECT model, size, correct, status, duration_ms, tokens, cost FROM runs"
+  )
+  .all()) {
+  if (!selectedModelNames.has(row.model)) continue;
+  if (!statsMap.has(row.model)) {
+    statsMap.set(row.model, new Map());
   }
-  const modelMap = statsMap.get(result.model)!;
-
-  if (!modelMap.has(result.size)) {
-    modelMap.set(result.size, {
+  const modelMap = statsMap.get(row.model)!;
+  if (!modelMap.has(row.size)) {
+    modelMap.set(row.size, {
       totalPuzzles: 0,
       correctCount: 0,
       failedCount: 0,
@@ -529,18 +536,18 @@ for (const result of flatResults) {
       totalCost: 0,
     });
   }
-  const stats = modelMap.get(result.size)!;
-
+  const stats = modelMap.get(row.size)!;
   stats.totalPuzzles++;
-  if (result.correct) stats.correctCount++;
-  if (result.status === "failed") stats.failedCount++;
-  stats.totalDuration += result.durationMs;
-  stats.totalTokens += result.tokens;
-  stats.totalCost += result.cost;
+  if (row.correct === 1) stats.correctCount++;
+  if (row.status === "failed") stats.failedCount++;
+  stats.totalDuration += row.duration_ms;
+  stats.totalTokens += row.tokens;
+  stats.totalCost += row.cost;
 }
+reportDb.close();
 
 // Get all unique sizes in order
-const allSizes = sortSizes([...new Set(flatResults.map((r) => r.size))]);
+const allSizes = sortSizes([...statsMap.values()].flatMap((sizes) => [...sizes.keys()]));
 
 // Display results
 console.log("\n" + "=".repeat(60));
@@ -706,27 +713,23 @@ if (modelRankings.length > 0) {
   }));
 
   console.log("\n" + "=".repeat(60));
-  console.log("MODEL RANKING (by accuracy) - This Session");
+  console.log("MODEL RANKING (by accuracy) - selected models, from database");
   console.log("=".repeat(60));
   printTable(rankingTableData);
 }
 
-// Global summary stats for this session
-if (flatResults.length > 0) {
-  const globalTotalRuns = flatResults.length;
-  const globalTotalCorrect = flatResults.filter((r) => r.correct).length;
-  const globalTotalFailed = flatResults.filter(
-    (r) => r.status === "failed"
-  ).length;
-  const globalTotalDuration = flatResults.reduce(
-    (sum, r) => sum + r.durationMs,
-    0
-  );
-  const globalTotalTokens = flatResults.reduce((sum, r) => sum + r.tokens, 0);
-  const globalTotalCost = flatResults.reduce((sum, r) => sum + r.cost, 0);
+// Global summary across the selected models, from the database
+const globalTotals = [...statsMap.values()].flatMap((sizes) => [...sizes.values()]);
+if (globalTotals.length > 0) {
+  const globalTotalRuns = globalTotals.reduce((sum, s) => sum + s.totalPuzzles, 0);
+  const globalTotalCorrect = globalTotals.reduce((sum, s) => sum + s.correctCount, 0);
+  const globalTotalFailed = globalTotals.reduce((sum, s) => sum + s.failedCount, 0);
+  const globalTotalDuration = globalTotals.reduce((sum, s) => sum + s.totalDuration, 0);
+  const globalTotalTokens = globalTotals.reduce((sum, s) => sum + s.totalTokens, 0);
+  const globalTotalCost = globalTotals.reduce((sum, s) => sum + s.totalCost, 0);
 
   console.log("\n" + "=".repeat(60));
-  console.log("SESSION SUMMARY");
+  console.log("TOTAL SUMMARY (selected models, from database)");
   console.log("=".repeat(60));
   console.log(`Total Runs:       ${globalTotalRuns.toLocaleString()}`);
   console.log(
