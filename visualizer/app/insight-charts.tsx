@@ -26,6 +26,10 @@ import { effortDescription, effortLabel, effortTitle } from "@/lib/display";
 import { type Filters } from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
 import { LazyDetails } from "@/components/lazy-details";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const metricLabels: Record<XMetric, string> = {
   cost: "Cost per puzzle",
@@ -56,8 +60,7 @@ const logTickLabel = (value: number, metric: XMetric) => {
   return `${minutes}m${remainder ? ` ${remainder}s` : ""}`;
 };
 const colorFor = (provider: string) => PROVIDERS[provider]?.color ?? "#D8A46B";
-const sectionClass = "defer-render mt-10 rounded-lg border border-border bg-card p-4 sm:p-6";
-const headingClass = "font-display text-base font-medium lowercase";
+const headingClass = "font-display text-2xl lowercase";
 
 export function AccuracyScatter({
   models,
@@ -127,8 +130,8 @@ export function AccuracyScatter({
   const hovered = points.find((point) => point.id === hoveredId);
 
   return (
-    <section className={sectionClass} aria-labelledby="scatter-heading">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <Card className="defer-render mt-8" aria-labelledby="scatter-heading">
+      <CardHeader><div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 id="scatter-heading" className={headingClass}>
             accuracy vs {metric}
@@ -138,28 +141,19 @@ export function AccuracyScatter({
             measured tradeoffs.
           </p>
         </div>
-        <div
-          role="group"
-          aria-label="Horizontal axis"
-          className="inline-flex max-w-full flex-wrap gap-1 rounded-md border border-border bg-background p-1"
-        >
+        <ToggleGroup aria-label="Horizontal axis" value={[metric]} onValueChange={(next) => {
+          if (!next[0]) return;
+          setHoveredId(null);
+          setActiveFamily(null);
+          onMetricChange(next[0] as XMetric);
+        }} variant="outline" spacing={0}>
           {(["cost", "time", "tokens"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => {
-                setHoveredId(null);
-                setActiveFamily(null);
-                onMetricChange(value);
-              }}
-              aria-pressed={metric === value}
-              className={`rounded px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-ring ${metric === value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
+            <ToggleGroupItem key={value} value={value}>
               {metricLabels[value]}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
-      </div>
+        </ToggleGroup>
+      </div></CardHeader><CardContent>
       {points.length ? (
         <>
           <div className="mt-5 flex items-center justify-between text-sm text-muted-foreground">
@@ -248,7 +242,7 @@ export function AccuracyScatter({
             {[100, 75, 50, 25, 0].map((value) => (
               <span
                 key={value}
-                className="absolute left-1.5 bg-card px-0.5 font-mono text-xs text-muted-foreground sm:text-[13px]"
+                className="absolute left-1.5 bg-card px-0.5 font-mono text-xs text-muted-foreground sm:text-xs"
                 style={{
                   top: `${yPosition(value)}%`,
                   transform: "translateY(-50%)",
@@ -282,7 +276,7 @@ export function AccuracyScatter({
                       onFocus={() => setActiveFamily(point.model.family)}
                       onBlur={() => setActiveFamily(null)}
                       aria-label={`${point.model.displayName}, ${effortDescription(point.model.effort)}, ${point.y.toFixed(1)}% accuracy, ${metricValue(point.x, metric)} per puzzle`}
-                      className="pointer-events-none absolute -left-3 -top-3 flex size-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring"
+                      className="absolute -left-3 -top-3 flex size-6 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:scale-150"
                       style={{
                         opacity:
                           activeFamily && activeFamily !== point.model.family
@@ -311,7 +305,7 @@ export function AccuracyScatter({
                 </div>
               );
             })}
-            {frontier.map((point) => <span key={`label-${point.id}`} className={`pointer-events-none absolute z-10 max-w-[150px] whitespace-nowrap items-center gap-1 rounded border border-border/60 bg-card px-1 py-0.5 text-[10px] leading-tight text-foreground sm:flex ${mobileLabelIds.has(point.id) ? "flex" : "hidden"}`} style={{ ...labelPositions.get(point.id), opacity: activeFamily && activeFamily !== point.model.family ? 0.25 : 1 }}><ProviderLogo provider={point.model.provider} size={12} className="shrink-0" /><span className="truncate">{point.model.familyDisplayName}</span></span>)}
+            {frontier.map((point) => <span key={`label-${point.id}`} className={`pointer-events-none absolute z-10 max-w-[150px] whitespace-nowrap items-center gap-2 rounded border border-border/60 bg-card px-1 py-0.5 text-xs leading-tight text-foreground sm:flex ${mobileLabelIds.has(point.id) ? "flex" : "hidden"}`} style={{ ...labelPositions.get(point.id), opacity: activeFamily && activeFamily !== point.model.family ? 0.25 : 1 }}><ProviderLogo provider={point.model.provider} size={12} className="shrink-0" /><span className="truncate">{point.model.familyDisplayName}</span></span>)}
             {hovered && (
               <div
                 role="status"
@@ -342,7 +336,7 @@ export function AccuracyScatter({
               </div>
             )}
           </div>
-          <div className="relative mt-1.5 h-6 font-mono text-xs text-muted-foreground sm:text-[13px]">
+          <div className="relative mt-2 h-6 font-mono text-xs text-muted-foreground sm:text-xs">
             {ticks.map((tick) => (
               <span
                 key={tick.value}
@@ -357,7 +351,7 @@ export function AccuracyScatter({
             {metricLabels[metric]} → <span className="text-muted-foreground">(log scale: each solid line is 10× the last)</span>
           </p>
           {points.length < models.length && (
-            <p className="mt-1 text-center font-mono text-[10px] text-muted-foreground">
+            <p className="mt-1 text-center font-mono text-xs text-muted-foreground">
               {models.length - points.length}{" "}
               {models.length - points.length === 1
                 ? "variant has"
@@ -374,31 +368,31 @@ export function AccuracyScatter({
       )}
       <LazyDetails summary="View scatter data table">
         <div className="mt-3 max-h-96 overflow-auto">
-          <table className="w-full min-w-[500px] text-left text-xs">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="py-2">Model</th>
-                <th>Effort</th>
-                <th>Accuracy</th>
-                <th>{metricLabels[metric]}</th>
-                <th>Frontier</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="min-w-[500px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Model</TableHead>
+                <TableHead>Effort</TableHead>
+                <TableHead>Accuracy</TableHead>
+                <TableHead>{metricLabels[metric]}</TableHead>
+                <TableHead>Frontier</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {points.map((point) => (
-                <tr key={point.id} className="border-b border-border/50">
-                  <td className="py-2">{point.model.familyDisplayName}</td>
-                  <td title={effortTitle(point.model.effort)}>{effortLabel(point.model.effort)}</td>
-                  <td>{point.y.toFixed(1)}%</td>
-                  <td>{metricValue(point.x, metric)}</td>
-                  <td>{frontierIds.has(point.id) ? "Yes" : ""}</td>
-                </tr>
+                <TableRow key={point.id}>
+                  <TableCell>{point.model.familyDisplayName}</TableCell>
+                  <TableCell title={effortTitle(point.model.effort)}>{effortLabel(point.model.effort)}</TableCell>
+                  <TableCell>{point.y.toFixed(1)}%</TableCell>
+                  <TableCell>{metricValue(point.x, metric)}</TableCell>
+                  <TableCell>{frontierIds.has(point.id) ? "Yes" : ""}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </LazyDetails>
-    </section>
+    </CardContent></Card>
   );
 }
 
@@ -425,8 +419,8 @@ function LadderRow({ group, size }: { group: EffortGroup<ChartVariant>; size?: s
       {group.variants.map((model) => {
         const value = chartStats(model, size), x = xPosition(model), y = yPosition(value.accuracy);
         return <div key={model.model}>
-          <span aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-background/80 px-0.5 font-mono text-[10px] tabular-nums" style={{ left: `${x}%`, top: `calc(${y}% - 9px)` }}>{value.correct}/{value.runs}</span>
-          <Tooltip><TooltipTrigger type="button" className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ring" style={{ left: `${x}%`, top: `${y}%` }} aria-label={`${model.familyDisplayName}, ${effortLabel(model.effort)}, ${value.correct} of ${value.runs} solved`}><span className="size-[10px] rounded-full border-2 border-card" style={{ backgroundColor: color }} /></TooltipTrigger><TooltipContent>{model.familyDisplayName} · {effortLabel(model.effort)}: {value.accuracy.toFixed(1)}% ({value.correct}/{value.runs} solved)</TooltipContent></Tooltip>
+          <span aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-background/80 px-0.5 font-mono text-xs tabular-nums" style={{ left: `${x}%`, top: `calc(${y}% - 9px)` }}>{value.correct}/{value.runs}</span>
+          <Tooltip><TooltipTrigger type="button" className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:scale-150" style={{ left: `${x}%`, top: `${y}%` }} aria-label={`${model.familyDisplayName}, ${effortLabel(model.effort)}, ${value.correct} of ${value.runs} solved`}><span className="size-[10px] rounded-full border-2 border-card" style={{ backgroundColor: color }} /></TooltipTrigger><TooltipContent>{model.familyDisplayName} · {effortLabel(model.effort)}: {value.accuracy.toFixed(1)}% ({value.correct}/{value.runs} solved)</TooltipContent></Tooltip>
         </div>;
       })}
       {group.variants.slice(1).map((model, index) => {
@@ -434,9 +428,9 @@ function LadderRow({ group, size }: { group: EffortGroup<ChartVariant>; size?: s
         const delta = chartStats(model, size).correct - chartStats(previous, size).correct;
         const x = (xPosition(previous) + xPosition(model)) / 2;
         const y = (yPosition(chartStats(previous, size).accuracy) + yPosition(chartStats(model, size).accuracy)) / 2;
-        return <span key={model.model} aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded border border-border bg-card px-1 font-mono text-[10px] tabular-nums" style={{ left: `${x}%`, top: `${y}%` }}>{delta > 0 ? `+${delta}` : delta < 0 ? `−${-delta}` : "0"}</span>;
+        return <span key={model.model} aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded border border-border bg-card px-1 font-mono text-xs tabular-nums" style={{ left: `${x}%`, top: `${y}%` }}>{delta > 0 ? `+${delta}` : delta < 0 ? `−${-delta}` : "0"}</span>;
       })}
-      {levels.map((level, index) => <span key={level} className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] text-muted-foreground" style={{ left: `${group.kind === "reasoning" ? index ? 88 : 12 : ladderX(index)}%` }}>{level}</span>)}
+      {levels.map((level, index) => <span key={level} className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap font-mono text-xs text-muted-foreground" style={{ left: `${group.kind === "reasoning" ? index ? 88 : 12 : ladderX(index)}%` }}>{level}</span>)}
     </div>
   </div>;
 }
@@ -454,17 +448,17 @@ export function EffortLadder({
   const size = filters.size;
   const insight = effortInsight(ladders, size);
   return (
-    <section className={sectionClass} aria-labelledby="effort-heading">
-      <h2 id="effort-heading" className={headingClass}>
+    <Card className="defer-render mt-8" aria-labelledby="effort-heading">
+      <CardHeader><CardTitle><h2 id="effort-heading" className={headingClass}>
         effort ladder
-      </h2>
+      </h2></CardTitle>
       <p className="mt-2 text-sm text-foreground">
         {insight}{insight.endsWith(".") ? "" : "."}
       </p>
       <Popover>
-        <PopoverTrigger type="button" aria-label="How to read effort ladders" className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"><Info size={14} /> How to read</PopoverTrigger>
+        <PopoverTrigger render={<Button variant="ghost" aria-label="How to read effort ladders" />}><Info size={14} /> How to read</PopoverTrigger>
         <PopoverContent>Every card shares the same effort axis, with its own score scale. Labels above the dots show puzzles solved, and the numbers between them show the change. The ladder always shows every measured level. “On” uses the provider’s default.</PopoverContent>
-      </Popover>
+      </Popover></CardHeader><CardContent>
       {ordered.length > 0 && <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-2">{ordered.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div>}
       {reasoning.length > 0 && <div className="mt-7"><h3 className="mb-3 text-sm font-medium text-foreground">Reasoning off → on</h3><div className="grid min-w-0 gap-3 lg:grid-cols-2">{reasoning.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div></div>}
       {!ladders.length && (
@@ -474,41 +468,41 @@ export function EffortLadder({
       )}
       <LazyDetails summary="View effort data table">
         <div className="mt-3 max-h-96 overflow-auto">
-          <table className="w-full min-w-[400px] text-left text-xs">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="py-2">Family</th>
-                <th>Level</th>
-                <th>Accuracy</th>
-                <th>Solved</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="min-w-[400px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Family</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead>Accuracy</TableHead>
+                <TableHead>Solved</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {ladders.flatMap((group) =>
                 group.variants.map((model) => {
                   const value = chartStats(model, size);
                   return (
-                    <tr key={model.model} className="border-b border-border/50">
-                      <td className="py-2">{model.familyDisplayName}</td>
-                      <td title={effortTitle(model.effort)}>
+                    <TableRow key={model.model}>
+                      <TableCell>{model.familyDisplayName}</TableCell>
+                      <TableCell title={effortTitle(model.effort)}>
                         {group.kind === "reasoning"
                           ? model.effort === "none"
                             ? "off"
                             : "on"
                           : effortLabel(model.effort)}
-                      </td>
-                      <td>{value.accuracy.toFixed(1)}%</td>
-                      <td>
+                      </TableCell>
+                      <TableCell>{value.accuracy.toFixed(1)}%</TableCell>
+                      <TableCell>
                         {value.correct}/{value.runs}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 }),
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </LazyDetails>
-    </section>
+    </CardContent></Card>
   );
 }

@@ -11,6 +11,9 @@ import { effortLabel } from "@/lib/display";
 import { PROVIDERS } from "@/lib/providers";
 import resultsData from "./results.json";
 import { LazyDetails } from "@/components/lazy-details";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type Outcome = "solved" | "wrong-grid" | "no-grid";
 type Reason = "timed-out" | "cut-off" | "wrong-size" | "gave-up" | "empty" | "no-grid";
@@ -24,8 +27,7 @@ const LINES = 40;
 // Puzzles 1–5 fall to line logic; 6–10 need deeper deduction.
 const LINE_SOLVABLE = 5;
 
-const sectionClass = "defer-render mt-10 rounded-lg border border-border bg-card p-4 sm:p-6";
-const headingClass = "font-display text-base font-medium lowercase";
+const headingClass = "font-display text-2xl lowercase";
 
 const reasonText: Record<Reason, string> = {
   "gave-up": "gave up",
@@ -95,7 +97,7 @@ export function HardModeIntro() {
       <p>
         Each family runs it at its best Standard effort level, and Best
         shows its best Hard result.{" "}
-        <Link href="/how-it-works" className="text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ring">
+        <Link href="/how-it-works" className="text-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
           How it works
         </Link>
       </p>
@@ -121,17 +123,17 @@ export function HardModeMisses({ models }: { models: Variant[] }) {
   const puzzles = Array.from({ length: hardMode.puzzles }, (_, index) => index + 1);
 
   return (
-    <section className={sectionClass} aria-labelledby="misses-heading">
-      <h2 id="misses-heading" className={headingClass}>how close were the misses</h2>
+    <Card className="defer-render mt-8" aria-labelledby="misses-heading">
+      <CardHeader><CardTitle><h2 id="misses-heading" className={headingClass}>how close were the misses</h2></CardTitle>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         One square per puzzle. A wrong grid shows how many of its 400 cells
         differ from the solution; a random grid would get about half of them
         wrong.
-      </p>
+      </p></CardHeader><CardContent>
 
       <div className="mt-5 overflow-x-auto">
         <div className="min-w-[640px]">
-          <div className="grid grid-cols-[minmax(10rem,14rem)_auto_minmax(12rem,1fr)] items-end gap-x-4 pb-2 text-[11px] text-muted-foreground">
+          <div className="grid grid-cols-[minmax(10rem,14rem)_auto_minmax(12rem,1fr)] items-end gap-x-4 pb-2 text-xs text-muted-foreground">
             <span />
             <div className="flex gap-3">
               <span className="w-[calc(5*1.75rem+4*2px)] text-center">line logic</span>
@@ -142,12 +144,12 @@ export function HardModeMisses({ models }: { models: Variant[] }) {
           <ul className="space-y-1.5">
             {rows.map(({ model, runs }) => (
               <li key={model.model} className="grid grid-cols-[minmax(10rem,14rem)_auto_minmax(12rem,1fr)] items-center gap-x-4">
-                <span className="flex min-w-0 items-center gap-1.5 text-sm">
+                <span className="flex min-w-0 items-center gap-2 text-sm">
                   <span className="shrink-0" style={{ color: PROVIDERS[model.provider]?.color }}>
                     <ProviderLogo provider={model.provider} size={15} />
                   </span>
                   <span className="truncate">{model.familyDisplayName}</span>
-                  <span className="shrink-0 rounded border border-border px-1 font-mono text-[10px] text-muted-foreground">{effortLabel(model.effort)}</span>
+                  <Badge variant="outline">{effortLabel(model.effort)}</Badge>
                 </span>
                 <span className="flex gap-3">
                   {[puzzles.slice(0, LINE_SOLVABLE), puzzles.slice(LINE_SOLVABLE)].map((group) => (
@@ -176,44 +178,44 @@ export function HardModeMisses({ models }: { models: Variant[] }) {
 
       <LazyDetails summary="View data table">
         <div className="mt-3 max-h-96 overflow-auto">
-          <table className="w-full min-w-[560px] text-left text-xs">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="py-2">Model</th>
-                <th>Effort</th>
-                <th>Solved</th>
-                <th>Complete grids</th>
-                <th>Cells off (wrong grids)</th>
-                <th>Clue lines satisfied (wrong grids)</th>
-                <th>No grid</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="min-w-[560px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Model</TableHead>
+                <TableHead>Effort</TableHead>
+                <TableHead>Solved</TableHead>
+                <TableHead>Complete grids</TableHead>
+                <TableHead>Cells off (wrong grids)</TableHead>
+                <TableHead>Clue lines satisfied (wrong grids)</TableHead>
+                <TableHead>No grid</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {rows.map(({ model, runs, rank: stats }) => {
                 const wrong = runs.filter((run) => run.outcome === "wrong-grid");
                 const lines = wrong.map((run) => run.linesSatisfied ?? 0);
                 return (
-                  <tr key={model.model} className="border-b border-border/50">
-                    <td className="py-2">{model.familyDisplayName}</td>
-                    <td>{effortLabel(model.effort)}</td>
-                    <td>{stats.solved}/{runs.length}</td>
-                    <td>{stats.grids}</td>
-                    <td>{wrong.map((run) => run.cellsOff).sort((a, b) => (a ?? 0) - (b ?? 0)).join(", ") || "—"}</td>
-                    <td>{lines.length ? `${Math.round((100 * lines.reduce((sum, value) => sum + value, 0)) / lines.length)}%` : "—"}</td>
-                    <td>{runs.length - stats.grids}</td>
-                  </tr>
+                  <TableRow key={model.model}>
+                    <TableCell>{model.familyDisplayName}</TableCell>
+                    <TableCell>{effortLabel(model.effort)}</TableCell>
+                    <TableCell>{stats.solved}/{runs.length}</TableCell>
+                    <TableCell>{stats.grids}</TableCell>
+                    <TableCell>{wrong.map((run) => run.cellsOff).sort((a, b) => (a ?? 0) - (b ?? 0)).join(", ") || "—"}</TableCell>
+                    <TableCell>{lines.length ? `${Math.round((100 * lines.reduce((sum, value) => sum + value, 0)) / lines.length)}%` : "—"}</TableCell>
+                    <TableCell>{runs.length - stats.grids}</TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </LazyDetails>
-    </section>
+    </CardContent></Card>
   );
 }
 
 function Square({ puzzle, run }: { puzzle: number; run?: HardRun }) {
-  const base = "flex size-7 items-center justify-center rounded-[4px] font-mono text-[10px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring";
+  const base = "flex size-7 items-center justify-center rounded-[4px] font-mono text-xs font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
   const label = !run
     ? `Puzzle ${puzzle}: not run`
     : run.outcome === "solved"
@@ -229,7 +231,7 @@ function Square({ puzzle, run }: { puzzle: number; run?: HardRun }) {
         : <span className={`${base} bg-foreground/10`} />;
   return (
     <Tooltip>
-      <TooltipTrigger type="button" aria-label={label} className="rounded-[4px] focus-visible:outline-2 focus-visible:outline-ring">
+      <TooltipTrigger type="button" aria-label={label} className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
         {content ?? <span className={`${base} border border-dashed border-border`} />}
       </TooltipTrigger>
       <TooltipContent side="top">
@@ -250,10 +252,10 @@ function Square({ puzzle, run }: { puzzle: number; run?: HardRun }) {
 
 function LegendSwatch({ fill, label, glyph, faint }: { fill: string; label: string; glyph?: string; faint?: boolean }) {
   return (
-    <span className="flex items-center gap-1.5">
+    <span className="flex items-center gap-2">
       <span
         aria-hidden="true"
-        className={`flex size-4 items-center justify-center rounded-[3px] font-mono text-[9px] font-semibold ${faint ? "bg-foreground/10" : ""}`}
+        className={`flex size-4 items-center justify-center rounded-[3px] font-mono text-xs font-semibold ${faint ? "bg-foreground/10" : ""}`}
         style={faint ? undefined : { background: fill, color: "#0B0D17" }}
       >
         {glyph}

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  CaretDown,
   Copy,
   DownloadSimple,
   GridFour,
@@ -14,6 +13,11 @@ import {
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Popover,
   PopoverContent,
@@ -38,7 +42,7 @@ import { wilsonInterval } from "@/lib/insights";
 import { PROVIDERS } from "@/lib/providers";
 import { AccuracyScatter, EffortLadder } from "./insight-charts";
 import { HardModeIntro, HardModeMisses } from "./hard-mode";
-import { EffortToggle, filterPill, ModelsPopover, Segmented } from "@/components/filter-bar";
+import { EffortToggle, ModelsPopover, Segmented } from "@/components/filter-bar";
 import resultsData from "./results.json";
 
 type SizeData = {
@@ -87,9 +91,6 @@ const displayedSizes = results.summary.sizes.filter((size) =>
 );
 const hasHardMode = displayedSizes.includes(HARD_SIZE);
 const standardSizes = displayedSizes.filter((size) => size !== HARD_SIZE);
-const control =
-  "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
-
 // Run progress per variant, for watching a benchmark wave locally. Shown in
 // `next dev`, or in a local production build with NEXT_PUBLIC_SHOW_PROGRESS=1.
 const showProgress =
@@ -103,11 +104,8 @@ function IncompleteBadge({ model, size }: { model: Model; size?: string }) {
   const progress = showProgress && runs < expected ? ` ${runs}/${expected}` : "";
   return (
     <Popover>
-      <PopoverTrigger
-        type="button"
-        className="shrink-0 cursor-pointer rounded-full bg-primary/13 px-1.5 py-0.5 font-mono text-[10px] text-primary hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-ring"
-      >
-        incomplete{progress}
+      <PopoverTrigger render={<Button variant="ghost" />}>
+        <Badge variant="secondary">incomplete{progress}</Badge>
       </PopoverTrigger>
       <PopoverContent side="bottom">
         {model.timeouts > 0 ? (
@@ -144,9 +142,9 @@ function ModelName({ model }: { model: Model }) {
       <span className="min-w-0 truncate" title={model.displayName}>
         {model.familyDisplayName}
       </span>
-      <span title={effortTitle(model.effort)} className="shrink-0 rounded border border-input px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground">
+      <Badge variant="outline" title={effortTitle(model.effort)}>
         {effortLabel(model.effort)}
-      </span>
+      </Badge>
     </span>
   );
 }
@@ -226,9 +224,8 @@ export default function ResultsPage({
     window.setTimeout(() => setCopyDone(false), 2000);
   };
   const sortButton = (label: string, key: string) => (
-    <button
-      type="button"
-      className="hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+    <Button
+      variant="ghost"
       onClick={() =>
         setSort((old) => ({
           key,
@@ -238,7 +235,7 @@ export default function ResultsPage({
     >
       {label}
       {sort.key === key ? (sort.desc ? " ↓" : " ↑") : ""}
-    </button>
+    </Button>
   );
 
   return (
@@ -246,37 +243,31 @@ export default function ResultsPage({
       <div className="noise-overlay" />
       <div className="pointer-events-none fixed inset-0 grid-pattern" />
       <div className="pointer-events-none fixed inset-0 atmosphere" />
-      <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-12">
-        <header className="mb-6 sm:mb-8">
-          <div className="nono-trigger mb-3 flex w-fit items-end gap-2 sm:mb-4 sm:gap-4">
-            <NonobenchMark />
-            <h1 className="pb-px font-display text-2xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
+      <div className="relative mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-8">
+        <header className="mb-3 sm:mb-6">
+          <div className="nono-trigger mb-2 flex w-fit items-end gap-2 sm:mb-3 sm:gap-4">
+            <NonobenchMark size="sm" />
+            <h1 className="pb-px font-display text-2xl font-semibold lowercase leading-[1.1] tracking-[-0.02em]">
               nonobench<span className="sr-only"> results</span>
             </h1>
-            <Link href="/how-it-works#whats-new" className="mb-0.5 rounded-full border border-primary/50 px-2 py-0.5 font-mono text-[10px] text-primary focus-visible:outline-2 focus-visible:outline-ring">v1.2</Link>
+            <Badge render={<Link href="/how-it-works#whats-new" />} variant="outline">v1.2</Badge>
           </div>
-          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
+          <p className="max-w-2xl text-sm leading-[1.4] text-muted-foreground">
             How well LLMs solve nonogram puzzles. Compare accuracy, speed
             and cost across grid sizes.
           </p>
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground sm:mt-5 sm:gap-x-6">
-            <span>{familiesWithResults} models · {variantsWithResults} variants with solved results</span>
-            <span>
-              Updated {new Date(results.timestamp).toLocaleDateString()}
-            </span>
-          </div>
-          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 whitespace-nowrap sm:mt-5" aria-label="Site navigation">
-            <Link href="/how-it-works" className={control}><Question size={16} />How it works</Link>
-            <Link href="/puzzles" className={control}><Rows size={16} />Explore puzzles</Link>
-            <Link href="/puzzles/overview" className={control}><GridFour size={16} />Puzzle insights</Link>
-            <a href="/results-raw.json" download className={control}><DownloadSimple size={16} />Raw results</a>
+          <nav className="mt-2 flex gap-2 overflow-x-auto whitespace-nowrap" aria-label="Site navigation">
+            <Button variant="outline" render={<Link href="/how-it-works" />}><Question size={16} />How it works</Button>
+            <Button variant="outline" render={<Link href="/puzzles" />}><Rows size={16} />Explore puzzles</Button>
+            <Button variant="outline" render={<Link href="/puzzles/overview" />}><GridFour size={16} />Puzzle insights</Button>
+            <Button variant="outline" render={<a href="/results-raw.json" download />}><DownloadSimple size={16} />Raw results</Button>
           </nav>
         </header>
         <main>
         <div
           role="group"
           aria-label="Leaderboard filters"
-          className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-foreground/5 p-2.5"
+          className="mb-3 flex flex-wrap items-center gap-3"
         >
           {hasHardMode && (
             <>
@@ -291,46 +282,31 @@ export default function ResultsPage({
           )}
           <ModelsPopover filters={filters} change={onFiltersChange} sources={results.byModel} />
           <EffortToggle filters={filters} change={onFiltersChange} />
-          {!isHard && (
-            <label className="relative inline-flex items-center">
-              <span className="sr-only">Grid size</span>
-              <select
-                name="size"
-                value={size ?? "all"}
-                onChange={(event) => onFiltersChange({ size: event.target.value === "all" ? undefined : event.target.value })}
-                className={`${filterPill} appearance-none pr-8`}
-              >
-                <option value="all">All sizes</option>
-                {standardSizes.map((value) => (
-                  <option key={value} value={value}>{sizeLabel(value)}</option>
-                ))}
-              </select>
-              <CaretDown size={13} className="pointer-events-none absolute right-3" aria-hidden="true" />
-            </label>
-          )}
+          {!isHard && <Select items={[{ value: "all", label: "All sizes" }, ...standardSizes.map((value) => ({ value, label: sizeLabel(value) }))]} value={size ?? "all"} onValueChange={(value) => onFiltersChange({ size: value && value !== "all" ? value : undefined })}>
+            <SelectTrigger aria-label="Grid size"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All sizes</SelectItem>{standardSizes.map((value) => <SelectItem key={value} value={value}>{sizeLabel(value)}</SelectItem>)}</SelectContent>
+          </Select>}
         </div>
         {isHard && <HardModeIntro />}
-        <section className="mb-10">
-          <Card className="pb-0">
-            <div ref={chartRef}>
+        <section className="mb-8">
+          <Card ref={chartRef}>
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <CardTitle><h2 className="font-display text-base font-medium lowercase">model accuracy</h2></CardTitle>
+                    <CardTitle><h2 className="font-display text-2xl lowercase">model accuracy</h2></CardTitle>
                     <Popover>
-                      <PopoverTrigger type="button" aria-label="What do the thin lines mean?" className="rounded-full text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"><Info size={17} /></PopoverTrigger>
+                      <PopoverTrigger render={<Button variant="ghost" size="icon" aria-label="What do the thin lines mean?" />}><Info size={17} /></PopoverTrigger>
                       <PopoverContent side="bottom">The thin lines show 95% Wilson intervals. With 30 Standard puzzles, small score differences may not mean much.</PopoverContent>
                     </Popover>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-muted-foreground">{chosen.length} {allLevels ? "variants" : "models"} · {size ? shortSizeLabel(size) : "Standard"}</span>
-                    <button type="button" title={copyDone ? "Copied" : "Copy link"} aria-label={copyDone ? "Copied" : "Copy link"} className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={copyLink}><Copy size={15} /></button>
-                    <button type="button" title="Download chart as PNG" aria-label="Download chart as PNG" className="rounded-md border border-border p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={downloadChart}><DownloadSimple size={15} /></button>
+                    <Button variant="outline" size="icon" title={copyDone ? "Copied" : "Copy link"} aria-label={copyDone ? "Copied" : "Copy link"} onClick={copyLink}><Copy size={15} /></Button>
+                    <Button variant="outline" size="icon" title="Download chart as PNG" aria-label="Download chart as PNG" onClick={downloadChart}><DownloadSimple size={15} /></Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1 pb-6 pt-4">
+                <div className="space-y-1">
                   {chosen.length === 0 && (
                     <p className="py-10 text-center text-sm text-muted-foreground">
                       No models match these filters. Select more models or
@@ -345,7 +321,7 @@ export default function ResultsPage({
                         key={model.model}
                         className="grid min-w-0 grid-cols-[minmax(0,1fr)_7.5rem] items-center gap-x-2 gap-y-1 border-b border-border/40 py-2 sm:grid-cols-[minmax(12rem,19rem)_minmax(0,1fr)_7.5rem]"
                       >
-                        <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-1.5 text-xs sm:text-sm">
+                        <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 text-sm">
                           <ModelName model={model} />
                           {!model.complete && <IncompleteBadge model={model} size={size} />}
                         </div>
@@ -353,7 +329,7 @@ export default function ResultsPage({
                           <TooltipTrigger
                             type="button"
                             aria-label={`${model.displayName}: ${value.accuracy.toFixed(1)}% accuracy, 95% interval ${(interval.low * 100).toFixed(0)} to ${(interval.high * 100).toFixed(0)}%; ${value.correct} of ${value.runs} correct; ${formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)} ${perPuzzle ? "cost per puzzle" : "total cost"}; ${formatDuration(perPuzzle ? value.time / value.runs : value.time)} ${perPuzzle ? "time per puzzle" : "total time"}`}
-                            className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-ring sm:col-span-1 sm:col-start-2 sm:row-start-1"
+                            className="relative col-span-2 col-start-1 row-start-2 h-5 w-full rounded-sm bg-foreground/5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:col-span-1 sm:col-start-2 sm:row-start-1"
                           >
                             <span
                               className="block h-full rounded-sm"
@@ -393,7 +369,7 @@ export default function ResultsPage({
                             </p>
                           </TooltipContent>
                         </Tooltip>
-                        <span className="col-start-2 row-start-1 text-right font-mono text-[10px] font-medium tabular-nums sm:col-start-3 sm:text-xs">
+                        <span className="col-start-2 row-start-1 text-right font-mono text-xs font-medium tabular-nums sm:col-start-3">
                           {value.accuracy.toFixed(1)}%{" "}
                           <span className="whitespace-nowrap text-muted-foreground">
                             ({(interval.low * 100).toFixed(0)}–{(interval.high * 100).toFixed(0)}%)
@@ -403,8 +379,12 @@ export default function ResultsPage({
                     );
                   })}
                 </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-3 font-mono text-xs text-muted-foreground">
+                  <span>{chosen.length} {allLevels ? "variants" : "models"} · {size ? shortSizeLabel(size) : "Standard"}</span>
+                  <span>{familiesWithResults} models · {variantsWithResults} variants with solved results</span>
+                  <span>Updated {new Date(results.timestamp).toLocaleDateString()}</span>
+                </div>
               </CardContent>
-            </div>
           </Card>
         </section>
         {isHard && <HardModeMisses models={chosen} />}
@@ -415,27 +395,27 @@ export default function ResultsPage({
           onMetricChange={onMetricChange}
         />
         {!isHard && <EffortLadder models={results.byModel} filters={filters} />}
-        <section className="defer-render mt-10 rounded-lg border border-border bg-card" aria-labelledby="details-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
+        <Card className="defer-render mt-8" aria-labelledby="details-heading">
+          <CardHeader><div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 id="details-heading" className="font-display text-base font-medium lowercase">detailed model statistics</h2>
+              <CardTitle><h2 id="details-heading" className="font-display text-2xl lowercase">detailed model statistics</h2></CardTitle>
               <p className="mt-1 text-sm text-muted-foreground">Accuracy and usage for the selected tier.</p>
             </div>
-            <div role="group" aria-label="Cost and time units" className="inline-flex rounded-md border border-border bg-background p-1 text-xs">
+            <ToggleGroup aria-label="Cost and time units" value={[String(perPuzzle)]} onValueChange={(next) => { if (next[0]) onPerPuzzleChange(next[0] === "true"); }} variant="outline" spacing={0}>
               {([false, true] as const).map((average) => (
-                <button key={String(average)} type="button" aria-pressed={perPuzzle === average} onClick={() => onPerPuzzleChange(average)} className={`rounded px-2.5 py-1.5 focus-visible:outline-2 focus-visible:outline-ring ${perPuzzle === average ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                <ToggleGroupItem key={String(average)} value={String(average)}>
                   {average ? "Per puzzle" : "Totals"}
-                </button>
+                </ToggleGroupItem>
               ))}
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[650px] text-sm">
-              <thead>
-                <tr className="border-b border-border bg-foreground/5 text-left">
-                  <th className="sticky left-0 z-10 w-32 max-w-32 bg-card px-2 py-3 sm:w-56 sm:max-w-56 sm:px-4">Model</th>
-                  <th
-                    className="px-3 py-3"
+            </ToggleGroup>
+          </div></CardHeader>
+          <CardContent>
+            <Table className="min-w-[650px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="sticky left-0 z-10 w-32 max-w-32 bg-card sm:w-56 sm:max-w-56">Model</TableHead>
+                  <TableHead
+
                     aria-sort={
                       sort.key === "accuracy"
                         ? sort.desc
@@ -448,17 +428,17 @@ export default function ResultsPage({
                       size ? `${shortSizeLabel(size)} accuracy` : "Standard accuracy",
                       "accuracy",
                     )}
-                    <span className="block text-[10px] font-normal text-muted-foreground">
+                    <span className="block text-xs font-normal text-muted-foreground">
                       95% interval
                     </span>
-                  </th>
+                  </TableHead>
                   {displayedSizes.map((value) => (
-                    <th key={value} className="px-3 py-3">
+                    <TableHead key={value}>
                       {shortSizeLabel(value)}
-                    </th>
+                    </TableHead>
                   ))}
-                  <th
-                    className="px-3 py-3"
+                  <TableHead
+
                     aria-sort={
                       sort.key === "cost"
                         ? sort.desc
@@ -468,9 +448,9 @@ export default function ResultsPage({
                     }
                   >
                     {sortButton(perPuzzle ? "Cost / puzzle" : "Total cost", "cost")}
-                  </th>
-                  <th
-                    className="px-3 py-3"
+                  </TableHead>
+                  <TableHead
+
                     aria-sort={
                       sort.key === "time"
                         ? sort.desc
@@ -480,59 +460,53 @@ export default function ResultsPage({
                     }
                   >
                     {sortButton(perPuzzle ? "Time / puzzle" : "Total time", "time")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {rows.map((model) => {
                   const value = chartStats(model, size);
                   const interval = wilsonInterval(value.correct, value.runs);
                   return (
-                    <tr
-                      key={model.model}
-                      className="border-b border-border/50 last:border-b-0 hover:bg-foreground/5"
-                    >
-                      <td className="sticky left-0 z-10 w-32 max-w-32 bg-card px-2 py-3 sm:w-56 sm:max-w-56 sm:px-4">
-                        <div className="flex items-center gap-1">
+                    <TableRow key={model.model}>
+                      <TableCell className="sticky left-0 z-10 w-32 max-w-32 bg-card sm:w-56 sm:max-w-56">
+                        <div className="flex items-center gap-2">
                           <ModelName model={model} />
                           {!model.complete && <IncompleteBadge model={model} size={size} />}
                         </div>
-                      </td>
-                      <td className="px-3 py-3 font-mono text-primary">
+                      </TableCell>
+                      <TableCell><span className="font-mono text-foreground">
                         {value.accuracy.toFixed(1)}%{" "}
-                        <span className="block whitespace-nowrap text-[10px] text-muted-foreground sm:inline sm:text-xs">
+                        <span className="block whitespace-nowrap text-xs text-muted-foreground sm:inline sm:text-xs">
                           ({(interval.low * 100).toFixed(0)}–{(interval.high * 100).toFixed(0)}%)
-                        </span>
-                      </td>
+                        </span></span>
+                      </TableCell>
                       {displayedSizes.map((grid) => {
                         const entry = model.bySize.find(
                           (row) => row.size === grid && row.runs > 0,
                         );
                         return (
-                          <td
-                            key={grid}
-                            className="px-3 py-3 font-mono text-muted-foreground"
-                          >
-                            {entry ? `${entry.accuracy.toFixed(0)}%` : "—"}
-                          </td>
+                          <TableCell key={grid}>
+                            <span className="font-mono text-muted-foreground">{entry ? `${entry.accuracy.toFixed(0)}%` : "—"}</span>
+                          </TableCell>
                         );
                       })}
-                      <td className="px-3 py-3 font-mono text-muted-foreground">
+                      <TableCell><span className="font-mono text-muted-foreground">
                         {formatCost(perPuzzle ? value.cost / value.runs : value.cost, perPuzzle)}
-                      </td>
-                      <td className="px-3 py-3 font-mono text-muted-foreground">
+                      </span></TableCell>
+                      <TableCell><span className="font-mono text-muted-foreground">
                         {formatDuration(perPuzzle ? value.time / value.runs : value.time)}
-                      </td>
-                    </tr>
+                      </span></TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-        <section className="defer-render mt-10 rounded-lg border border-border bg-card p-4 sm:p-6" aria-labelledby="grid-stats-heading">
-          <h2 id="grid-stats-heading" className="font-display text-base font-medium lowercase">statistics by grid size</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Combined results for the models shown.</p>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        <section className="defer-render mt-8" aria-labelledby="grid-stats-heading">
+          <h2 id="grid-stats-heading" className="font-display text-2xl lowercase">statistics by grid size</h2>
+          <p className="text-sm text-muted-foreground">Combined results for the models shown.</p>
           <div className={`mt-5 grid gap-4 sm:grid-cols-2 ${displayedSizes.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
             {displayedSizes.map((grid, index) => {
               const entries = chosen
@@ -557,12 +531,7 @@ export default function ResultsPage({
                 <Card key={grid}>
                   <CardHeader>
                     <CardTitle>
-                      <span
-                        className="rounded px-2 py-1 font-mono text-sm"
-                        style={{ color, backgroundColor: `${color}20` }}
-                      >
-                        {sizeLabel(grid)}
-                      </span>
+                      <Badge variant="outline"><span className="size-2 rounded-full" style={{ backgroundColor: color }} />{sizeLabel(grid)}</Badge>
                       <span className="ml-3 text-sm font-normal text-muted-foreground">
                         {entries.length} {allLevels ? "variants" : "models"}
                       </span>
@@ -593,7 +562,7 @@ export default function ResultsPage({
               a side quest by{" "}
               <a
                 href="https://www.mauricekleine.com/"
-                className="hover:text-foreground"
+                className="inline-flex min-h-11 items-center hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 maurice kleine
               </a>
@@ -602,14 +571,14 @@ export default function ResultsPage({
           <span className="flex gap-5">
             <a
               href="https://github.com/mauricekleine/nonobench"
-              className="inline-flex items-center gap-1 hover:text-foreground"
+              className="inline-flex min-h-11 items-center gap-1 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               <GithubLogo size={16} />
               GitHub
             </a>
             <a
               href="https://x.com/mauricekleine"
-              className="inline-flex items-center gap-1 hover:text-foreground"
+              className="inline-flex min-h-11 items-center gap-1 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               <XLogo size={16} />
               @mauricekleine

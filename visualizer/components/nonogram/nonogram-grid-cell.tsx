@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { XIcon } from "@phosphor-icons/react";
 
 import { useNonogramStore } from "./store";
@@ -55,12 +55,13 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
     stopDragging();
   }
 
+  const reduceMotion = useReducedMotion();
   return (
     <div
       className={cn(
         "relative border-foreground not-last:border-r not-last:nth-[5n]:border-r-2 p-px",
         {
-          "bg-red-500": !cell.isValid && shouldHighlightMistakes,
+          "bg-destructive": !cell.isValid && shouldHighlightMistakes,
         }
       )}
       onMouseDown={handleMouseDown}
@@ -70,7 +71,7 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
       <motion.div
         animate={value}
         className={cn(
-          "relative aspect-square items-center justify-center rounded-xs",
+          "relative aspect-square items-center justify-center rounded-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           {
             "size-4": zoomLevel === "xs",
             "size-6": zoomLevel === "sm",
@@ -84,7 +85,7 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
         tabIndex={0}
         aria-label={`Row ${cell.row + 1}, column ${cell.column + 1}, ${value.toLowerCase()}`}
         onKeyDown={handleKeyDown}
-        transition={{ duration: 0.1 }}
+        transition={{ duration: reduceMotion ? 0 : 0.12, ease: [0.22, 1, 0.36, 1] }}
         variants={{
           [NonogramCellValue.FILLED]: { backgroundColor: "var(--foreground)" },
           [NonogramCellValue.MARKED]: { backgroundColor: "var(--background)" },
@@ -98,7 +99,7 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
               className="absolute inset-0 flex items-center justify-center"
               exit={{ opacity: 0, scale: 0.8 }}
               initial={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: reduceMotion ? 0 : 0.18, ease: [0.22, 1, 0.36, 1] }}
             >
               <XIcon
                 className={cn({
@@ -108,7 +109,7 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
                   "size-10": zoomLevel === "lg",
                   "size-12": zoomLevel === "xl",
                   "text-foreground": cell.isValid,
-                  "text-red-500": !cell.isValid && shouldHighlightMistakes,
+                  "text-destructive": !cell.isValid && shouldHighlightMistakes,
                 })}
               />
             </motion.div>

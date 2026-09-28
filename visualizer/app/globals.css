@@ -6,8 +6,6 @@
   --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Sections below the fold: the browser skips their layout and paint until
-   they near the viewport, then remembers their real height. */
 @utility defer-render {
   content-visibility: auto;
   contain-intrinsic-size: auto 900px;
@@ -19,7 +17,8 @@
     color: var(--primary-foreground);
   }
 
-  kbd {
+  kbd,
+  .font-mono {
     font-synthesis: none;
   }
 
@@ -41,13 +40,6 @@
   }
 }
 
-.font-mono {
-  font-synthesis: none;
-}
-
-/* Nonogram paper: square cells with a heavier rule every fifth line, the way a
-   printed nonogram groups its grid. It fades out from the top-left corner so
-   the chart and table sit on clean ground. */
 .grid-pattern {
   --grid-minor: color-mix(in srgb, var(--foreground) 3.5%, transparent);
   --grid-major: color-mix(in srgb, var(--foreground) 7.5%, transparent);
@@ -61,13 +53,10 @@
   mask-image: radial-gradient(ellipse 90% 70% at 0% 0%, black 0%, transparent 70%);
 }
 
-/* The room is lit by the thread: one faint ember glow behind the header. */
 .atmosphere {
   background: radial-gradient(60% 45% at 10% 0%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 70%);
 }
 
-/* Film grain, Superthread recipe (mauricekleine.com style.css). Static: this is
-   an instrument, so the grain does not animate. */
 .noise-overlay {
   position: fixed;
   inset: 0;
@@ -78,8 +67,6 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* The header mark finishes its own puzzle when you hover the wordmark: the
-   solver crosses out the empty cells, one after another. */
 .nono-mark .nono-cross {
   opacity: 0;
   transform: scale(0.6);
