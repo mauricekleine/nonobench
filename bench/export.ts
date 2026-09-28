@@ -1,5 +1,5 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
-import { MODELS } from "./constants";
+import { MODELS, type Model } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
 import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { checkClues } from "../visualizer/lib/nonogram";
@@ -358,20 +358,33 @@ const knownProviders = new Set([
 	"moonshotai", "xiaomi", "bytedance-seed", "minimax", "mistralai", "meta", "allenai",
 ]);
 const modelsByName = new Map(MODELS.map((model) => {
-	const provider = model.llm.modelId.split("/")[0];
-	if (!provider || !knownProviders.has(provider)) throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
+	const provider = model.local ? "local" : model.llm.modelId.split("/")[0] ?? "";
+	if (!model.local && (!provider || !knownProviders.has(provider))) throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
 	return [model.name, { ...model, provider }] as const;
 }));
 
 for (const [model, sizeDatas] of modelMap) {
-	const metadata = modelsByName.get(model);
-	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
+	// A model from the user's own server is only in MODELS while its env vars
+	// are set, so a later export sees a name it does not know. Synthesize it.
+	const metadata = modelsByName.get(model) ?? {
+		llm: { modelId: model } as Model["llm"],
+		name: model,
+		family: model,
+		effort: "default",
+		reasoning: false,
+		local: true,
+		provider: "local",
+	};
 	const { provider } = metadata;
-	const catalog = (modelMetadata as Record<string, { displayName: string; openWeights: boolean | null; addedAt: string | null }>)[metadata.llm.modelId];
-	if (!catalog) throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
-	const familyDisplayName = (familyDisplayNames as Record<string, string>)[metadata.family];
+	const catalog = metadata.local
+		? null
+		: (modelMetadata as Record<string, { displayName: string; openWeights: boolean | null; addedAt: string | null }>)[metadata.llm.modelId];
+	if (!metadata.local && !catalog) throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
+	const familyDisplayName = (familyDisplayNames as Record<string, string>)[metadata.family] ?? (metadata.local ? model : undefined);
 	if (!familyDisplayName) throw new Error(`Missing family display name for ${metadata.family}`);
-	const displayName = `${familyDisplayName} (${metadata.effort === "none" ? "no reasoning" : metadata.effort === "default" ? "reasoning" : metadata.effort})`;
+	const displayName = metadata.local
+		? model
+		: `${familyDisplayName} (${metadata.effort === "none" ? "no reasoning" : metadata.effort === "default" ? "reasoning" : metadata.effort})`;
 	const weightOverride = (metadataOverrides as Record<string, { openWeights: boolean; sourceUrl: string }>)[metadata.llm.modelId];
 	// Sort size data by size
 	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
@@ -411,8 +424,8 @@ for (const [model, sizeDatas] of modelMap) {
 		displayName,
 		familyDisplayName,
 		providerName: PROVIDERS[provider]?.name ?? provider,
-		openWeights: weightOverride?.openWeights ?? catalog.openWeights,
-		addedAt: catalog.addedAt,
+		openWeights: weightOverride?.openWeights ?? catalog?.openWeights ?? null,
+		addedAt: catalog?.addedAt ?? null,
 		provider,
 		family: metadata.family,
 		effort: metadata.effort,

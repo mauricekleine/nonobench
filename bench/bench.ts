@@ -7,6 +7,7 @@ import {
   REQUEST_TIMEOUT_MS,
   outputModeFor,
   pinnedProviderFor,
+  registerLocalModel,
   requestProviderOptions,
   type Model,
 } from "./constants";
@@ -86,6 +87,8 @@ if (allMissing && selectedNames.size > 0) {
   process.exit(1);
 }
 const selectedModels = allMissing ? MODELS : MODELS.filter((model) => selectedNames.has(model.name));
+// Remember local models so a later export (without env vars) can label them.
+for (const model of selectedModels) if (model.local) registerLocalModel(model);
 const plannedPuzzles = PUZZLES.filter((puzzle) => selectedSizes.includes(`${puzzle.width}x${puzzle.height}`));
 const extendedPuzzles = PUZZLES.filter((puzzle) => EXTENDED_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`));
 console.log(`Benchmark plan (${dbPath}):`);

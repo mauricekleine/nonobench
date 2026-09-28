@@ -187,6 +187,7 @@ The runner adds the local model to the plan only when you set both `NONOBENCH_LO
 - The 20x20 tier asks for 128,000 output tokens. If your server has a smaller context, run only the core sizes.
 - The runner does not apply the reasoning-token circuit breaker to a local model. Some local servers report zero reasoning tokens for every run.
 - Set the same variables in `bench/.env` to avoid the prefix on every command.
+- A bench run registers the local model in `bench/local-models.json` (name, family, server URL), so a later `bun run export` and the visualizer pick it up without any env vars. To register a model you already benched, add one entry there: `"<name>": { "baseURL": "http://host:port/v1", "family": "<name>" }`.
 
 ### 4. Viewing Results
 
