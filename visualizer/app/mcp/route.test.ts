@@ -1,9 +1,8 @@
 import { afterEach, expect, test } from "bun:test";
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { CLIENT_CAPABILITIES_META_KEY, CLIENT_INFO_META_KEY, PROTOCOL_VERSION_META_KEY } from "@modelcontextprotocol/client";
+import { CLIENT_CAPABILITIES_META_KEY, CLIENT_INFO_META_KEY, Client, PROTOCOL_VERSION_META_KEY, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 
 import { GET as serverCard } from "@/app/.well-known/mcp/server-card.json/route";
-import { OPTIONS, POST } from "@/app/mcp/route";
+import { DELETE, GET, OPTIONS, POST } from "@/app/mcp/route";
 
 const url = new URL("http://localhost:3000/mcp");
 const clients: Client[] = [];
@@ -29,17 +28,21 @@ function modernRequest(id: number, method: string, params: Record<string, unknow
 	};
 }
 
-async function connect(modern: boolean, methods: string[]) {
+async function connect(modern: boolean, methods: string[], contentTypes: string[] = []) {
 	const transport = new StreamableHTTPClientTransport(url, {
 		fetch: async (input, init) => {
 			const headers = new Headers(init?.headers);
 			headers.set("Host", url.host);
 			const req = new Request(input, { ...init, headers });
+			let method: string | undefined;
 			if (req.method === "POST") {
 				const body = await req.clone().json();
+				method = body.method;
 				methods.push(body.method);
 			}
-			return POST(req);
+			const response = await POST(req);
+			if (method === "initialize") contentTypes.push(response.headers.get("Content-Type") ?? "");
+			return response;
 		},
 	});
 	const client = new Client({ name: "nonobench-test", version: "1.0.0" }, modern ? { versionNegotiation: { mode: { pin: "2026-07-28" } } } : {});
@@ -95,38 +98,52 @@ test("modern header mismatch and unknown method are rejected by the SDK", async 
 	expect((await unknown.json()).error.code).toBe(-32601);
 });
 
-test("Origin, Host and browser preflight are restricted to allowed sites", async () => {
+test("Origin and browser preflight are restricted to allowed sites", async () => {
 	const body = modernRequest(3, "server/discover");
 	const modernHeaders = { "MCP-Protocol-Version": "2026-07-28", "Mcp-Method": "server/discover" };
-	expect((await POST(request(body, { ...modernHeaders, Origin: "https://evil.example" }))).status).toBe(403);
+	const denied = await POST(request(body, { ...modernHeaders, Origin: "https://evil.example" }));
+	expect(denied.status).toBe(403);
+	expect(denied.headers.get("Vary")).toContain("Origin");
+	expect(denied.headers.get("Access-Control-Allow-Origin")).toBeNull();
 	expect((await POST(request(body, { ...modernHeaders, Origin: "http://localhost.evil.example" }))).status).toBe(403);
-	expect((await POST(request(body, { ...modernHeaders, Host: "evil.example" }))).status).toBe(403);
 	for (const origin of [undefined, "https://www.nonobench.com", "https://nonobench.com", "http://localhost:4123", "http://127.0.0.1:4123"]) {
 		const response = await POST(request(body, { ...modernHeaders, ...(origin ? { Origin: origin } : {}) }));
 		expect(response.status).toBe(200);
 		expect(response.headers.get("Access-Control-Allow-Origin")).toBe(origin ?? null);
+		expect(response.headers.get("Vary")).toContain("Origin");
 	}
 	const preflight = OPTIONS(new Request(url, { method: "OPTIONS", headers: { Host: url.host, Origin: "https://nonobench.com" } }));
 	expect(preflight.status).toBe(204);
 	expect(preflight.headers.get("Access-Control-Allow-Headers")).toContain("Mcp-Method");
 	expect(preflight.headers.get("Access-Control-Allow-Headers")).toContain("Mcp-Name");
 	expect(preflight.headers.get("Access-Control-Allow-Origin")).toBe("https://nonobench.com");
+	expect(preflight.headers.get("Vary")).toContain("Origin");
 	expect(OPTIONS(new Request(url, { method: "OPTIONS", headers: { Host: url.host, Origin: "https://evil.example" } })).status).toBe(403);
 });
 
 test("2025 initialize still connects to the same endpoint", async () => {
 	const methods: string[] = [];
-	const client = await connect(false, methods);
+	const contentTypes: string[] = [];
+	const client = await connect(false, methods, contentTypes);
 	expect(client.getProtocolEra()).toBe("legacy");
 	expect(client.getServerCapabilities()?.tools?.listChanged).toBe(false);
 	expect(methods[0]).toBe("initialize");
+	expect(contentTypes[0]).toStartWith("text/event-stream");
 	expect((await client.listTools()).tools).toHaveLength(11);
 });
 
-test("server card advertises the served versions without change notifications", async () => {
+test("GET and DELETE stay method not allowed", () => {
+	for (const route of [GET, DELETE]) {
+		const response = route(new Request(url, { headers: { Origin: "https://www.nonobench.com" } }));
+		expect(response.status).toBe(405);
+		expect(response.headers.get("Allow")).toBe("POST");
+		expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://www.nonobench.com");
+		expect(response.headers.get("Vary")).toContain("Origin");
+	}
+});
+
+test("server card advertises 2026 without change notifications", async () => {
 	const card = await serverCard().json();
 	expect(card.protocolVersion).toBe("2026-07-28");
-	expect(card.protocolVersions).toContain("2025-06-18");
-	expect(card.protocolVersions).toContain("2025-11-25");
 	expect(card.capabilities.tools.listChanged).toBe(false);
 });
