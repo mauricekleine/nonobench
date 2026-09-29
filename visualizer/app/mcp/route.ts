@@ -1,11 +1,10 @@
-import { createMcpHandler, hostHeaderValidationResponse, originValidationResponse } from "@modelcontextprotocol/server";
+import { createMcpHandler } from "@modelcontextprotocol/server";
 
 import { SITE_URL } from "@/lib/data";
 import { createMcpServer } from "@/lib/mcp";
 
 const site = new URL(SITE_URL);
 const allowedSiteOrigins = new Set([site.origin, `${site.protocol}//${site.hostname.replace(/^www\./, "")}`]);
-const allowedHostnames = [site.hostname, site.hostname.replace(/^www\./, ""), "localhost", "127.0.0.1"];
 const handler = createMcpHandler(createMcpServer);
 
 function allowedOrigin(origin: string) {
@@ -18,33 +17,37 @@ function allowedOrigin(origin: string) {
 	}
 }
 
-function validateRequest(request: Request) {
-	const rejected = hostHeaderValidationResponse(request, allowedHostnames) ?? originValidationResponse(request, allowedHostnames);
-	if (rejected) return rejected;
+function validateOrigin(request: Request) {
 	const origin = request.headers.get("Origin");
 	if (origin && !allowedOrigin(origin)) return new Response(null, { status: 403 });
 }
 
 function withCors(response: Response, request: Request) {
 	const origin = request.headers.get("Origin");
-	if (origin) {
+	if (origin && allowedOrigin(origin)) {
 		response.headers.set("Access-Control-Allow-Origin", origin);
-		response.headers.set("Vary", "Origin");
 	}
+	response.headers.append("Vary", "Origin");
 	return response;
 }
 
-async function serve(request: Request) {
-	const rejected = validateRequest(request);
-	if (rejected) return rejected;
+export async function POST(request: Request) {
+	const rejected = validateOrigin(request);
+	if (rejected) return withCors(rejected, request);
 	return withCors(await handler.fetch(request), request);
 }
 
-export { serve as POST, serve as GET, serve as DELETE };
+function methodNotAllowed(request: Request) {
+	const rejected = validateOrigin(request);
+	if (rejected) return withCors(rejected, request);
+	return withCors(new Response(null, { status: 405, headers: { Allow: "POST" } }), request);
+}
+
+export { methodNotAllowed as GET, methodNotAllowed as DELETE };
 
 export function OPTIONS(request: Request) {
-	const rejected = validateRequest(request);
-	if (rejected) return rejected;
+	const rejected = validateOrigin(request);
+	if (rejected) return withCors(rejected, request);
 	return withCors(new Response(null, {
 		status: 204,
 		headers: {
