@@ -1,4 +1,5 @@
 import { generateText, jsonSchema, NoObjectGeneratedError, Output, streamText } from "ai";
+import { fileURLToPath } from "node:url";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
   MAX_PARALLEL_RUNS_PER_MODEL,
@@ -16,7 +17,6 @@ import {
   getPuzzleId,
   getSizeTally,
   getSuccessfulPuzzlesByModel,
-  openReadDb,
   saveRunToDb,
   codeRevision,
   type BenchmarkResult,
@@ -94,6 +94,47 @@ if (allMissing && selectedNames.size > 0) {
 const selectedModels = allMissing
   ? MODELS.filter((model) => !model.fromRegistry)
   : MODELS.filter((model) => selectedNames.has(model.name));
+// Local runs must not land in the shared dataset: it is the published data,
+// and the export-contract test checks it against the committed exports.
+if (
+  selectedModels.some((model) => model.local) &&
+  dbPath === fileURLToPath(new URL("./results.db", import.meta.url))
+) {
+  console.error("Local models write to their own database: use bun run bench:local, or set NONOBENCH_DB.");
+  process.exit(1);
+}
+
+// Ask the server which models it serves before spending a run on a typo:
+// every OpenAI-compatible server answers GET /v1/models. Unreachable servers
+// and unknown ids fail here, where the error is readable, instead of being
+// recorded as one failed run per puzzle.
+for (const model of selectedModels) {
+  if (!model.local || !model.localBaseURL) continue;
+  let ids: string[] | undefined;
+  try {
+    const response = await fetch(`${model.localBaseURL}/models`, {
+      headers: { Authorization: `Bearer ${process.env.NONOBENCH_LOCAL_API_KEY ?? "local"}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok && response.status !== 404 && response.status !== 405) {
+      throw new Error(`GET /models failed: HTTP ${response.status}`);
+    }
+    if (response.ok) {
+      const body = (await response.json()) as { data?: { id: string }[] };
+      ids = (body.data ?? []).map((entry) => entry.id);
+    } else {
+      console.log(`[${model.name}] Server does not list its models (HTTP ${response.status}); skipping the id check.`);
+    }
+  } catch (err) {
+    console.error(`[${model.name}] Cannot reach ${model.localBaseURL} (${(err as Error).message}). Is the server up and reachable from this machine?`);
+    process.exit(1);
+  }
+  if (ids && !ids.includes(model.llm.modelId)) {
+    console.error(`The server at ${model.localBaseURL} has no model '${model.llm.modelId}'. It serves: ${ids.join(", ") || "(nothing)"}`);
+    process.exit(1);
+  }
+}
+
 // Remember local models so a later export (without env vars) can label them.
 for (const model of selectedModels) await registerLocalModel(model);
 const plannedPuzzles = PUZZLES.filter((puzzle) => selectedSizes.includes(`${puzzle.width}x${puzzle.height}`));
@@ -382,7 +423,9 @@ let budgetExhausted = false;
 const BREAKER_SAMPLE = 8;
 const BREAKER_MAX_ZERO_SHARE = 0.5;
 function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean {
-  if (!model.reasoning) return false;
+  // Local servers rarely report reasoning tokens at all; the zero-token signal
+  // only means "the endpoint dropped reasoning" for OpenRouter endpoints.
+  if (model.local || !model.reasoning) return false;
   const answered = results.filter((result) => result.status === "success").slice(0, BREAKER_SAMPLE);
   if (answered.length < BREAKER_SAMPLE) return false;
   const zero = answered.filter((result) => result.reasoningTokens === 0).length;
@@ -512,34 +555,22 @@ console.log(`Parallel runs per model: ${maxParallel}`);
 console.log(`Database: ${dbPath}`);
 console.log("=".repeat(60) + "\n");
 
-await Promise.all(selectedModels.map((model) => runModelBenchmark(model)));
+const allResults = await Promise.all(
+  selectedModels.map((model) => runModelBenchmark(model))
+);
+const flatResults = allResults.flat();
 
 // Aggregate results by model and size for display
 const statsMap = new Map<string, Map<string, ModelSizeStats>>();
 
-// Aggregate from the database, not just this session: when a run is stopped
-// and resumed, the report should reflect the full state of the selected models.
-// Rows span every code revision: the runs table keeps one final row per
-// model+puzzle, and a re-grade rewrites it, so a resumed run reports what the
-// current grader says about each puzzle.
-// Scoped to the selected sizes, so --sizes 5x5 does not report a full ladder.
-const selectedModelNames = new Set(selectedModels.map((model) => model.name));
-const selectedSizeNames = new Set(selectedSizes);
-const reportDb = openReadDb();
-if (!reportDb) throw new Error("Database does not exist");
-for (const row of reportDb
-  .query<{ model: string; size: string; correct: number; status: string; duration_ms: number; tokens: number; cost: number }, []>(
-    "SELECT model, size, correct, status, duration_ms, tokens, cost FROM runs"
-  )
-  .all()) {
-  if (!selectedModelNames.has(row.model)) continue;
-  if (!selectedSizeNames.has(row.size)) continue;
-  if (!statsMap.has(row.model)) {
-    statsMap.set(row.model, new Map());
+for (const result of flatResults) {
+  if (!statsMap.has(result.model)) {
+    statsMap.set(result.model, new Map());
   }
-  const modelMap = statsMap.get(row.model)!;
-  if (!modelMap.has(row.size)) {
-    modelMap.set(row.size, {
+  const modelMap = statsMap.get(result.model)!;
+
+  if (!modelMap.has(result.size)) {
+    modelMap.set(result.size, {
       totalPuzzles: 0,
       correctCount: 0,
       failedCount: 0,
@@ -548,18 +579,18 @@ for (const row of reportDb
       totalCost: 0,
     });
   }
-  const stats = modelMap.get(row.size)!;
+  const stats = modelMap.get(result.size)!;
+
   stats.totalPuzzles++;
-  if (row.correct === 1) stats.correctCount++;
-  if (row.status === "failed") stats.failedCount++;
-  stats.totalDuration += row.duration_ms;
-  stats.totalTokens += row.tokens;
-  stats.totalCost += row.cost;
+  if (result.correct) stats.correctCount++;
+  if (result.status === "failed") stats.failedCount++;
+  stats.totalDuration += result.durationMs;
+  stats.totalTokens += result.tokens;
+  stats.totalCost += result.cost;
 }
-reportDb.close();
 
 // Get all unique sizes in order
-const allSizes = sortSizes([...statsMap.values()].flatMap((sizes) => [...sizes.keys()]));
+const allSizes = sortSizes([...new Set(flatResults.map((r) => r.size))]);
 
 // Display results
 console.log("\n" + "=".repeat(60));
@@ -725,24 +756,27 @@ if (modelRankings.length > 0) {
   }));
 
   console.log("\n" + "=".repeat(60));
-  console.log("MODEL RANKING (by accuracy) - selected models and sizes, from the database");
+  console.log("MODEL RANKING (by accuracy) - This Session");
   console.log("=".repeat(60));
   printTable(rankingTableData);
 }
 
-// Global summary across the selected models, from the database
-const globalTotals = [...statsMap.values()].flatMap((sizes) => [...sizes.values()]);
-if (globalTotals.length > 0) {
-  const globalTotalRuns = globalTotals.reduce((sum, s) => sum + s.totalPuzzles, 0);
-  const globalTotalCorrect = globalTotals.reduce((sum, s) => sum + s.correctCount, 0);
-  const globalTotalFailed = globalTotals.reduce((sum, s) => sum + s.failedCount, 0);
-  const globalTotalDuration = globalTotals.reduce((sum, s) => sum + s.totalDuration, 0);
-  const globalTotalTokens = globalTotals.reduce((sum, s) => sum + s.totalTokens, 0);
-  const globalTotalCost = globalTotals.reduce((sum, s) => sum + s.totalCost, 0);
+// Global summary stats for this session
+if (flatResults.length > 0) {
+  const globalTotalRuns = flatResults.length;
+  const globalTotalCorrect = flatResults.filter((r) => r.correct).length;
+  const globalTotalFailed = flatResults.filter(
+    (r) => r.status === "failed"
+  ).length;
+  const globalTotalDuration = flatResults.reduce(
+    (sum, r) => sum + r.durationMs,
+    0
+  );
+  const globalTotalTokens = flatResults.reduce((sum, r) => sum + r.tokens, 0);
+  const globalTotalCost = flatResults.reduce((sum, r) => sum + r.cost, 0);
 
   console.log("\n" + "=".repeat(60));
-  console.log("TOTAL SUMMARY (selected models and sizes, from the database)");
-  console.log("=".repeat(60));
+  console.log("SESSION SUMMARY");
   console.log(`Total Runs:       ${globalTotalRuns.toLocaleString()}`);
   console.log(
     `Total Correct:    ${globalTotalCorrect.toLocaleString()} (${(
