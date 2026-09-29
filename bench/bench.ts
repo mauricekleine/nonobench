@@ -87,9 +87,15 @@ if (allMissing && selectedNames.size > 0) {
   console.error("Use either --all-missing or --model, not both.");
   process.exit(1);
 }
-const selectedModels = allMissing ? MODELS : MODELS.filter((model) => selectedNames.has(model.name));
+// --all-missing runs the models configured for this session. A registry entry is
+// a local model from an earlier session, and the server it lived on is usually
+// off: sweeping them in would record a run of failures. Run one by name instead,
+// with its env vars set.
+const selectedModels = allMissing
+  ? MODELS.filter((model) => !model.fromRegistry)
+  : MODELS.filter((model) => selectedNames.has(model.name));
 // Remember local models so a later export (without env vars) can label them.
-for (const model of selectedModels) if (model.local) registerLocalModel(model);
+for (const model of selectedModels) await registerLocalModel(model);
 const plannedPuzzles = PUZZLES.filter((puzzle) => selectedSizes.includes(`${puzzle.width}x${puzzle.height}`));
 const extendedPuzzles = PUZZLES.filter((puzzle) => EXTENDED_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`));
 console.log(`Benchmark plan (${dbPath}):`);
@@ -513,7 +519,12 @@ const statsMap = new Map<string, Map<string, ModelSizeStats>>();
 
 // Aggregate from the database, not just this session: when a run is stopped
 // and resumed, the report should reflect the full state of the selected models.
+// Rows span every code revision: the runs table keeps one final row per
+// model+puzzle, and a re-grade rewrites it, so a resumed run reports what the
+// current grader says about each puzzle.
+// Scoped to the selected sizes, so --sizes 5x5 does not report a full ladder.
 const selectedModelNames = new Set(selectedModels.map((model) => model.name));
+const selectedSizeNames = new Set(selectedSizes);
 const reportDb = openReadDb();
 if (!reportDb) throw new Error("Database does not exist");
 for (const row of reportDb
@@ -522,6 +533,7 @@ for (const row of reportDb
   )
   .all()) {
   if (!selectedModelNames.has(row.model)) continue;
+  if (!selectedSizeNames.has(row.size)) continue;
   if (!statsMap.has(row.model)) {
     statsMap.set(row.model, new Map());
   }
@@ -713,7 +725,7 @@ if (modelRankings.length > 0) {
   }));
 
   console.log("\n" + "=".repeat(60));
-  console.log("MODEL RANKING (by accuracy) - selected models, from database");
+  console.log("MODEL RANKING (by accuracy) - selected models and sizes, from the database");
   console.log("=".repeat(60));
   printTable(rankingTableData);
 }
@@ -729,7 +741,7 @@ if (globalTotals.length > 0) {
   const globalTotalCost = globalTotals.reduce((sum, s) => sum + s.totalCost, 0);
 
   console.log("\n" + "=".repeat(60));
-  console.log("TOTAL SUMMARY (selected models, from database)");
+  console.log("TOTAL SUMMARY (selected models and sizes, from the database)");
   console.log("=".repeat(60));
   console.log(`Total Runs:       ${globalTotalRuns.toLocaleString()}`);
   console.log(
