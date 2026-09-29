@@ -19,17 +19,28 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/.." && pwd)"
 db="${NONOBENCH_LOCAL_DB:-local-results.db}"
 
+export_files=(
+  visualizer/app/results.json
+  visualizer/public/results-raw.json
+  visualizer/public/puzzle-results.json
+)
+
 if [[ ! -f "${repo_root}/bench/${db}" ]]; then
   echo "No bench/${db}. Run a local benchmark first:" >&2
   echo "  cd bench && bun run bench:local --model <name>" >&2
   exit 1
 fi
 
+# The restore below checks the exports out of git, which would discard any
+# uncommitted edit to them. Refuse to start while there is one (staged or not).
+if ! git -C "${repo_root}" diff --quiet HEAD -- "${export_files[@]}"; then
+  echo "Uncommitted changes to the export files; commit or stash them first:" >&2
+  git -C "${repo_root}" diff --name-only HEAD -- "${export_files[@]}" | sed 's/^/  /' >&2
+  exit 1
+fi
+
 restore() {
-  git -C "${repo_root}" checkout -- \
-    visualizer/app/results.json \
-    visualizer/public/results-raw.json \
-    visualizer/public/puzzle-results.json
+  git -C "${repo_root}" checkout -- "${export_files[@]}"
   echo "Stopped. Restored the committed exports; bench/results.db is untouched."
 }
 trap 'exit 130' INT TERM
@@ -40,9 +51,5 @@ NONOBENCH_DB="${db}" bun run export.ts
 
 cd "${script_dir}"
 # Run the server as a child process: exec would replace the shell and skip the
-# restore. NONOBENCH_DEV_CMD is a test hook for the export/restore path.
-if [[ -n "${NONOBENCH_DEV_CMD:-}" ]]; then
-  bash -c "${NONOBENCH_DEV_CMD}"
-else
-  bun run dev
-fi
+# restore.
+bun run dev
