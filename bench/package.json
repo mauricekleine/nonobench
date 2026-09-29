@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "bench": "bun run bench.ts",
+    "bench:local": "NONOBENCH_DB=local-results.db bun run bench.ts",
     "export": "bun run export.ts",
     "refresh-metadata": "bun run refresh-metadata.ts",
     "refresh-provider-pins": "bun run refresh-provider-pins.ts",

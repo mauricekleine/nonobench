@@ -182,7 +182,7 @@ The runner adds the local model to the plan only when you set both `NONOBENCH_LO
 
 #### Notes on local runs
 
-- Local runs cost $0. The runner stores them in the same database as cloud runs, and `bun run export` includes them.
+- Local runs cost $0. Keep them out of the published dataset: run them with `bun run bench:local`, which is `bun run bench` with `NONOBENCH_DB=local-results.db`. `bench/results.db` is the shared dataset, and the export-contract test checks it against the committed exports.
 - Text mode is the default for a local model. Many local servers accept a JSON schema request and then ignore it. If your server enforces the schema, set `NONOBENCH_OUTPUT_MODE=json_schema`.
 - Start with `--parallel 1`. One GPU serves fewer requests at the same time than a cloud provider does.
 - The 20x20 tier asks for 128,000 output tokens. If your server has a smaller context, run only the core sizes.
@@ -199,6 +199,17 @@ bun run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) to view the interactive dashboard.
+
+Your own runs live in a separate database. Serve them with:
+
+```bash
+cd visualizer
+bun run dev:local
+```
+
+`dev:local` exports `bench/local-results.db` into the dashboard's data files, starts the dev server, and restores the committed files when you stop it. Open [http://localhost:3000](http://localhost:3000) and filter by the `local` provider. Set `NONOBENCH_LOCAL_DB` to serve another database.
+
+While that server runs, `bun test` in `bench` fails one test: the export-contract test compares the dashboard's data files against `bench/results.db`, and `dev:local` has put your runs in them. Stop the server, let the script restore the committed files, and the suite passes again.
 
 ## Agent Access
 

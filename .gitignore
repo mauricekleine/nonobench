@@ -30,6 +30,10 @@ bench/local-models.json
 .cache
 *.tsbuildinfo
 
+# Next.js dev server artifacts (written on every `next dev` start)
+visualizer/AGENTS.md
+visualizer/CLAUDE.md
+
 # IntelliJ based IDEs
 .idea
 

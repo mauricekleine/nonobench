@@ -1,7 +1,9 @@
 // Provider labels and bar colors are shared by the exporter and visualizer.
 // Colors are spread around the hue wheel with alternating lightness so every
-// pair stays visibly distinct (min OKLab distance ~10 across all 14) and each
+// pair stays visibly distinct (min OKLab distance ~10 across all 15) and each
 // clears 3:1 contrast on the void panels; logos and names carry identity too.
+// "local" is the neutral end of the scale: a model you serve yourself has no
+// brand, no logo, and no cost.
 export const PROVIDERS: Record<string, { name: string; color: string }> = {
 	openai: { name: "OpenAI", color: "#4FCB9C" },
 	anthropic: { name: "Anthropic", color: "#CB7B48" },
@@ -17,4 +19,5 @@ export const PROVIDERS: Record<string, { name: string; color: string }> = {
 	mistralai: { name: "Mistral AI", color: "#FACA4B" },
 	meta: { name: "Meta", color: "#7DD9FC" },
 	allenai: { name: "Allen Institute for AI", color: "#9C9E51" },
+	local: { name: "Local", color: "#A0A6B0" },
 };

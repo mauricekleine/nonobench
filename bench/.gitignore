@@ -9,9 +9,9 @@ dist
 # local model runs: benchmarks against a server you host yourself. Keep them
 # out of the shared dataset. The export-contract test compares the committed
 # JSON exports against bench/results.db, so a local run must not write there:
-# run it with NONOBENCH_DB=local-results.db.
+# run it with `bun run bench:local`, which sets NONOBENCH_DB=local-results.db.
 local-results.db
-*.local.db
+local-*.db
 local-models.json
 
 # code coverage
