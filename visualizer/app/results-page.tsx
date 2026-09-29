@@ -614,6 +614,9 @@ export default function ResultsPage({
               <XLogo size={16} />
               @mauricekleine
             </a>
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
           </span>
         </footer>
       </div>
