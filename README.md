@@ -154,7 +154,7 @@ cd bench
 bun install
 NONOBENCH_LOCAL_BASE_URL=http://192.168.1.20:8000/v1 \
 NONOBENCH_LOCAL_MODEL=Qwen3-32B \
-bun run bench --model Qwen3-32B
+bun run bench:local --model Qwen3-32B
 ```
 
 Do a pilot first. The next command runs two 5x5 puzzles into a scratch database:
@@ -174,7 +174,7 @@ Make sure that the plan lists your model as `[local, text]`.
 | --- | --- |
 | `NONOBENCH_LOCAL_BASE_URL` | The `/v1` endpoint of the server. Ollama uses port `11434`. |
 | `NONOBENCH_LOCAL_MODEL` | The model `id` that the server returns from `GET /v1/models`. |
-| `NONOBENCH_LOCAL_NAME` | The display name and the value for `--model`. Defaults to the model `id`. |
+| `NONOBENCH_LOCAL_NAME` | The display name and the value for `--model`. Defaults to the model `id`. Must not match a cloud model name. |
 | `NONOBENCH_LOCAL_EFFORT` | The reasoning effort your server is configured with (`none`, `low`, `xhigh`, …). Label only — the runner never sends reasoning settings to a local server. Defaults to `none`. |
 | `NONOBENCH_LOCAL_API_KEY` | The bearer token, when the server requires one. Defaults to `local`. |
 
@@ -182,13 +182,14 @@ The runner adds the local model to the plan only when you set both `NONOBENCH_LO
 
 #### Notes on local runs
 
-- Local runs cost $0. Keep them out of the published dataset: run them with `bun run bench:local`, which is `bun run bench` with `NONOBENCH_DB=local-results.db`. `bench/results.db` is the shared dataset, and the export-contract test checks it against the committed exports.
+- Local runs cost $0. Keep them out of the published dataset: run them with `bun run bench:local`, which is `bun run bench` with `NONOBENCH_DB=local-results.db`. `bench/results.db` is the shared dataset, and the export-contract test checks it against the committed exports. The runner refuses to write a local model to the shared database.
+- Before starting, the runner checks the model `id` against the server's `GET /v1/models` list. A typo fails with the models the server does serve, and an unreachable server fails before any run is recorded.
 - Text mode is the default for a local model. Many local servers accept a JSON schema request and then ignore it. If your server enforces the schema, set `NONOBENCH_OUTPUT_MODE=json_schema`.
 - Start with `--parallel 1`. One GPU serves fewer requests at the same time than a cloud provider does.
 - The 20x20 tier asks for 128,000 output tokens. If your server has a smaller context, run only the core sizes.
 - The runner does not apply the reasoning-token circuit breaker to a local model. Some local servers report zero reasoning tokens for every run.
 - Set the same variables in `bench/.env` to avoid the prefix on every command.
-- A bench run registers the local model in `bench/local-models.json` (name, family, server URL), so a later `bun run export` and the visualizer pick it up without any env vars. To register a model you already benched, add one entry there: `"<name>": { "baseURL": "http://host:port/v1", "family": "<name>" }`.
+- A bench run registers the local model in `bench/local-models.json` (name, server model id, family, server URL), so a later `bun run export` and the visualizer pick it up without any env vars. To register a model you already benched, add one entry there: `"<name>": { "baseURL": "http://host:port/v1", "modelId": "<server model id>", "family": "<name>" }`. Omit `modelId` when the name is the server's id.
 
 ### 4. Viewing Results
 
@@ -207,7 +208,7 @@ cd visualizer
 bun run dev:local
 ```
 
-`dev:local` exports `bench/local-results.db` into the dashboard's data files, starts the dev server, and restores the committed files when you stop it. Open [http://localhost:3000](http://localhost:3000) and filter by the `local` provider. Set `NONOBENCH_LOCAL_DB` to serve another database.
+`dev:local` exports `bench/local-results.db` into the dashboard's data files, starts the dev server, and restores the committed files when you stop it. While it runs, the dashboard shows only the models in that database — your local runs, not the published leaderboard. Set `NONOBENCH_LOCAL_DB` to serve another database.
 
 While that server runs, `bun test` in `bench` fails one test: the export-contract test compares the dashboard's data files against `bench/results.db`, and `dev:local` has put your runs in them. Stop the server, let the script restore the committed files, and the suite passes again.
 
