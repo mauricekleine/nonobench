@@ -219,6 +219,64 @@
         }
       ]
     },
+    "anthropic/claude-sonnet-5.5": {
+      "pins": [
+        "anthropic"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Amazon Bedrock",
+          "tag": "amazon-bedrock",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Claude Platform on AWS",
+          "tag": "claude-on-aws",
+          "quantization": "unknown",
+          "structuredOutputs": false
+        },
+        {
+          "providerName": "Anthropic",
+          "tag": "anthropic",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/europe",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
     "bytedance-seed/seed-1.6": {
       "pins": [
         "seed"
