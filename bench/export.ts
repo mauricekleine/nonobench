@@ -1,5 +1,5 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
-import { MODELS, type Model } from "./constants";
+import { MODELS, localRegistryEntryFor, type Model } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
 import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { checkClues } from "../visualizer/lib/nonogram";
@@ -364,17 +364,23 @@ const modelsByName = new Map(MODELS.map((model) => {
 }));
 
 for (const [model, sizeDatas] of modelMap) {
-	// A model from the user's own server is only in MODELS while its env vars
-	// are set, so a later export sees a name it does not know. Synthesize it.
-	const metadata = modelsByName.get(model) ?? {
-		llm: { modelId: model } as Model["llm"],
-		name: model,
-		family: model,
-		effort: "none",
-		reasoning: false,
-		local: true,
-		provider: "local",
-	};
+	// A local model benched in an earlier session is in local-models.json, not in
+	// MODELS (its env vars are unset). Synthesize its metadata from that entry.
+	// Only the registry counts as evidence: an unknown cloud model name must stay
+	// a hard error, not a silent $0 local run.
+	const registryEntry = localRegistryEntryFor(model);
+	const metadata = modelsByName.get(model) ?? (registryEntry
+		? {
+			llm: { modelId: model } as Model["llm"],
+			name: model,
+			family: registryEntry.family ?? model,
+			effort: registryEntry.effort ?? "none",
+			reasoning: false,
+			local: true as const,
+			provider: "local",
+		}
+		: undefined);
+	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
 	const { provider } = metadata;
 	const catalog = metadata.local
 		? null
@@ -424,7 +430,9 @@ for (const [model, sizeDatas] of modelMap) {
 		displayName,
 		familyDisplayName,
 		providerName: PROVIDERS[provider]?.name ?? provider,
-		openWeights: weightOverride?.openWeights ?? catalog?.openWeights ?? null,
+		// A model you serve yourself runs open weights by definition; the catalog has
+		// no entry for it, so the catalog lookup alone would report "unknown".
+		openWeights: weightOverride?.openWeights ?? catalog?.openWeights ?? (metadata.local ? true : null),
 		addedAt: catalog?.addedAt ?? null,
 		provider,
 		family: metadata.family,
