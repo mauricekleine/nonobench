@@ -6,6 +6,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { JSONObject } from "@ai-sdk/provider";
 import type { LanguageModel } from "ai";
 import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import effortEvidence from "./effort-levels.json";
 
 // Bun's fetch aborts after 300s without the response headers arriving, and some
@@ -89,6 +90,10 @@ export type Model = {
   // Base URL of the user's server, persisted to local-models.json so a
   // later export or re-run knows where the model lived.
   localBaseURL?: string;
+  // True for a registry entry: a local model benched in an earlier session and
+  // restored from local-models.json. The server it lived on is usually off, so
+  // --all-missing skips it; run it by name with its env vars set.
+  fromRegistry?: true;
 };
 
 export type OutputMode = "json_schema" | "text";
@@ -809,21 +814,43 @@ const localModels: Model[] = localBaseUrl && localModelId
 
 // Local model registry: models benched against the user's own server, persisted
 // so exports, the visualizer, and re-runs recognize them without env vars.
-// A bench run registers its local model automatically (see bench.ts).
-const localRegistryPath = new URL("./local-models.json", import.meta.url);
-export type LocalModelRegistryEntry = { baseURL: string; family: string; effort: string };
+// A bench run registers its local model automatically (see bench.ts). The file
+// holds the user's server address, so it is gitignored.
+const localRegistryPath = process.env.NONOBENCH_LOCAL_MODELS_JSON
+  ? pathToFileURL(process.env.NONOBENCH_LOCAL_MODELS_JSON)
+  : new URL("./local-models.json", import.meta.url);
+export type LocalModelRegistryEntry = { baseURL: string; family?: string; effort?: string };
+
 function readLocalRegistry(): Record<string, LocalModelRegistryEntry> {
+  let text: string;
   try {
-    return JSON.parse(readFileSync(localRegistryPath, "utf8"));
-  } catch {
-    return {};
+    text = readFileSync(localRegistryPath, "utf8");
+  } catch (err) {
+    // Absent is normal: a clone has no local models before its first local run.
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return {};
+    throw new Error(`${localRegistryPath.pathname} is unreadable: ${String(err)}`);
+  }
+  try {
+    return JSON.parse(text) as Record<string, LocalModelRegistryEntry>;
+  } catch (err) {
+    // A truncated write must not read as "no local models": that would silently
+    // drop a benched model from the export.
+    throw new Error(`${localRegistryPath.pathname} is not valid JSON: ${String(err)}`);
   }
 }
-export function registerLocalModel(model: Model): void {
+
+// The registry entry for a model name, if the model was benched from a server
+// the user hosts. export.ts labels a database model local only on this evidence,
+// so an unknown cloud model name stays a hard error instead of a silent $0 run.
+export function localRegistryEntryFor(name: string): LocalModelRegistryEntry | undefined {
+  return readLocalRegistry()[name];
+}
+
+export async function registerLocalModel(model: Model): Promise<void> {
   if (!model.localBaseURL) return;
   const registry = readLocalRegistry();
   registry[model.name] = { baseURL: model.localBaseURL, family: model.family, effort: model.effort };
-  Bun.write(localRegistryPath, JSON.stringify(registry, null, 2) + "\n");
+  await Bun.write(localRegistryPath, JSON.stringify(registry, null, 2) + "\n");
 }
 const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, entry]) => ({
   llm: createOpenAICompatible({
@@ -833,12 +860,15 @@ const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, 
     fetch: fetchWithoutIdleTimeout,
   })(name),
   name,
-  family: entry.family,
+  family: entry.family ?? name,
   effort: entry.effort ?? "none",
   reasoning: false,
   outputMode: "text",
   local: true,
   localBaseURL: entry.baseURL,
+  // Registry entries label exports and answer an explicit --model. They are not
+  // part of a --all-missing run: see bench.ts.
+  fromRegistry: true,
 }));
 // Env-var models win over registry entries with the same name.
 export const MODELS: Model[] = [
