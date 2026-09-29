@@ -1,0 +1,19 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.mauricekleine/nonobench",
+  "title": "Nonobench",
+  "description": "An open-source benchmark of how well LLMs solve nonogram puzzles, from 5x5 to 20x20.",
+  "version": "1.0.0",
+  "websiteUrl": "https://www.nonobench.com",
+  "repository": {
+    "url": "https://github.com/mauricekleine/nonobench",
+    "source": "github",
+    "id": "1124680684"
+  },
+  "icons": [
+    { "src": "https://www.nonobench.com/icon.svg", "mimeType": "image/svg+xml" }
+  ],
+  "remotes": [
+    { "type": "streamable-http", "url": "https://www.nonobench.com/mcp" }
+  ]
+}
