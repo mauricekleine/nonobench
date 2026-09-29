@@ -23,7 +23,7 @@ import { runState } from "@/lib/puzzle-insights";
 
 export const MCP_SERVER_INFO = { name: "nonobench", title: "Nonobench", version: "1.0.0" };
 
-const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
+const readOnly = (title: string) => ({ title, readOnlyHint: true, openWorldHint: false } as const);
 
 const result = (data: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] });
 const failure = (message: string) => ({ content: [{ type: "text" as const, text: message }], isError: true });
@@ -46,7 +46,7 @@ export function createMcpServer() {
 			title: "Get leaderboard",
 			description: "Models ranked by accuracy; defaults to all effort levels for compatibility.",
 			inputSchema: z.object({ size, provider: z.string().optional().describe("Comma-separated provider ids; empty means no filter"), family: z.string().optional().describe("Comma-separated family ids; empty means no filter"), version: z.string().optional().describe("Comma-separated benchmark versions: 1.0, 1.1, 1.2; empty means all"), effort: z.string().optional().describe("best, all (default), or one effort level; empty means all"), reasoning: z.boolean().optional(), open_weights: z.boolean().optional(), min_correct: z.number().int().min(0).optional().describe("Minimum puzzles solved in the selected tier; default 0 includes unsolved variants") }),
-			annotations: readOnly,
+			annotations: readOnly("Get leaderboard"),
 		},
 		async ({ size, provider, family, version, effort, reasoning, open_weights, min_correct }) => {
 			const filters: Filters = { size, providers: parseCommaList(provider), families: parseCommaList(family), versions: parseCommaList(version) as Filters["versions"], effort: effort?.trim() || "all", reasoning, openWeights: open_weights, minCorrect: min_correct ?? 0 };
@@ -55,9 +55,9 @@ export function createMcpServer() {
 		},
 	);
 
-	server.registerTool("list_providers", { title: "List providers", description: "Provider ids, names, families and variant counts.", inputSchema: z.object({}), annotations: readOnly }, async () => result(listProviders()));
-	server.registerTool("list_families", { title: "List families", description: "Model families, available efforts and best variants.", inputSchema: z.object({}), annotations: readOnly }, async () => result(listFamilies()));
-	server.registerTool("compare_models", { title: "Compare models", description: "Side-by-side core overall and per-size accuracy, cost, latency and token results for model or family names.", inputSchema: z.object({ models: z.array(z.string()).min(2).max(20) }), annotations: readOnly }, async ({ models }) => {
+	server.registerTool("list_providers", { title: "List providers", description: "Provider ids, names, families and variant counts.", inputSchema: z.object({}), annotations: readOnly("List providers") }, async () => result(listProviders()));
+	server.registerTool("list_families", { title: "List families", description: "Model families, available efforts and best variants.", inputSchema: z.object({}), annotations: readOnly("List families") }, async () => result(listFamilies()));
+	server.registerTool("compare_models", { title: "Compare models", description: "Side-by-side core overall and per-size accuracy, cost, latency and token results for model or family names.", inputSchema: z.object({ models: z.array(z.string()).min(2).max(20) }), annotations: readOnly("Compare models") }, async ({ models }) => {
 		const compared = compareModels(models);
 		const missing = models.filter((_, index) => !compared[index]);
 		return missing.length ? failure(`Unknown model or family: ${missing.join(", ")}. Call list_families or get_leaderboard for names.`) : result({ models: compared });
@@ -69,7 +69,7 @@ export function createMcpServer() {
 			title: "Get model results",
 			description: "Accuracy, cost, latency and token use for one model, broken down by grid size.",
 			inputSchema: z.object({ model: z.string().describe("Model name as listed on the leaderboard, e.g. gpt-5.4-xhigh") }),
-			annotations: readOnly,
+			annotations: readOnly("Get model results"),
 		},
 		async ({ model }) => {
 			const data = getModel(model);
@@ -83,7 +83,7 @@ export function createMcpServer() {
 			title: "List puzzles",
 			description: "The benchmark puzzles with their ids and row/column clues.",
 			inputSchema: z.object({ size }),
-			annotations: readOnly,
+			annotations: readOnly("List puzzles"),
 		},
 		async ({ size }) => result(listPuzzles(size)),
 	);
@@ -98,7 +98,7 @@ export function createMcpServer() {
 				id: z.string().describe("Puzzle id from list_puzzles"),
 				include_solution: z.boolean().optional().describe("Include a reference solution"),
 			}),
-			annotations: readOnly,
+			annotations: readOnly("Get puzzle"),
 		},
 		async ({ id, include_solution }) => {
 			const puzzle = getPuzzle(id, include_solution);
@@ -116,7 +116,7 @@ export function createMcpServer() {
 				id: z.string().describe("Puzzle id from list_puzzles"),
 				grid: z.string().describe("Row-major string of 0 (empty) and 1 (filled), width × height characters"),
 			}),
-			annotations: readOnly,
+			annotations: readOnly("Check solution"),
 		},
 		async ({ id, grid }) => {
 			const found = findPuzzle(id);
@@ -128,7 +128,7 @@ export function createMcpServer() {
 		title: "Get puzzle results",
 		description: "Per-model outcomes for one puzzle. Answers are omitted unless requested.",
 		inputSchema: z.object({ id: z.string(), provider: z.string().optional(), family: z.string().optional(), effort: z.string().optional(), reasoning: z.boolean().optional(), open_weights: z.boolean().optional(), include_answers: z.boolean().optional() }),
-		annotations: readOnly,
+		annotations: readOnly("Get puzzle results"),
 	}, async ({ id, provider, family, effort, reasoning, open_weights, include_answers }) => {
 		if (!getPuzzle(id)) return failure(`Unknown puzzle "${id}".`);
 		const filters: Filters = { providers: parseCommaList(provider), families: parseCommaList(family), effort: effort?.trim() || "all", reasoning, openWeights: open_weights };
@@ -148,7 +148,7 @@ export function createMcpServer() {
 	server.registerTool("get_model_puzzles", {
 		title: "Get model puzzles",
 		description: "Which puzzles one model solved, missed, timed out on, or has not run.",
-		inputSchema: z.object({ model: z.string() }), annotations: readOnly,
+		inputSchema: z.object({ model: z.string() }), annotations: readOnly("Get model puzzles"),
 	}, async ({ model }) => {
 		const metadata = getModel(model);
 		if (!metadata) return failure(`Unknown model "${model}".`);
@@ -173,7 +173,7 @@ export function createMcpServer() {
 				limit: z.number().int().min(1).max(MAX_RUNS_LIMIT).optional().describe("Default 100"),
 				offset: z.number().int().min(0).optional(),
 			}),
-			annotations: readOnly,
+			annotations: readOnly("List runs"),
 		},
 		async ({ model, puzzle_id, size, include_output, limit, offset }) =>
 			result(await listRuns({ model, puzzleId: puzzle_id, size, includeOutput: include_output, limit, offset })),
