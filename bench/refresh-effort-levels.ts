@@ -10,6 +10,11 @@ const modelIds = [
   "bytedance-seed/seed-2-1-turbo",
 ] as const;
 
+// Lab-documented reasoning levels, for models where OpenRouter lists levels the
+// model doesn't have or that turn reasoning off (LEARNINGS.md §14). Link the
+// lab's docs next to each entry. Unlisted models keep every catalog level.
+const nativeLevels: Partial<Record<(typeof modelIds)[number], string[]>> = {};
+
 type CatalogModel = {
   id: string;
   reasoning?: {
@@ -38,7 +43,8 @@ for (const modelId of modelIds) {
   const effortControl = Array.isArray(supported) && supported.some((level) => level !== "none") &&
     !(supported.length === 2 && supported.includes("high") && supported.includes("none"));
   const order = ["minimal", "low", "medium", "high", "xhigh", "max"];
-  const levels = effortControl ? order.filter((level) => supported!.includes(level)) : [];
+  const native = nativeLevels[modelId];
+  const levels = effortControl ? order.filter((level) => supported!.includes(level) && (!native || native.includes(level))) : [];
   families[family] = {
     modelId,
     supportedEfforts: supported ?? null,
