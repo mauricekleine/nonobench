@@ -792,6 +792,7 @@ export const NEW_VARIANT_NAMES = new Set(addedModels.map((model) => model.name))
 // NONOBENCH_OUTPUT_MODE=json_schema when the server enforces the schema.
 const localBaseUrl = process.env.NONOBENCH_LOCAL_BASE_URL;
 const localModelId = process.env.NONOBENCH_LOCAL_MODEL;
+const localEffort = process.env.NONOBENCH_LOCAL_EFFORT ?? "none";
 const localModels: Model[] = localBaseUrl && localModelId
   ? [{
     llm: createOpenAICompatible({
@@ -804,8 +805,9 @@ const localModels: Model[] = localBaseUrl && localModelId
     family: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
     // Label only: the runner never sends reasoning settings to a local
     // server, so this records what the user configured there.
-    effort: process.env.NONOBENCH_LOCAL_EFFORT ?? "none",
-    reasoning: false,
+    effort: localEffort,
+    // Label only, like effort: the dashboard's reasoning filter uses it.
+    reasoning: localEffort !== "none",
     outputMode: "text",
     local: true,
     localBaseURL: localBaseUrl,
@@ -819,7 +821,14 @@ const localModels: Model[] = localBaseUrl && localModelId
 const localRegistryPath = process.env.NONOBENCH_LOCAL_MODELS_JSON
   ? pathToFileURL(process.env.NONOBENCH_LOCAL_MODELS_JSON)
   : new URL("./local-models.json", import.meta.url);
-export type LocalModelRegistryEntry = { baseURL: string; family?: string; effort?: string };
+export type LocalModelRegistryEntry = {
+  baseURL: string;
+  // The id the server returns from GET /v1/models. registerLocalModel writes it;
+  // hand-written entries may omit it, in which case the name is the id.
+  modelId?: string;
+  family?: string;
+  effort?: string;
+};
 
 function readLocalRegistry(): Record<string, LocalModelRegistryEntry> {
   let text: string;
@@ -849,7 +858,7 @@ export function localRegistryEntryFor(name: string): LocalModelRegistryEntry | u
 export async function registerLocalModel(model: Model): Promise<void> {
   if (!model.localBaseURL) return;
   const registry = readLocalRegistry();
-  registry[model.name] = { baseURL: model.localBaseURL, family: model.family, effort: model.effort };
+  registry[model.name] = { baseURL: model.localBaseURL, modelId: model.llm.modelId, family: model.family, effort: model.effort };
   await Bun.write(localRegistryPath, JSON.stringify(registry, null, 2) + "\n");
 }
 const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, entry]) => ({
@@ -858,11 +867,14 @@ const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, 
     baseURL: entry.baseURL,
     apiKey: "local",
     fetch: fetchWithoutIdleTimeout,
-  })(name),
+  // Without a stored model id, the name is the id: hand-written entries
+  // predate the field, and the name is usually the server's id anyway.
+  })(entry.modelId ?? name),
   name,
   family: entry.family ?? name,
   effort: entry.effort ?? "none",
-  reasoning: false,
+  // Label only, like the env model: the dashboard's reasoning filter uses it.
+  reasoning: (entry.effort ?? "none") !== "none",
   outputMode: "text",
   local: true,
   localBaseURL: entry.baseURL,
@@ -877,3 +889,14 @@ export const MODELS: Model[] = [
   ...registryModels.filter((model) => localModels.every((env) => env.name !== model.name)),
   ...localModels,
 ];
+// A local model must not take a cloud model's name: --model would select both,
+// and they would overwrite each other's rows through UNIQUE(model, puzzle_id).
+{
+  const counts = new Map<string, number>();
+  for (const model of MODELS) counts.set(model.name, (counts.get(model.name) ?? 0) + 1);
+  const shadowed = [...counts.entries()].find(([, count]) => count > 1)?.[0];
+  if (shadowed) throw new Error(`Local model name '${shadowed}' shadows a cloud model; choose another NONOBENCH_LOCAL_NAME (or rename the registry entry)`);
+}
+// OpenRouter-facing list for the refresh-* and backfill-* scripts: their ids are
+// OpenRouter ids, and a local model's id is not one.
+export const CLOUD_MODELS: Model[] = MODELS.filter((model) => !model.local);
