@@ -375,7 +375,8 @@ for (const [model, sizeDatas] of modelMap) {
 			name: model,
 			family: registryEntry.family ?? model,
 			effort: registryEntry.effort ?? "none",
-			reasoning: false,
+			// Label only, like the runner: the dashboard's reasoning filter uses it.
+			reasoning: (registryEntry.effort ?? "none") !== "none",
 			local: true as const,
 			provider: "local",
 		}

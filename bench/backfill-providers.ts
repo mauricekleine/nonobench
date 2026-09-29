@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 import { resolve } from "node:path";
-import { MODELS } from "./constants";
+import { CLOUD_MODELS } from "./constants";
 import { quantizationFor } from "./provider-pins";
 
 const path = process.env.NONOBENCH_DB;
@@ -42,8 +42,8 @@ const activity = csv.map((fields) => Object.fromEntries(headers.map((header, ind
     time: Date.parse((row.created_at ?? "").replace(" ", "T") + "Z"),
   })).filter((row) => Number.isFinite(row.time) && Number.isFinite(row.tokens));
 
-const modelByName = new Map(MODELS.map((model) => [model.name, model] as const));
-const activityModelFor = (model: (typeof MODELS)[number]) => {
+const modelByName = new Map(CLOUD_MODELS.map((model) => [model.name, model] as const));
+const activityModelFor = (model: (typeof CLOUD_MODELS)[number]) => {
   const author = model.llm.modelId.split("/")[0];
   const family = model.family === "seed-2.1-turbo" ? "seed-2-1-turbo" : model.family;
   return `${author}/${family}`;
