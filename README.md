@@ -94,9 +94,9 @@ nonobench.com exposes the benchmark data to agents, with no authentication:
 
 - **REST API** under `/api/v1` (leaderboard, models, puzzles, a solution checker, individual runs). The spec is at `/api/openapi.json`, and `/.well-known/api-catalog` (RFC 9727) points to it.
 - **MCP server** at `/mcp` (stateless Streamable HTTP, MCP 2026-07-28 with 2025 client compatibility), described by `/.well-known/mcp/server-card.json`. Add it to a client with `claude mcp add --transport http nonobench https://www.nonobench.com/mcp`. Browser requests may use the site's origins or HTTP localhost/127.0.0.1 origins.
-  It's listed in the [Claude Connectors Directory](https://claude.ai/directory/nonobench), the [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.mauricekleine/nonobench) (`io.github.mauricekleine/nonobench`), [Smithery](https://smithery.ai/servers/mauricekleine/nonobench) and [Glama](https://glama.ai/mcp/connectors/com.nonobench/nonobench).
+  It's listed in the [Claude Connectors Directory](https://claude.ai/directory/nonobench), the [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.mauricekleine/nonobench) (`io.github.mauricekleine/nonobench`), [Smithery](https://smithery.ai/servers/mauricekleine/nonobench), [Glama](https://glama.ai/mcp/connectors/com.nonobench/nonobench) and [mcpservers.org](https://mcpservers.org/servers/mauricekleine/nonobench).
 
-  [![Nonobench MCP connector](https://glama.ai/mcp/connectors/com.nonobench/nonobench/badges/score.svg)](https://glama.ai/mcp/connectors/com.nonobench/nonobench)
+  [![Nonobench MCP connector](https://glama.ai/mcp/connectors/com.nonobench/nonobench/badges/score.svg)](https://glama.ai/mcp/connectors/com.nonobench/nonobench) [![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/mauricekleine/nonobench)
 - **WebMCP** tools registered in the browser via `navigator.modelContext`.
 - **Markdown**: `/` and `/puzzles` return markdown when requested with `Accept: text/markdown`. `/llms.txt` gives an overview.
 - **Discovery**: `robots.txt` (with Content Signals), `sitemap.xml`, `Link` headers on the homepage, an agent skill at `/.well-known/agent-skills/index.json`, and an ARD manifest at `/.well-known/ai-catalog.json`.
