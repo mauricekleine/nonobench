@@ -1,36 +1,56 @@
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { createMcpHandler, hostHeaderValidationResponse, originValidationResponse } from "@modelcontextprotocol/server";
 
+import { SITE_URL } from "@/lib/data";
 import { createMcpServer } from "@/lib/mcp";
 
-// Stateless Streamable HTTP: every POST gets a fresh server, so no sessions
-// need to survive between requests or across instances.
-export async function POST(request: Request) {
-	const server = createMcpServer();
-	const transport = new WebStandardStreamableHTTPServerTransport({
-		sessionIdGenerator: undefined,
-		enableJsonResponse: true,
-	});
-	await server.connect(transport);
-	return transport.handleRequest(request);
+const site = new URL(SITE_URL);
+const allowedSiteOrigins = new Set([site.origin, `${site.protocol}//${site.hostname.replace(/^www\./, "")}`]);
+const allowedHostnames = [site.hostname, site.hostname.replace(/^www\./, ""), "localhost", "127.0.0.1"];
+const handler = createMcpHandler(createMcpServer);
+
+function allowedOrigin(origin: string) {
+	if (allowedSiteOrigins.has(origin)) return true;
+	try {
+		const url = new URL(origin);
+		return url.origin === origin && url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
+	} catch {
+		return false;
+	}
 }
 
-function methodNotAllowed() {
-	return Response.json(
-		{ jsonrpc: "2.0", error: { code: -32000, message: "Method not allowed. POST JSON-RPC messages to /mcp." }, id: null },
-		{ status: 405, headers: { Allow: "POST" } },
-	);
+function validateRequest(request: Request) {
+	const rejected = hostHeaderValidationResponse(request, allowedHostnames) ?? originValidationResponse(request, allowedHostnames);
+	if (rejected) return rejected;
+	const origin = request.headers.get("Origin");
+	if (origin && !allowedOrigin(origin)) return new Response(null, { status: 403 });
 }
 
-export { methodNotAllowed as GET, methodNotAllowed as DELETE };
+function withCors(response: Response, request: Request) {
+	const origin = request.headers.get("Origin");
+	if (origin) {
+		response.headers.set("Access-Control-Allow-Origin", origin);
+		response.headers.set("Vary", "Origin");
+	}
+	return response;
+}
 
-// CORS preflight, so browser-based MCP clients can connect.
-export function OPTIONS() {
-	return new Response(null, {
+async function serve(request: Request) {
+	const rejected = validateRequest(request);
+	if (rejected) return rejected;
+	return withCors(await handler.fetch(request), request);
+}
+
+export { serve as POST, serve as GET, serve as DELETE };
+
+export function OPTIONS(request: Request) {
+	const rejected = validateRequest(request);
+	if (rejected) return rejected;
+	return withCors(new Response(null, {
 		status: 204,
 		headers: {
 			"Access-Control-Allow-Methods": "POST, OPTIONS",
-			"Access-Control-Allow-Headers": "Content-Type, Accept, Mcp-Protocol-Version, Mcp-Session-Id",
-			"Access-Control-Max-Age": "86400",
+			"Access-Control-Allow-Headers": "Content-Type, MCP-Protocol-Version, Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID",
+			"Access-Control-Max-Age": "3600",
 		},
-	});
+	}), request);
 }
