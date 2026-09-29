@@ -34,7 +34,6 @@ const nextConfig: NextConfig = {
 			},
 			{ source: "/api/:path*", headers: cors },
 			{ source: "/.well-known/:path*", headers: cors },
-			{ source: "/mcp", headers: cors },
 			{ source: "/llms.txt", headers: cors },
 			{ source: "/results-raw.json", headers: cors },
 		];

@@ -1,3 +1,5 @@
+import { SUPPORTED_PROTOCOL_VERSIONS } from "@modelcontextprotocol/server";
+
 import { SITE_URL } from "@/lib/data";
 import { MCP_SERVER_INFO } from "@/lib/mcp";
 
@@ -6,12 +8,13 @@ export function GET() {
 	return Response.json({
 		$schema: "https://static.modelcontextprotocol.io/schemas/mcp-server-card/v1.json",
 		version: "1.0",
-		protocolVersion: "2025-06-18",
+		protocolVersion: "2026-07-28",
+		protocolVersions: ["2026-07-28", ...SUPPORTED_PROTOCOL_VERSIONS],
 		serverInfo: MCP_SERVER_INFO,
 		description: "Read-only access to Nonobench results, puzzles and a nonogram solution checker.",
 		documentationUrl: `${SITE_URL}/llms.txt`,
 		transport: { type: "streamable-http", endpoint: `${SITE_URL}/mcp` },
-		capabilities: { tools: { listChanged: true } },
+		capabilities: { tools: { listChanged: false } },
 		authentication: { required: false },
 		tools: ["get_leaderboard", "list_providers", "list_families", "compare_models", "get_model_results", "get_model_puzzles", "list_puzzles", "get_puzzle", "get_puzzle_results", "check_solution", "list_runs"].map(
 			(name) => ({ name }),
