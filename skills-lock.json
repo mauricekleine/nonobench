@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "add-model": {
+      "source": "./skills",
+      "sourceType": "local",
+      "computedHash": "d44e0ae1a358eab4a61fbd349aaf12f02b93ec3cbfd050ccf1c42f393a4c136a"
+    },
     "remotion-best-practices": {
       "source": "remotion-dev/skills",
       "sourceType": "github",
