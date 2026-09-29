@@ -65,22 +65,27 @@ test("2026 client discovers without initialize, lists the stable catalog and cal
 	expect(listed.ttlMs).toBe(3_600_000);
 	expect(listed.cacheScope).toBe("public");
 	expect(listed.tools.every((tool) => tool.annotations?.readOnlyHint === true && tool.annotations?.openWorldHint === false)).toBe(true);
+	expect(listed.tools.every((tool) => tool.outputSchema?.type === "object" && Object.keys(tool.outputSchema.properties ?? {}).length > 0)).toBe(true);
+	const undescribed = listed.tools.flatMap((tool) => Object.entries(tool.inputSchema.properties ?? {}).filter(([, schema]) => !(schema as { description?: string }).description).map(([name]) => `${tool.name}.${name}`));
+	expect(undescribed).toEqual([]);
 	const call = async (name: string, args: Record<string, unknown>) => {
 		const answer = await client.callTool({ name, arguments: args });
 		expect(answer.isError).not.toBe(true);
 		expect(answer.content[0]?.type).toBe("text");
-		return JSON.parse((answer.content[0] as { text: string }).text);
+		const parsed = JSON.parse((answer.content[0] as { text: string }).text);
+		expect(answer.structuredContent).toEqual(parsed);
+		return parsed;
 	};
 	const leaderboard = await call("get_leaderboard", { size: "5x5" });
 	expect(leaderboard.models.length).toBeGreaterThan(0);
-	const providers = await call("list_providers", {});
+	const { providers } = await call("list_providers", {});
 	expect(providers.length).toBeGreaterThan(0);
-	const families = await call("list_families", {});
+	const { families } = await call("list_families", {});
 	expect(families.length).toBeGreaterThan(0);
 	const model = leaderboard.models[0].model;
 	await call("compare_models", { models: [model, model] });
 	await call("get_model_results", { model });
-	const puzzles = await call("list_puzzles", { size: "5x5" });
+	const { puzzles } = await call("list_puzzles", { size: "5x5" });
 	const id = puzzles[0].id;
 	await call("get_puzzle", { id });
 	await call("check_solution", { id, grid: "0".repeat(25) });
@@ -147,3 +152,27 @@ test("server card advertises 2026 without change notifications", async () => {
 	expect(card.protocolVersion).toBe("2026-07-28");
 	expect(card.capabilities.tools.listChanged).toBe(false);
 });
+
+// Output schemas are enforced by the SDK, so a single field that doesn't match breaks the tool. Call every model and puzzle once.
+test("every model and puzzle result matches the declared output schemas", async () => {
+	const client = await connect(true, []);
+	const call = async (name: string, args: Record<string, unknown>) => {
+		const answer = await client.callTool({ name, arguments: args });
+		expect({ name, args, error: answer.isError ? answer.content : undefined }).toEqual({ name, args, error: undefined });
+		return answer.structuredContent as Record<string, unknown>;
+	};
+	for (const size of [undefined, "5x5", "10x10", "15x15", "20x20"]) await call("get_leaderboard", size ? { size } : {});
+	const { models } = await call("get_leaderboard", {}) as { models: { model: string }[] };
+	for (const { model } of models) {
+		await call("get_model_results", { model });
+		await call("get_model_puzzles", { model });
+	}
+	const { puzzles } = await call("list_puzzles", {}) as { puzzles: { id: string; width: number; height: number }[] };
+	for (const puzzle of puzzles) {
+		await call("get_puzzle", { id: puzzle.id, include_solution: true });
+		await call("get_puzzle_results", { id: puzzle.id, include_answers: true });
+		await call("check_solution", { id: puzzle.id, grid: "0".repeat(puzzle.width * puzzle.height) });
+	}
+	await call("check_solution", { id: puzzles[0].id, grid: "01" });
+	await call("list_runs", { limit: 500, include_output: true });
+}, 60_000);
