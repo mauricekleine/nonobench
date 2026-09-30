@@ -167,17 +167,17 @@ for (const route of ROUTES) {
 	if (b.headers["x-robots-tag"] === "noindex" && !a.headers["x-robots-tag"] && !INDEXABLE.has(new URL(candidate).hostname)) b.headers["x-robots-tag"] = null;
 	const headerDiffs = HEADERS.filter((name) => a.headers[name] !== b.headers[name]).map((name) => `${name}: ${JSON.stringify(a.headers[name])} → ${JSON.stringify(b.headers[name])}`);
 	const method = init.method ?? "GET";
-	const request = `${method} ${path}${init.headers?.Accept === "text/markdown" ? " (Accept: text/markdown)" : ""}`;
-	const same = a.status === b.status && headerDiffs.length === 0 && body.same;
-	rows.push(`| ${label} | \`${request}\` | ${a.status} → ${b.status} | ${a.headers["content-type"] ?? "–"} → ${b.headers["content-type"] ?? "–"} | ${same ? "same" : "differs"} | ${a.ms} / ${b.ms} ms |`);
-	if (!same) differences.push({ request, status: a.status === b.status ? null : `${a.status} → ${b.status}`, headers: headerDiffs, body: body.same ? null : body.note });
-	else if (body.note) rows[rows.length - 1] = rows[rows.length - 1].replace("| same |", `| same (${body.note}) |`);
+	const rpc = path === "/mcp" && init.body ? ` ${JSON.parse(init.body).method}` : "";
+	const request = `${method} ${path}${rpc}${init.headers?.Accept === "text/markdown" ? " (Accept: text/markdown)" : ""}`;
+	const contentType = a.headers["content-type"] === b.headers["content-type"] ? (a.headers["content-type"] ?? "–") : `${a.headers["content-type"]} → ${b.headers["content-type"]}`;
+	rows.push(`| ${label} | \`${request}\` | ${a.status === b.status ? a.status : `${a.status} → ${b.status}`} | ${contentType} | ${headerDiffs.length ? `${headerDiffs.length} differ` : "same"} | ${body.same ? body.note || "–" : "**differs**"} | ${a.ms} / ${b.ms} ms |`);
+	if (a.status !== b.status || headerDiffs.length || !body.same) differences.push({ request, status: a.status === b.status ? null : `${a.status} → ${b.status}`, headers: headerDiffs, body: body.same ? null : body.note });
 }
 
 console.log(`# Parity: ${baseline} → ${candidate}\n`);
 console.log("Next.js router tokens are dropped from Vary before comparing. X-Robots-Tag: noindex on a non-production candidate is expected and not listed.\n");
-console.log("| Kind | Request | Status | Content type | Result | Time (baseline / candidate) |");
-console.log("| --- | --- | --- | --- | --- | --- |");
+console.log("| Kind | Request | Status | Content type | Key headers | Body | Time (baseline / candidate) |");
+console.log("| --- | --- | --- | --- | --- | --- | --- |");
 console.log(rows.join("\n"));
 console.log(`\n## Differences (${differences.length})\n`);
 for (const difference of differences) {
