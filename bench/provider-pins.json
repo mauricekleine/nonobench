@@ -1516,6 +1516,52 @@
         }
       ]
     },
+    "openai/gpt-6.1-sol": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/eu",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
     "openai/gpt-oss-120b": {
       "pins": [
         "openai"

@@ -1,6 +1,6 @@
 {
   "source": "https://openrouter.ai/api/v1/models",
-  "fetchedAt": "2026-09-27T14:19:07.836Z",
+  "fetchedAt": "2026-09-29T23:12:05.719Z",
   "families": {
     "claude-opus-5.5": {
       "modelId": "anthropic/claude-opus-5.5",
@@ -116,6 +116,26 @@
       ],
       "defaultEffort": "medium",
       "mandatory": false,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    "gpt-6.1-sol": {
+      "modelId": "openai/gpt-6.1-sol",
+      "supportedEfforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "medium",
+      "mandatory": true,
       "supportsMaxTokens": false,
       "levels": [
         "low",

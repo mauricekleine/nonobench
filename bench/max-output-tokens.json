@@ -15,6 +15,7 @@
     "qwen/qwen3.8-flash": 131072,
     "qwen/qwen3.8-max-0902": 131072,
     "bytedance-seed/seed-2-1-turbo": 235929,
-    "openai/gpt-6-luna": 128000
+    "openai/gpt-6-luna": 128000,
+    "openai/gpt-6.1-sol": 128000
   }
 }

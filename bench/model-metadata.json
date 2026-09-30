@@ -159,6 +159,11 @@
     "openWeights": false,
     "addedAt": "2026-09-22T18:12:55.000Z"
   },
+  "openai/gpt-6.1-sol": {
+    "displayName": "GPT-6.1 Sol",
+    "openWeights": false,
+    "addedAt": "2026-09-29T17:28:02.000Z"
+  },
   "openai/gpt-oss-120b": {
     "displayName": "gpt-oss-120b",
     "openWeights": true,
