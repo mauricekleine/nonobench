@@ -78,6 +78,119 @@ Other scripts:
 - `bun run typecheck` - TypeScript check
 - `bun run regrade` - read-only comparison of stored grades against the current grader
 
+### Running Against a Local Model
+
+The runner can benchmark a model that you serve yourself. Any server with an OpenAI-compatible `/v1` endpoint works: vLLM, SGLang, llama.cpp, LM Studio, and Ollama.
+
+This setup uses two machines. The model server is the workstation that serves the model. The bench machine is the laptop that runs the benchmark.
+
+#### 1. Serve the model on the workstation
+
+Bind the server to all interfaces. The default bind address, `127.0.0.1`, accepts connections only from the model server itself.
+
+vLLM:
+
+```bash
+vllm serve Qwen/Qwen3-32B --host 0.0.0.0 --port 8000
+```
+
+Ollama:
+
+```bash
+ollama pull qwen3:32b
+OLLAMA_HOST=0.0.0.0:11434 ollama serve
+```
+
+llama.cpp:
+
+```bash
+llama-server -m ./qwen3-32b-Q4_K_M.gguf --host 0.0.0.0 --port 8080
+```
+
+SGLang:
+
+```bash
+python -m sglang.launch_server --model-path Qwen/Qwen3-32B --host 0.0.0.0 --port 30000
+```
+
+LM Studio: open the Developer tab, then select Start Server. Turn on the Network Server switch, so the server listens on all interfaces.
+
+CAUTION: Do not expose the port to the internet. Most local servers have no authentication, so anyone who reaches the port can run the model.
+
+#### 2. Open the port on the model server
+
+Restrict the rule to your own subnet. Allow TCP traffic from your local network to the port:
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 8000 proto tcp
+```
+
+On macOS, allow incoming connections for the server app in System Settings.
+
+#### 3. Verify the connection from the laptop
+
+Find the LAN address of the model server. On Linux, run `ip -4 addr show`. On macOS, run `ipconfig getifaddr en0`.
+
+From the laptop, request the model list:
+
+```bash
+curl http://192.168.1.20:8000/v1/models
+```
+
+Make sure that the answer lists your model. Copy the exact `id` value. You need that value for `NONOBENCH_LOCAL_MODEL`.
+
+If the request fails, check the bind address from step 1. Then check the firewall rule, the address, and the port.
+
+If the model server is not reachable on your network, create an SSH tunnel to it instead. Then use the address `http://127.0.0.1:8000/v1`:
+
+```bash
+ssh -N -L 8000:127.0.0.1:8000 user@192.168.1.20
+```
+
+#### 4. Run the benchmark
+
+```bash
+cd bench
+bun install
+NONOBENCH_LOCAL_BASE_URL=http://192.168.1.20:8000/v1 \
+NONOBENCH_LOCAL_MODEL=Qwen3-32B \
+bun run bench:local --model Qwen3-32B
+```
+
+Do a pilot first. The next command runs two 5x5 puzzles into a scratch database:
+
+```bash
+NONOBENCH_LOCAL_BASE_URL=http://192.168.1.20:8000/v1 \
+NONOBENCH_LOCAL_MODEL=Qwen3-32B \
+NONOBENCH_DB=local-pilot.db \
+bun run bench --model Qwen3-32B --sizes 5x5 --limit 2
+```
+
+Make sure that the plan lists your model as `[local, text]`.
+
+#### Environment variables for a local model
+
+| Variable | Meaning |
+| --- | --- |
+| `NONOBENCH_LOCAL_BASE_URL` | The `/v1` endpoint of the server. Ollama uses port `11434`. |
+| `NONOBENCH_LOCAL_MODEL` | The model `id` that the server returns from `GET /v1/models`. |
+| `NONOBENCH_LOCAL_NAME` | The display name and the value for `--model`. Defaults to the model `id`. Must not match a cloud model name. |
+| `NONOBENCH_LOCAL_EFFORT` | The reasoning effort your server is configured with (`none`, `low`, `xhigh`, …). Label only — the runner never sends reasoning settings to a local server. Defaults to `none`. |
+| `NONOBENCH_LOCAL_API_KEY` | The bearer token, when the server requires one. Defaults to `local`. |
+
+The runner adds the local model to the plan only when you set both `NONOBENCH_LOCAL_BASE_URL` and `NONOBENCH_LOCAL_MODEL`.
+
+#### Notes on local runs
+
+- Local runs cost $0. Keep them out of the published dataset: run them with `bun run bench:local`, which is `bun run bench` with `NONOBENCH_DB=local-results.db`. `bench/results.db` is the shared dataset, and the export-contract test checks it against the committed exports. The runner refuses to write a local model to the shared database.
+- Before starting, the runner checks the model `id` against the server's `GET /v1/models` list. A typo fails with the models the server does serve, and an unreachable server fails before any run is recorded.
+- Text mode is the default for a local model. Many local servers accept a JSON schema request and then ignore it. If your server enforces the schema, set `NONOBENCH_OUTPUT_MODE=json_schema`.
+- Start with `--parallel 1`. One GPU serves fewer requests at the same time than a cloud provider does.
+- The 20x20 tier asks for 128,000 output tokens. If your server has a smaller context, run only the core sizes.
+- The runner does not apply the reasoning-token circuit breaker to a local model. Some local servers report zero reasoning tokens for every run.
+- Set the same variables in `bench/.env` to avoid the prefix on every command.
+- A bench run registers the local model in `bench/local-models.json` (name, server model id, family, server URL), so a later `bun run export` and the visualizer pick it up without any env vars. To register a model you already benched, add one entry there: `"<name>": { "baseURL": "http://host:port/v1", "modelId": "<server model id>", "family": "<name>" }`. Omit `modelId` when the name is the server's id.
+
 ### 4. Viewing Results
 
 ```bash
@@ -87,6 +200,17 @@ bun run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) to view the interactive dashboard.
+
+Your own runs live in a separate database. Serve them with:
+
+```bash
+cd visualizer
+bun run dev:local
+```
+
+`dev:local` exports `bench/local-results.db` into the dashboard's data files, starts the dev server, and restores the committed files when you stop it. While it runs, the dashboard shows only the models in that database — your local runs, not the published leaderboard. Set `NONOBENCH_LOCAL_DB` to serve another database.
+
+While that server runs, `bun test` in `bench` fails one test: the export-contract test compares the dashboard's data files against `bench/results.db`, and `dev:local` has put your runs in them. Stop the server, let the script restore the committed files, and the suite passes again.
 
 ## Agent Access
 

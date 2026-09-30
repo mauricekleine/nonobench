@@ -1,4 +1,6 @@
 import { generateText, jsonSchema, NoObjectGeneratedError, Output, streamText } from "ai";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
   MAX_PARALLEL_RUNS_PER_MODEL,
@@ -7,6 +9,7 @@ import {
   REQUEST_TIMEOUT_MS,
   outputModeFor,
   pinnedProviderFor,
+  registerLocalModel,
   requestProviderOptions,
   type Model,
 } from "./constants";
@@ -85,7 +88,57 @@ if (allMissing && selectedNames.size > 0) {
   console.error("Use either --all-missing or --model, not both.");
   process.exit(1);
 }
-const selectedModels = allMissing ? MODELS : MODELS.filter((model) => selectedNames.has(model.name));
+// --all-missing runs the models configured for this session. A registry entry is
+// a local model from an earlier session, and the server it lived on is usually
+// off: sweeping them in would record a run of failures. Run one by name instead,
+// with its env vars set.
+const selectedModels = allMissing
+  ? MODELS.filter((model) => !model.fromRegistry)
+  : MODELS.filter((model) => selectedNames.has(model.name));
+// Local runs must not land in the shared dataset: it is the published data,
+// and the export-contract test checks it against the committed exports.
+// resolve() so NONOBENCH_DB=results.db or ./results.db run from bench/ counts too.
+if (
+  selectedModels.some((model) => model.local) &&
+  resolve(dbPath) === fileURLToPath(new URL("./results.db", import.meta.url))
+) {
+  console.error("Local models write to their own database: use bun run bench:local, or set NONOBENCH_DB.");
+  process.exit(1);
+}
+
+// Ask the server which models it serves before spending a run on a typo:
+// every OpenAI-compatible server answers GET /v1/models. Unreachable servers
+// and unknown ids fail here, where the error is readable, instead of being
+// recorded as one failed run per puzzle.
+for (const model of selectedModels) {
+  if (!model.local || !model.localBaseURL) continue;
+  let ids: string[] | undefined;
+  try {
+    const response = await fetch(`${model.localBaseURL}/models`, {
+      headers: { Authorization: `Bearer ${process.env.NONOBENCH_LOCAL_API_KEY ?? "local"}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok && response.status !== 404 && response.status !== 405) {
+      throw new Error(`GET /models failed: HTTP ${response.status}`);
+    }
+    if (response.ok) {
+      const body = (await response.json()) as { data?: { id: string }[] };
+      ids = (body.data ?? []).map((entry) => entry.id);
+    } else {
+      console.log(`[${model.name}] Server does not list its models (HTTP ${response.status}); skipping the id check.`);
+    }
+  } catch (err) {
+    console.error(`[${model.name}] Cannot reach ${model.localBaseURL} (${(err as Error).message}). Is the server up and reachable from this machine?`);
+    process.exit(1);
+  }
+  if (ids && !ids.includes(model.llm.modelId)) {
+    console.error(`The server at ${model.localBaseURL} has no model '${model.llm.modelId}'. It serves: ${ids.join(", ") || "(nothing)"}`);
+    process.exit(1);
+  }
+}
+
+// Remember local models so a later export (without env vars) can label them.
+for (const model of selectedModels) await registerLocalModel(model);
 const plannedPuzzles = PUZZLES.filter((puzzle) => selectedSizes.includes(`${puzzle.width}x${puzzle.height}`));
 const extendedPuzzles = PUZZLES.filter((puzzle) => EXTENDED_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`));
 console.log(`Benchmark plan (${dbPath}):`);
@@ -93,7 +146,8 @@ for (const model of MODELS) {
   const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const missing = plannedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
   const extendedMissing = extendedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  console.log(`  ${model.name}${NEW_VARIANT_NAMES.has(model.name) ? " [new variant]" : ""} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable"}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
+  const availability = model.local ? "" : firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable";
+  console.log(`  ${model.name}${NEW_VARIANT_NAMES.has(model.name) ? " [new variant]" : ""} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${availability}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
 }
 if (selectedModels.length === 0) {
   console.log("Select --model <name> (repeatable) or --all-missing to run.");
@@ -289,7 +343,7 @@ async function runBenchmark(
       correct = gradeOutput(puzzle, err.text);
       tokens = err.usage?.outputTokens ?? 0;
       reasoningTokens = err.usage?.outputTokenDetails?.reasoningTokens ?? null;
-      const generation = await fetchGenerationDetails(err.response?.id);
+      const generation = model.local ? null : await fetchGenerationDetails(err.response?.id);
       generationId = err.response?.id ?? null;
       finishReason = err.finishReason ?? null;
       providerName = generation?.providerName ?? null;
@@ -371,7 +425,9 @@ let budgetExhausted = false;
 const BREAKER_SAMPLE = 8;
 const BREAKER_MAX_ZERO_SHARE = 0.5;
 function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean {
-  if (!model.reasoning) return false;
+  // Local servers rarely report reasoning tokens at all; the zero-token signal
+  // only means "the endpoint dropped reasoning" for OpenRouter endpoints.
+  if (model.local || !model.reasoning) return false;
   const answered = results.filter((result) => result.status === "success").slice(0, BREAKER_SAMPLE);
   if (answered.length < BREAKER_SAMPLE) return false;
   const zero = answered.filter((result) => result.reasoningTokens === 0).length;
@@ -380,7 +436,7 @@ function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean
 
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
-  if (!firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model))) {
+  if (!model.local && !firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model))) {
     console.log(`[${model.name}] Skipping: no first-party endpoint in provider-pins.json. Run refresh-provider-pins after endpoint availability changes.`);
     return [];
   }
@@ -723,7 +779,6 @@ if (flatResults.length > 0) {
 
   console.log("\n" + "=".repeat(60));
   console.log("SESSION SUMMARY");
-  console.log("=".repeat(60));
   console.log(`Total Runs:       ${globalTotalRuns.toLocaleString()}`);
   console.log(
     `Total Correct:    ${globalTotalCorrect.toLocaleString()} (${(

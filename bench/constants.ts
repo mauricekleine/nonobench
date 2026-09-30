@@ -2,7 +2,11 @@ import {
   createOpenRouter,
   type OpenRouterChatSettings,
 } from "@openrouter/ai-sdk-provider";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import type { JSONObject } from "@ai-sdk/provider";
 import type { LanguageModel } from "ai";
+import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import effortEvidence from "./effort-levels.json";
 
 // Bun's fetch aborts after 300s without the response headers arriving, and some
@@ -47,13 +51,15 @@ function pinnedModel(id: string, settings: OpenRouterChatSettings = defaultProvi
 }
 
 export function pinnedProviderFor(model: Model): string {
+  if (model.local) return "local";
   const settings = (model.llm as { settings?: OpenRouterChatSettings }).settings;
   const slug = settings?.provider?.order?.[0];
   if (!slug) throw new Error(`Missing provider pin for ${model.name}`);
   return slug;
 }
 
-export function requestProviderOptions(model: Model): { openrouter: { provider: { order: string[]; allow_fallbacks: false; require_parameters?: true } } } {
+export function requestProviderOptions(model: Model): Record<string, JSONObject> {
+  if (model.local) return {};
   return { openrouter: { provider: {
     order: [pinnedProviderFor(model)], allow_fallbacks: false,
     ...(outputModeFor(model) === "json_schema" ? { require_parameters: true as const } : {}),
@@ -77,6 +83,17 @@ export type Model = {
   // A provider-side cap on request duration; runs cut off there count as
   // unsolved attempts (status "timeout") rather than being retried.
   providerTimeLimit?: { seconds: number; note: string };
+  // True for a model from the user's own OpenAI-compatible server, see
+  // localModels below. Such a model has no OpenRouter provider pin, no cost,
+  // and no endpoint availability to check.
+  local?: true;
+  // Base URL of the user's server, persisted to local-models.json so a
+  // later export or re-run knows where the model lived.
+  localBaseURL?: string;
+  // True for a registry entry: a local model benched in an earlier session and
+  // restored from local-models.json. The server it lived on is usually off, so
+  // --all-missing skips it; run it by name with its env vars set.
+  fromRegistry?: true;
 };
 
 export type OutputMode = "json_schema" | "text";
@@ -766,4 +783,125 @@ for (const [family, evidence] of Object.entries(effortFamilies)) {
   }
 }
 export const NEW_VARIANT_NAMES = new Set(addedModels.map((model) => model.name));
-export const MODELS: Model[] = [...configuredModels, ...addedModels];
+
+// A model that the user serves on their own machine: vLLM, SGLang, llama.cpp,
+// LM Studio, Ollama, or any other server with an OpenAI-compatible /v1
+// endpoint. The bench machine reaches it over the network:
+//
+//   NONOBENCH_LOCAL_BASE_URL=http://192.168.1.20:8000/v1 \
+//   NONOBENCH_LOCAL_MODEL=Qwen3-32B bun run bench --model Qwen3-32B
+//
+// Bind the server to an address the bench machine can reach, for example with
+// --host 0.0.0.0. Local runs cost $0. Text mode is the default, because many
+// local servers accept a JSON schema request and then ignore it. Set
+// NONOBENCH_OUTPUT_MODE=json_schema when the server enforces the schema.
+const localBaseUrl = process.env.NONOBENCH_LOCAL_BASE_URL;
+const localModelId = process.env.NONOBENCH_LOCAL_MODEL;
+const localEffort = process.env.NONOBENCH_LOCAL_EFFORT ?? "none";
+const localModels: Model[] = localBaseUrl && localModelId
+  ? [{
+    llm: createOpenAICompatible({
+      name: "local",
+      baseURL: localBaseUrl,
+      apiKey: process.env.NONOBENCH_LOCAL_API_KEY ?? "local",
+      fetch: fetchWithoutIdleTimeout,
+    })(localModelId),
+    name: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
+    family: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
+    // Label only: the runner never sends reasoning settings to a local
+    // server, so this records what the user configured there.
+    effort: localEffort,
+    // Label only, like effort: the dashboard's reasoning filter uses it.
+    reasoning: localEffort !== "none",
+    outputMode: "text",
+    local: true,
+    localBaseURL: localBaseUrl,
+  }]
+  : [];
+
+// Local model registry: models benched against the user's own server, persisted
+// so exports, the visualizer, and re-runs recognize them without env vars.
+// A bench run registers its local model automatically (see bench.ts). The file
+// holds the user's server address, so it is gitignored.
+const localRegistryPath = process.env.NONOBENCH_LOCAL_MODELS_JSON
+  ? pathToFileURL(process.env.NONOBENCH_LOCAL_MODELS_JSON)
+  : new URL("./local-models.json", import.meta.url);
+export type LocalModelRegistryEntry = {
+  baseURL: string;
+  // The id the server returns from GET /v1/models. registerLocalModel writes it;
+  // hand-written entries may omit it, in which case the name is the id.
+  modelId?: string;
+  family?: string;
+  effort?: string;
+};
+
+function readLocalRegistry(): Record<string, LocalModelRegistryEntry> {
+  let text: string;
+  try {
+    text = readFileSync(localRegistryPath, "utf8");
+  } catch (err) {
+    // Absent is normal: a clone has no local models before its first local run.
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return {};
+    throw new Error(`${localRegistryPath.pathname} is unreadable: ${String(err)}`);
+  }
+  try {
+    return JSON.parse(text) as Record<string, LocalModelRegistryEntry>;
+  } catch (err) {
+    // A truncated write must not read as "no local models": that would silently
+    // drop a benched model from the export.
+    throw new Error(`${localRegistryPath.pathname} is not valid JSON: ${String(err)}`);
+  }
+}
+
+// The registry entry for a model name, if the model was benched from a server
+// the user hosts. export.ts labels a database model local only on this evidence,
+// so an unknown cloud model name stays a hard error instead of a silent $0 run.
+export function localRegistryEntryFor(name: string): LocalModelRegistryEntry | undefined {
+  return readLocalRegistry()[name];
+}
+
+export async function registerLocalModel(model: Model): Promise<void> {
+  if (!model.localBaseURL) return;
+  const registry = readLocalRegistry();
+  registry[model.name] = { baseURL: model.localBaseURL, modelId: model.llm.modelId, family: model.family, effort: model.effort };
+  await Bun.write(localRegistryPath, JSON.stringify(registry, null, 2) + "\n");
+}
+const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, entry]) => ({
+  llm: createOpenAICompatible({
+    name: "local",
+    baseURL: entry.baseURL,
+    apiKey: "local",
+    fetch: fetchWithoutIdleTimeout,
+  // Without a stored model id, the name is the id: hand-written entries
+  // predate the field, and the name is usually the server's id anyway.
+  })(entry.modelId ?? name),
+  name,
+  family: entry.family ?? name,
+  effort: entry.effort ?? "none",
+  // Label only, like the env model: the dashboard's reasoning filter uses it.
+  reasoning: (entry.effort ?? "none") !== "none",
+  outputMode: "text",
+  local: true,
+  localBaseURL: entry.baseURL,
+  // Registry entries label exports and answer an explicit --model. They are not
+  // part of a --all-missing run: see bench.ts.
+  fromRegistry: true,
+}));
+// Env-var models win over registry entries with the same name.
+export const MODELS: Model[] = [
+  ...configuredModels,
+  ...addedModels,
+  ...registryModels.filter((model) => localModels.every((env) => env.name !== model.name)),
+  ...localModels,
+];
+// A local model must not take a cloud model's name: --model would select both,
+// and they would overwrite each other's rows through UNIQUE(model, puzzle_id).
+{
+  const counts = new Map<string, number>();
+  for (const model of MODELS) counts.set(model.name, (counts.get(model.name) ?? 0) + 1);
+  const shadowed = [...counts.entries()].find(([, count]) => count > 1)?.[0];
+  if (shadowed) throw new Error(`Local model name '${shadowed}' shadows a cloud model; choose another NONOBENCH_LOCAL_NAME (or rename the registry entry)`);
+}
+// OpenRouter-facing list for the refresh-* and backfill-* scripts: their ids are
+// OpenRouter ids, and a local model's id is not one.
+export const CLOUD_MODELS: Model[] = MODELS.filter((model) => !model.local);

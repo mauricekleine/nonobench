@@ -1,4 +1,4 @@
-import { MODELS } from "./constants";
+import { CLOUD_MODELS } from "./constants";
 import familyDisplayNames from "./family-display-names.json";
 import overrides from "./model-metadata-overrides.json";
 
@@ -8,9 +8,9 @@ if (!response.ok) throw new Error(`OpenRouter model list failed: HTTP ${response
 const listing = (await response.json()) as { data: OpenRouterModel[] };
 if (!Array.isArray(listing.data)) throw new Error("OpenRouter model list has no data array");
 const models = new Map(listing.data.map((model) => [model.id, model]));
-const ids = [...new Set(MODELS.map((model) => model.llm.modelId))].sort();
+const ids = [...new Set(CLOUD_MODELS.map((model) => model.llm.modelId))].sort();
 const familyName = (id: string) => {
-	const family = MODELS.find((model) => model.llm.modelId === id)?.family ?? id.split("/")[1] ?? id;
+	const family = CLOUD_MODELS.find((model) => model.llm.modelId === id)?.family ?? id.split("/")[1] ?? id;
 	const displayName = (familyDisplayNames as Record<string, string>)[family];
 	if (!displayName) throw new Error(`Missing family display name for ${family}`);
 	return displayName;
