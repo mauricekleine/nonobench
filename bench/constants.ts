@@ -722,6 +722,9 @@ const configuredModels: Model[] = ([
   // on their machine. Re-run here so every answer is stored and inspectable.
   // Its three OpenRouter levels are Qwen's native ones.
   { ...reasoningModel("qwen/qwen3.8-27b", "qwen3.8-27b", "low"), outputMode: "text" },
+  // New release (2026-09-28): full ladder, the natural comparison to Opus 5.5
+  // at half the price. Anthropic's endpoint supports structured outputs.
+  reasoningModel("anthropic/claude-sonnet-5.5", "claude-sonnet-5.5", "low"),
   // New release (2026-09-30): GPT-6.1 Sol, full ladder to compare with GPT-6 Sol.
   reasoningModel("openai/gpt-6.1-sol", "gpt-6.1-sol", "low"),
   // No effort control on OpenRouter: reasoning on at the provider default.

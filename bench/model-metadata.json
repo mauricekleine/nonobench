@@ -238,5 +238,10 @@
     "displayName": "GLM 5.3 Flash",
     "openWeights": true,
     "addedAt": "2026-08-26T13:59:01.000Z"
+  },
+  "anthropic/claude-sonnet-5.5": {
+    "displayName": "Claude Sonnet 5.5",
+    "openWeights": false,
+    "addedAt": "2026-09-28T18:04:46.000Z"
   }
 }

@@ -1,6 +1,6 @@
 {
   "source": "https://openrouter.ai/api/v1/models",
-  "fetchedAt": "2026-09-29T23:12:05.719Z",
+  "fetchedAt": "2026-09-29T23:15:31.173Z",
   "families": {
     "claude-opus-5.5": {
       "modelId": "anthropic/claude-opus-5.5",
@@ -359,6 +359,26 @@
       "mandatory": false,
       "supportsMaxTokens": false,
       "levels": []
+    },
+    "claude-sonnet-5.5": {
+      "modelId": "anthropic/claude-sonnet-5.5",
+      "supportedEfforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "high",
+      "mandatory": true,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
     }
   }
 }

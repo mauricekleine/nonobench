@@ -1,6 +1,6 @@
 // Public, unauthenticated catalog only. This prepares configs; it never calls a model.
 const modelIds = [
-  "anthropic/claude-opus-5.5", "anthropic/claude-fable-5.1",
+  "anthropic/claude-opus-5.5", "anthropic/claude-fable-5.1", "anthropic/claude-sonnet-5.5",
   "openai/gpt-6-sol", "openai/gpt-6-luna", "openai/gpt-6-astra", "openai/gpt-5.6-sol",
   "openai/gpt-6.1-sol",
   "google/gemini-3.8-flash", "x-ai/grok-4.7",
