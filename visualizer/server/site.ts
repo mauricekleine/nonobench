@@ -158,6 +158,12 @@ export async function handleRequest(request: Request, env: SiteEnv, renderPage: 
 	bindAssets(env.ASSETS);
 	const url = new URL(request.url);
 
+	// Plain HTTP redirects to HTTPS; the zone doesn't enforce it, Dokploy's proxy did.
+	if (url.protocol === "http:" && (url.hostname === "nonobench.com" || url.hostname.endsWith(".nonobench.com"))) {
+		url.protocol = "https:";
+		return new Response(null, { status: 301, headers: { Location: url.toString() } });
+	}
+
 	// The bare domain redirects to www, path and query included.
 	if (url.hostname === "nonobench.com") {
 		url.hostname = "www.nonobench.com";

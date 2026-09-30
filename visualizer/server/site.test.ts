@@ -60,6 +60,15 @@ test("the bare domain redirects to www with path and query", async () => {
 	expect(response.headers.get("Location")).toBe("https://www.nonobench.com/puzzles?puzzle=3");
 });
 
+test("plain HTTP redirects to HTTPS on the site's hosts only", async () => {
+	for (const host of ["www.nonobench.com", "nonobench.com", "beta.nonobench.com"]) {
+		const response = await site(new Request(`http://${host}/puzzles?puzzle=3`));
+		expect(response.status).toBe(301);
+		expect(response.headers.get("Location")).toBe(`https://${host}/puzzles?puzzle=3`);
+	}
+	expect((await site(new Request("http://localhost:3000/llms.txt"))).status).toBe(200);
+});
+
 test("trailing slashes redirect to the canonical path", async () => {
 	for (const [path, location] of [["/puzzles/", "/puzzles"], ["/api/v1/providers/", "/api/v1/providers"], ["/results-raw.json/?x=1", "/results-raw.json?x=1"]]) {
 		const response = await site(path);
