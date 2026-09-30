@@ -1,4 +1,4 @@
-import { MODELS, pinnedProviderFor } from "./constants";
+import { CLOUD_MODELS, pinnedProviderFor } from "./constants";
 
 type Endpoint = {
   provider_name: string;
@@ -7,7 +7,7 @@ type Endpoint = {
   supported_parameters: string[];
 };
 
-const ids = [...new Set(MODELS.map((model) => model.llm.modelId))].sort();
+const ids = [...new Set(CLOUD_MODELS.map((model) => model.llm.modelId))].sort();
 const models: Record<string, {
   pins: string[];
   firstPartyAvailable: boolean;
@@ -17,7 +17,7 @@ const models: Record<string, {
 }> = {};
 
 for (const id of ids) {
-  const pins = [...new Set(MODELS.filter((model) => model.llm.modelId === id).map(pinnedProviderFor))];
+  const pins = [...new Set(CLOUD_MODELS.filter((model) => model.llm.modelId === id).map(pinnedProviderFor))];
   const url = `https://openrouter.ai/api/v1/models/${id}/endpoints`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`${url}: ${response.status}`);

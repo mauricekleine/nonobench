@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun tools/og-image.tsx && vite dev --port 3000",
+    "dev:local": "./dev-local.sh",
     "build": "node tools/stamp-deploy.mjs && bun tools/og-image.tsx && vite build",
     "preview": "vite preview",
     "deploy": "wrangler deploy",

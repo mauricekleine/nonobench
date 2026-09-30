@@ -1,5 +1,5 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
-import { MODELS } from "./constants";
+import { MODELS, localRegistryEntryFor, type Model } from "./constants";
 import { getPuzzleId, openReadDb } from "./db";
 import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { checkClues } from "../visualizer/lib/nonogram";
@@ -358,20 +358,40 @@ const knownProviders = new Set([
 	"moonshotai", "xiaomi", "bytedance-seed", "minimax", "mistralai", "meta", "allenai",
 ]);
 const modelsByName = new Map(MODELS.map((model) => {
-	const provider = model.llm.modelId.split("/")[0];
-	if (!provider || !knownProviders.has(provider)) throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
+	const provider = model.local ? "local" : model.llm.modelId.split("/")[0] ?? "";
+	if (!model.local && (!provider || !knownProviders.has(provider))) throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
 	return [model.name, { ...model, provider }] as const;
 }));
 
 for (const [model, sizeDatas] of modelMap) {
-	const metadata = modelsByName.get(model);
+	// A local model benched in an earlier session is in local-models.json, not in
+	// MODELS (its env vars are unset). Synthesize its metadata from that entry.
+	// Only the registry counts as evidence: an unknown cloud model name must stay
+	// a hard error, not a silent $0 local run.
+	const registryEntry = localRegistryEntryFor(model);
+	const metadata = modelsByName.get(model) ?? (registryEntry
+		? {
+			llm: { modelId: model } as Model["llm"],
+			name: model,
+			family: registryEntry.family ?? model,
+			effort: registryEntry.effort ?? "none",
+			// Label only, like the runner: the dashboard's reasoning filter uses it.
+			reasoning: (registryEntry.effort ?? "none") !== "none",
+			local: true as const,
+			provider: "local",
+		}
+		: undefined);
 	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
 	const { provider } = metadata;
-	const catalog = (modelMetadata as Record<string, { displayName: string; openWeights: boolean | null; addedAt: string | null }>)[metadata.llm.modelId];
-	if (!catalog) throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
-	const familyDisplayName = (familyDisplayNames as Record<string, string>)[metadata.family];
+	const catalog = metadata.local
+		? null
+		: (modelMetadata as Record<string, { displayName: string; openWeights: boolean | null; addedAt: string | null }>)[metadata.llm.modelId];
+	if (!metadata.local && !catalog) throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
+	const familyDisplayName = (familyDisplayNames as Record<string, string>)[metadata.family] ?? (metadata.local ? model : undefined);
 	if (!familyDisplayName) throw new Error(`Missing family display name for ${metadata.family}`);
-	const displayName = `${familyDisplayName} (${metadata.effort === "none" ? "no reasoning" : metadata.effort === "default" ? "reasoning" : metadata.effort})`;
+	const displayName = metadata.local
+		? model
+		: `${familyDisplayName} (${metadata.effort === "none" ? "no reasoning" : metadata.effort === "default" ? "reasoning" : metadata.effort})`;
 	const weightOverride = (metadataOverrides as Record<string, { openWeights: boolean; sourceUrl: string }>)[metadata.llm.modelId];
 	// Sort size data by size
 	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
@@ -411,8 +431,10 @@ for (const [model, sizeDatas] of modelMap) {
 		displayName,
 		familyDisplayName,
 		providerName: PROVIDERS[provider]?.name ?? provider,
-		openWeights: weightOverride?.openWeights ?? catalog.openWeights,
-		addedAt: catalog.addedAt,
+		// A model you serve yourself runs open weights by definition; the catalog has
+		// no entry for it, so the catalog lookup alone would report "unknown".
+		openWeights: weightOverride?.openWeights ?? catalog?.openWeights ?? (metadata.local ? true : null),
+		addedAt: catalog?.addedAt ?? null,
 		provider,
 		family: metadata.family,
 		effort: metadata.effort,

@@ -22,10 +22,14 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .env.production.local
 .env.local
 
+# local model registry (contains the user's server address)
+bench/local-models.json
+
 # caches
 .eslintcache
 .cache
 *.tsbuildinfo
+
 
 # IntelliJ based IDEs
 .idea
