@@ -4,15 +4,16 @@ import * as agent from "./agent";
 import * as api from "./api";
 import { handleMcp } from "./mcp";
 import { openApiSpec } from "./openapi";
+import { isWorkshopPath, rejectPlainHttp, WORKSHOP_PATH, workshopEnabled, workshopReport, type WorkshopEnv } from "./workshop";
 
 // Everything the Worker does before a request reaches the static assets or
 // the page renderer: the agent and API routes, the MCP server, markdown
 // negotiation, and the response headers the site has always sent.
 
-export type SiteEnv = { ASSETS: AssetFetcher };
+export type SiteEnv = { ASSETS: AssetFetcher } & WorkshopEnv;
 export type RenderPage = (request: Request) => Response | Promise<Response>;
 
-type Handler = (request: Request, params: Record<string, string>) => Response | Promise<Response>;
+type Handler = (request: Request, params: Record<string, string>, env: SiteEnv) => Response | Promise<Response>;
 type Route = { path: string; GET?: Handler; POST?: Handler };
 
 const ROUTES: Route[] = [
@@ -65,11 +66,11 @@ function matchRoute(pathname: string) {
 
 // Route handler semantics: HEAD runs GET without a body, OPTIONS lists the
 // allowed methods, and any other method is 405.
-async function dispatch(request: Request, route: Route, params: Record<string, string>) {
+async function dispatch(request: Request, route: Route, params: Record<string, string>, env: SiteEnv) {
 	const methods = (["GET", "POST"] as const).filter((method) => route[method]);
 	const handler = request.method === "HEAD" ? route.GET : route[request.method as "GET" | "POST"];
 	if (handler) {
-		const response = await handler(request, params);
+		const response = await handler(request, params, env);
 		return request.method === "HEAD" ? new Response(null, response) : response;
 	}
 	if (request.method === "OPTIONS") {
@@ -91,9 +92,10 @@ const AGENT_LINKS = [
 	'</sitemap.xml>; rel="sitemap"; type="application/xml"',
 ].join(", ");
 
+// The workshop endpoint takes a bearer credential, so it stays same-origin.
 const PUBLIC_CORS = (pathname: string) =>
 	pathname === "/api" ||
-	pathname.startsWith("/api/") ||
+	(pathname.startsWith("/api/") && !isWorkshopPath(pathname)) ||
 	pathname.startsWith("/.well-known/") ||
 	pathname === "/llms.txt" ||
 	pathname === "/results-raw.json";
@@ -125,13 +127,14 @@ async function route(request: Request, url: URL, env: SiteEnv, renderPage: Rende
 	}
 
 	if (url.pathname === "/mcp") return handleMcp(request);
+	if (url.pathname === WORKSHOP_PATH && workshopEnabled(env)) return workshopReport(request, env);
 
 	const twin = MARKDOWN_TWINS[url.pathname];
 	const accept = request.headers.get("Accept") ?? "";
 	const pathname = twin && accept.includes("text/markdown") ? twin : url.pathname;
 
 	const matched = matchRoute(pathname);
-	if (matched) return dispatch(request, matched.route, matched.params);
+	if (matched) return dispatch(request, matched.route, matched.params, env);
 
 	// The Open Graph image is rendered at build time (tools/og-image.tsx).
 	if (pathname === "/opengraph-image") {
@@ -164,6 +167,7 @@ export async function handleRequest(request: Request, env: SiteEnv, renderPage: 
 	// Plain HTTP redirects to HTTPS; the zone doesn't enforce it, Dokploy's proxy did.
 	// 308 keeps the method, so an MCP client POSTing to an http:// URL still POSTs.
 	if (url.protocol === "http:" && (url.hostname === "nonobench.com" || url.hostname.endsWith(".nonobench.com"))) {
+		if (workshopEnabled(env) && isWorkshopPath(url.pathname)) return withSiteHeaders(url, rejectPlainHttp());
 		url.protocol = "https:";
 		const status = request.method === "GET" || request.method === "HEAD" ? 301 : 308;
 		return new Response(null, { status, headers: { Location: url.toString() } });

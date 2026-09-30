@@ -22,7 +22,10 @@
 		// Built with CLOUDFLARE_ENV=beta (bun run deploy:beta); deploys as the
 		// separate Worker nonobench-beta on beta.nonobench.com only.
 		"beta": {
-			"routes": [{ "pattern": "beta.nonobench.com", "custom_domain": true }]
+			"routes": [{ "pattern": "beta.nonobench.com", "custom_domain": true }],
+			// The MCP workshop's protected endpoint (server/workshop.ts). Its key is
+			// the secret WORKSHOP_API_KEY on nonobench-beta; see workshop/README.md.
+			"vars": { "WORKSHOP_ENABLED": "true" }
 		}
 	}
 }

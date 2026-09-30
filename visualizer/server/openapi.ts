@@ -1,4 +1,6 @@
-import { SITE_URL, SIZES } from "@/lib/data";
+import { getLeaderboard, getModel, RESULTS_TIMESTAMP, SITE_URL, SIZES } from "@/lib/data";
+
+import { WORKSHOP_PATH, WORKSHOP_REPORT, workshopEnabled, type WorkshopEnv } from "./workshop";
 
 const sizeParam = {
 	name: "size",
@@ -307,6 +309,53 @@ const spec = {
 	},
 };
 
-export function openApiSpec() {
-	return Response.json(spec);
+// Examples come from the current results, so the model IDs in them are real.
+function withExamples(document: typeof spec) {
+	const board = getLeaderboard("15x15", { effort: "best", minCorrect: 1 });
+	const model = board[0]?.model;
+	const paths = document.paths as unknown as Record<string, { get: Record<string, unknown> }>;
+	const leaderboard = paths["/api/v1/leaderboard"].get;
+	leaderboard.description = `Example: \`GET /api/v1/leaderboard?size=15x15&effort=best&min_correct=1\` ranks each family's best 15x15 variant. Model ids in the response (e.g. \`${model}\`) are what /api/v1/models/{model} takes.`;
+	(leaderboard.responses as Record<string, { content: Record<string, Record<string, unknown>> }>)["200"].content["application/json"].examples = {
+		best15x15: {
+			summary: "size=15x15&effort=best&min_correct=1 (first two rows)",
+			value: { updatedAt: RESULTS_TIMESTAMP, size: "15x15", models: board.slice(0, 2) },
+		},
+	};
+	const modelResults = paths["/api/v1/models/{model}"].get;
+	modelResults.parameters = [{ name: "model", in: "path", required: true, description: "Model variant id from the leaderboard.", schema: { type: "string" }, example: model }];
+	(modelResults.responses as Record<string, { content: Record<string, Record<string, unknown>> }>)["200"].content["application/json"].examples = {
+		[model]: { summary: `GET /api/v1/models/${model}`, value: getModel(model) },
+	};
+	return document;
+}
+
+// On the workshop deployment the spec also documents the protected endpoint
+// and points at this host, where that endpoint exists.
+function withWorkshop(document: typeof spec, origin: string) {
+	document.servers = [{ url: origin }];
+	(document.paths as Record<string, unknown>)[WORKSHOP_PATH] = {
+		get: {
+			operationId: "getWorkshopReport",
+			summary: "Workshop report (protected, sample data)",
+			description:
+				"Read-only sample data for the MCP workshop; not benchmark results. Requires the shared workshop key as a bearer token: `Authorization: Bearer <key>`. Use https:// only.",
+			security: [{ workshopKey: [] }],
+			responses: {
+				"200": { description: "Sample workshop report", content: { "application/json": { schema: { type: "object", properties: { sample: { type: "boolean", const: true }, notice: { type: "string" } } }, example: WORKSHOP_REPORT } } },
+				"401": { ...error, description: "Missing, invalid or revoked workshop key" },
+				"403": { ...error, description: "Request sent over plain http://" },
+				"503": { ...error, description: "The workshop endpoint is not configured" },
+			},
+		},
+	};
+	(document.components as Record<string, unknown>).securitySchemes = {
+		workshopKey: { type: "http", scheme: "bearer", description: "The shared workshop key, handed out at the workshop." },
+	};
+	return document;
+}
+
+export function openApiSpec(request: Request, _params?: Record<string, string>, env: WorkshopEnv = {}) {
+	const document = withExamples(structuredClone(spec));
+	return Response.json(workshopEnabled(env) ? withWorkshop(document, new URL(request.url).origin) : document);
 }
