@@ -137,14 +137,17 @@ async function route(request: Request, url: URL, env: SiteEnv, renderPage: Rende
 	}
 
 	const asset = await env.ASSETS.fetch(request);
+	// Files and pages only answer GET and HEAD.
+	if (asset.status === 405) return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
 	if (asset.status !== 404) return asset;
 
 	// Not a file: render the page. Pages are prerendered into the assets at
-	// build time, so at runtime this renders the not-found page.
-	if (request.method !== "GET" && request.method !== "HEAD") {
-		return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
-	}
-	const page = await renderPage(request);
+	// build time, so at runtime this renders the not-found page. It is HTML
+	// whatever the method or Accept header: MCP clients probe paths such as
+	// /.well-known/oauth-protected-resource with Accept: application/json and
+	// read a 404 as "no auth", but TanStack Start answers 406 to requests that
+	// don't accept HTML.
+	const page = await renderPage(new Request(url, { method: request.method === "HEAD" ? "HEAD" : "GET", headers: { Accept: "text/html" } }));
 	if (page.status !== 404) return page;
 	const headers = new Headers(page.headers);
 	headers.set("Cache-Control", "private, no-cache, no-store, max-age=0, must-revalidate");

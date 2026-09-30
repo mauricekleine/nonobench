@@ -80,6 +80,17 @@ const ROUTES = [
 	["mcp", "/mcp", { method: "POST", headers: { ...mcpHeaders, "MCP-Protocol-Version": "2026-07-28", "Mcp-Method": "tools/list" }, body: modern(2, "tools/list") }, "json"],
 	["mcp", "/mcp", { method: "POST", headers: { ...mcpHeaders, "MCP-Protocol-Version": "2026-07-28", "Mcp-Method": "tools/call", "Mcp-Name": "get_leaderboard" }, body: modern(3, "tools/call", { name: "get_leaderboard", arguments: { size: "5x5", effort: "best" } }) }, "json"],
 	["mcp (2025 initialize)", "/mcp", { method: "POST", headers: mcpHeaders, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "parity", version: "1.0.0" } } }) }, "sse"],
+	["mcp (2024-11-05 initialize)", "/mcp", { method: "POST", headers: mcpHeaders, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2024-11-05", capabilities: {}, clientInfo: { name: "parity", version: "1.0.0" } } }) }, "sse"],
+	["mcp (notification)", "/mcp", { method: "POST", headers: { ...mcpHeaders, "MCP-Protocol-Version": "2025-06-18" }, body: JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) }, "none"],
+	["mcp (2025 tools/list)", "/mcp", { method: "POST", headers: { ...mcpHeaders, "MCP-Protocol-Version": "2025-06-18" }, body: JSON.stringify({ jsonrpc: "2.0", id: 4, method: "tools/list" }) }, "sse"],
+	["mcp (406)", "/mcp", { method: "POST", headers: { ...json, Accept: "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 5, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "parity", version: "1.0.0" } } }) }, "json"],
+	["mcp (parse error)", "/mcp", { method: "POST", headers: mcpHeaders, body: "{not json" }, "json"],
+	["mcp (405)", "/mcp", { method: "PUT" }, "none"],
+	["redirect", "/mcp/", { method: "POST", headers: mcpHeaders, body: modern(6, "server/discover") }, "none"],
+	// MCP clients and directories probe these; 404 means "no auth" and "no such document".
+	...["/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp", "/.well-known/oauth-authorization-server", "/.well-known/openid-configuration", "/.well-known/mcp.json"].map((path) => ["discovery (404)", path, { headers: { Accept: "application/json" } }, "html"]),
+	["unknown (404)", "/register", { method: "POST", headers: json, body: "{}" }, "html"],
+	["api (unknown, JSON)", "/api/v1/nope", { headers: { Accept: "application/json" } }, "html"],
 ];
 
 // Visible text and head metadata: what a reader or a crawler gets from a page.
@@ -167,7 +178,7 @@ for (const route of ROUTES) {
 	if (b.headers["x-robots-tag"] === "noindex" && !a.headers["x-robots-tag"] && !INDEXABLE.has(new URL(candidate).hostname)) b.headers["x-robots-tag"] = null;
 	const headerDiffs = HEADERS.filter((name) => a.headers[name] !== b.headers[name]).map((name) => `${name}: ${JSON.stringify(a.headers[name])} → ${JSON.stringify(b.headers[name])}`);
 	const method = init.method ?? "GET";
-	const rpc = path === "/mcp" && init.body ? ` ${JSON.parse(init.body).method}` : "";
+	const rpc = path.startsWith("/mcp") && init.body ? ` ${(() => { try { return JSON.parse(init.body).method; } catch { return "(invalid JSON)"; } })()}` : "";
 	const request = `${method} ${path}${rpc}${init.headers?.Accept === "text/markdown" ? " (Accept: text/markdown)" : ""}`;
 	const contentType = a.headers["content-type"] === b.headers["content-type"] ? (a.headers["content-type"] ?? "–") : `${a.headers["content-type"]} → ${b.headers["content-type"]}`;
 	rows.push(`| ${label} | \`${request}\` | ${a.status === b.status ? a.status : `${a.status} → ${b.status}`} | ${contentType} | ${headerDiffs.length ? `${headerDiffs.length} differ` : "same"} | ${body.same ? body.note || "–" : "**differs**"} | ${a.ms} / ${b.ms} ms |`);

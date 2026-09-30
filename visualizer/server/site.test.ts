@@ -90,6 +90,21 @@ test("unknown paths render the not-found page, never cached", async () => {
 	expect(response.headers.get("Cache-Control")).toBe("private, no-cache, no-store, max-age=0, must-revalidate");
 });
 
+// MCP clients probe OAuth metadata with Accept: application/json and treat 404 as "no auth".
+test("unknown paths are 404 whatever the method or Accept header", async () => {
+	for (const path of ["/.well-known/oauth-protected-resource", "/.well-known/oauth-authorization-server", "/api/v1/nope"]) {
+		const response = await site(path, { headers: { Accept: "application/json" } });
+		expect({ path, status: response.status }).toEqual({ path, status: 404 });
+	}
+	for (const method of ["POST", "PUT", "DELETE"]) expect((await site("/register", { method })).status).toBe(404);
+});
+
+test("files and pages answer other methods than GET and HEAD with 405", async () => {
+	const response = await site("/results-raw.json", { method: "POST" });
+	expect(response.status).toBe(405);
+	expect(response.headers.get("Allow")).toBe("GET, HEAD");
+});
+
 test("the Open Graph image is served from its build-time asset", async () => {
 	const requested: string[] = [];
 	const assets = { ASSETS: { fetch: async (input: Request | URL | string) => {
