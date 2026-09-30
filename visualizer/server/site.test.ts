@@ -66,6 +66,9 @@ test("plain HTTP redirects to HTTPS on the site's hosts only", async () => {
 		expect(response.status).toBe(301);
 		expect(response.headers.get("Location")).toBe(`https://${host}/puzzles?puzzle=3`);
 	}
+	const post = await site(new Request("http://www.nonobench.com/mcp", { method: "POST", body: "{}" }));
+	expect(post.status).toBe(308);
+	expect(post.headers.get("Location")).toBe("https://www.nonobench.com/mcp");
 	expect((await site(new Request("http://localhost:3000/llms.txt"))).status).toBe(200);
 });
 

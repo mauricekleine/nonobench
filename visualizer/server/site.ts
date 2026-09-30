@@ -159,9 +159,11 @@ export async function handleRequest(request: Request, env: SiteEnv, renderPage: 
 	const url = new URL(request.url);
 
 	// Plain HTTP redirects to HTTPS; the zone doesn't enforce it, Dokploy's proxy did.
+	// 308 keeps the method, so an MCP client POSTing to an http:// URL still POSTs.
 	if (url.protocol === "http:" && (url.hostname === "nonobench.com" || url.hostname.endsWith(".nonobench.com"))) {
 		url.protocol = "https:";
-		return new Response(null, { status: 301, headers: { Location: url.toString() } });
+		const status = request.method === "GET" || request.method === "HEAD" ? 301 : 308;
+		return new Response(null, { status, headers: { Location: url.toString() } });
 	}
 
 	// The bare domain redirects to www, path and query included.
