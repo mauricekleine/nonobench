@@ -225,6 +225,15 @@ const runBench = async (args: string[], env: Record<string, string> = {}) => {
   return { exitCode, stdout, stderr };
 };
 
+test("bench refuses to write a local model to the shared database, however it is spelled", async () => {
+  // The guard exits before the server check, so the unreachable server in localEnv is never called.
+  for (const db of [undefined, "results.db", "./results.db", join(import.meta.dir, "results.db")]) {
+    const out = await runBench(["--model", "Env-Override"], db === undefined ? {} : { NONOBENCH_DB: db });
+    expect(out.exitCode).toBe(1);
+    expect(out.stderr).toContain("Local models write to their own database");
+  }
+}, 30000);
+
 test("bench refuses a model id the server does not serve", async () => {
   const server = fakeServer(["real-model"]);
   try {

@@ -1,4 +1,5 @@
 import { generateText, jsonSchema, NoObjectGeneratedError, Output, streamText } from "ai";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PUZZLES, type Puzzle } from "../visualizer/components/puzzles";
 import {
@@ -96,9 +97,10 @@ const selectedModels = allMissing
   : MODELS.filter((model) => selectedNames.has(model.name));
 // Local runs must not land in the shared dataset: it is the published data,
 // and the export-contract test checks it against the committed exports.
+// resolve() so NONOBENCH_DB=results.db or ./results.db run from bench/ counts too.
 if (
   selectedModels.some((model) => model.local) &&
-  dbPath === fileURLToPath(new URL("./results.db", import.meta.url))
+  resolve(dbPath) === fileURLToPath(new URL("./results.db", import.meta.url))
 ) {
   console.error("Local models write to their own database: use bun run bench:local, or set NONOBENCH_DB.");
   process.exit(1);
