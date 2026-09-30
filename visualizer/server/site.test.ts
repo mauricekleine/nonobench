@@ -76,7 +76,14 @@ test("trailing slashes redirect to the canonical path", async () => {
 	for (const [path, location] of [["/puzzles/", "/puzzles"], ["/api/v1/providers/", "/api/v1/providers"], ["/results-raw.json/?x=1", "/results-raw.json?x=1"]]) {
 		const response = await site(path);
 		expect(response.status).toBe(308);
-		expect(response.headers.get("Location")).toBe(location);
+		expect(response.headers.get("Location")).toBe(`https://www.nonobench.com${location}`);
+	}
+});
+
+test("the trailing-slash redirect never leaves the site", async () => {
+	for (const url of ["https://www.nonobench.com//", "https://www.nonobench.com//example.com/", "https://www.nonobench.com/\\example.com/", "https://www.nonobench.com///example.com//?x=1"]) {
+		const location = (await site(new Request(url))).headers.get("Location") ?? "";
+		expect({ url, origin: new URL(location, url).origin }).toEqual({ url, origin: "https://www.nonobench.com" });
 	}
 });
 

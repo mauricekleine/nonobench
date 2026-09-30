@@ -116,9 +116,12 @@ function withSiteHeaders(url: URL, response: Response) {
 }
 
 async function route(request: Request, url: URL, env: SiteEnv, renderPage: RenderPage): Promise<Response> {
-	// One canonical form per URL, as before: no trailing slash.
+	// One canonical form per URL, as before: no trailing slash. The Location is
+	// absolute on this origin: a relative one would send //example.com/ off-site.
 	if (url.pathname !== "/" && url.pathname.endsWith("/")) {
-		return new Response(null, { status: 308, headers: { Location: `${url.pathname.replace(/\/+$/, "") || "/"}${url.search}` } });
+		const target = new URL(url);
+		target.pathname = url.pathname.replace(/\/+$/, "") || "/";
+		return new Response(null, { status: 308, headers: { Location: target.toString() } });
 	}
 
 	if (url.pathname === "/mcp") return handleMcp(request);
