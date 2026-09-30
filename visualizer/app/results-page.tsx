@@ -11,7 +11,7 @@ import {
   Rows,
   XLogo,
 } from "@phosphor-icons/react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -91,10 +91,9 @@ const control =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
 
 // Run progress per variant, for watching a benchmark wave locally. Shown in
-// `next dev`, or in a local production build with NEXT_PUBLIC_SHOW_PROGRESS=1.
+// `vite dev`, or in a local production build with VITE_SHOW_PROGRESS=1.
 const showProgress =
-  process.env.NODE_ENV === "development" ||
-  process.env.NEXT_PUBLIC_SHOW_PROGRESS === "1";
+  import.meta.env.DEV || import.meta.env.VITE_SHOW_PROGRESS === "1";
 
 function IncompleteBadge({ model, size }: { model: Model; size?: string }) {
   const runs = chartStats(model, size).runs;
@@ -253,7 +252,7 @@ export default function ResultsPage({
             <h1 className="pb-px font-display text-2xl font-semibold lowercase leading-none tracking-[-0.02em] sm:text-4xl">
               nonobench<span className="sr-only"> results</span>
             </h1>
-            <Link href="/how-it-works#whats-new" className="mb-0.5 rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link>
+            <Link to="/how-it-works" hash="whats-new" className="mb-0.5 rounded-full border border-ember/50 px-2 py-0.5 font-mono text-[10px] text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">v1.2</Link>
           </div>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
             How well LLMs solve nonogram puzzles. Compare accuracy, speed
@@ -266,9 +265,9 @@ export default function ResultsPage({
             </span>
           </div>
           <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 whitespace-nowrap sm:mt-5" aria-label="Site navigation">
-            <Link href="/how-it-works" className={control}><Question size={16} />How it works</Link>
-            <Link href="/puzzles" className={control}><Rows size={16} />Explore puzzles</Link>
-            <Link href="/puzzles/overview" className={control}><GridFour size={16} />Puzzle insights</Link>
+            <Link to="/how-it-works" className={control}><Question size={16} />How it works</Link>
+            <Link to="/puzzles" className={control}><Rows size={16} />Explore puzzles</Link>
+            <Link to="/puzzles/overview" className={control}><GridFour size={16} />Puzzle insights</Link>
             <a href="/results-raw.json" download className={control}><DownloadSimple size={16} />Raw results</a>
           </nav>
         </header>
@@ -614,7 +613,7 @@ export default function ResultsPage({
               <XLogo size={16} />
               @mauricekleine
             </a>
-            <Link href="/privacy" className="hover:text-foreground">
+            <Link to="/privacy" className="hover:text-foreground">
               Privacy
             </Link>
           </span>

@@ -1,0 +1,28 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// nonobench.com as a TanStack Start Worker with static assets.
+	// The top level is production; Workers Builds deploys it from main. Its
+	// routes (nonobench.com/* and www.nonobench.com/*, on the existing proxied
+	// DNS records) are managed in the Cloudflare dashboard, so none are listed
+	// here: wrangler deploy leaves routes it doesn't define alone, but routes
+	// added here would replace the dashboard's set on the next deploy.
+	"name": "nonobench",
+	"compatibility_date": "2026-09-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "./app/server.ts",
+	"assets": {
+		"binding": "ASSETS",
+		// The Worker sees every request: it adds the agent Link, CORS and
+		// noindex headers, negotiates markdown and redirects the apex to www.
+		"run_worker_first": true
+	},
+	"workers_dev": false,
+	"observability": { "enabled": true },
+	"env": {
+		// Built with CLOUDFLARE_ENV=beta (bun run deploy:beta); deploys as the
+		// separate Worker nonobench-beta on beta.nonobench.com only.
+		"beta": {
+			"routes": [{ "pattern": "beta.nonobench.com", "custom_domain": true }]
+		}
+	}
+}

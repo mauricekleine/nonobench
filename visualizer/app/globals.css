@@ -1,5 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* Superthread type roles: a wide, squared display face for the wordmark and
+   headings, a warm round sans for body, Fragment Mono for numbers and meta. */
+@import "@fontsource-variable/unbounded/wght.css";
+@import "@fontsource-variable/figtree/wght.css";
+@import "@fontsource/fragment-mono/latin-400.css";
 @theme inline {
   @keyframes accordion-down {
     from {
@@ -249,6 +254,9 @@
     background: var(--night-deep);
   }
   body {
+    --font-display: "Unbounded Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "Fragment Mono", ui-monospace, monospace;
     @apply bg-background text-foreground;
   }
   .dark body {

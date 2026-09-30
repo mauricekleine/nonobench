@@ -13,7 +13,7 @@ Nonograms (also known as Picross, Griddlers, or Paint by Numbers) are logic puzz
 ```
 nonobench/
 ├── bench/          # Benchmark runner, results database and exporter
-└── visualizer/     # Next.js dashboard (nonobench.com), also home of the puzzle set
+└── visualizer/     # TanStack Start dashboard on Cloudflare Workers (nonobench.com), also home of the puzzle set
 ```
 
 ## Prerequisites
@@ -212,6 +212,13 @@ bun run dev:local
 
 While that server runs, `bun test` in `bench` fails one test: the export-contract test compares the dashboard's data files against `bench/results.db`, and `dev:local` has put your runs in them. Stop the server, let the script restore the committed files, and the suite passes again.
 
+### 5. Deploying
+
+The visualizer is a Cloudflare Worker (`visualizer/wrangler.jsonc`). Pages are prerendered at build time and served as static assets; the Worker serves the API, the MCP server and the agent routes, reading the exported JSON through its assets binding. Merging to `main` deploys production through Cloudflare Workers Builds. From `visualizer/`:
+
+- `bun run deploy:beta` builds the checkout and deploys it to [beta.nonobench.com](https://beta.nonobench.com), a separate Worker that sends `X-Robots-Tag: noindex`.
+- `bun run deploy:verify <sha>` waits until the live Worker runs a build containing that commit: production for commits on `main`, the beta for branch commits.
+
 ## Agent Access
 
 nonobench.com exposes the benchmark data to agents, with no authentication:
@@ -262,7 +269,8 @@ Edit `bench/constants.ts` to configure:
 - TypeScript
 
 **Visualizer**
-- [Next.js 16](https://nextjs.org) - React framework
+- [TanStack Start](https://tanstack.com/start) - React framework, prerendered pages
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/) - hosting, with static assets
 - [React 19](https://react.dev) - UI library
 - [Tailwind CSS 4](https://tailwindcss.com) - Styling
 - [shadcn/ui](https://ui.shadcn.com) - Component library
