@@ -49,17 +49,18 @@ const jsonLd = {
 };
 
 export const Route = createRootRoute({
-	head: () => ({
+	head: ({ match }) => ({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ title: TITLE },
+			// An unknown path renders the not-found page under the root route.
+			{ title: match._notFound ? "404: This page could not be found." : TITLE },
 			{ name: "description", content: DESCRIPTION },
 			{ name: "author", content: "Maurice Kleine" },
 			{ name: "keywords", content: KEYWORDS.join(",") },
 			{ name: "creator", content: "Maurice Kleine" },
 			{ name: "publisher", content: "Maurice Kleine" },
-			{ name: "robots", content: "index, follow" },
+			{ name: "robots", content: match._notFound ? "noindex" : "index, follow" },
 			{ name: "googlebot", content: "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1" },
 			{ name: "category", content: "Technology" },
 			{ property: "og:title", content: TITLE },

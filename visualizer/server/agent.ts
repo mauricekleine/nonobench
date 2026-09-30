@@ -8,7 +8,8 @@ import { MCP_SERVER_INFO } from "@/lib/mcp";
 // Discovery surfaces for agents and crawlers: llms.txt, the markdown twins of
 // the pages, robots.txt, the sitemap and the /.well-known documents.
 
-const text = (body: string, contentType: string) => new Response(body, { headers: { "Content-Type": contentType } });
+const text = (body: string, contentType: string, cacheControl?: string) =>
+	new Response(body, { headers: { "Content-Type": contentType, ...(cacheControl ? { "Cache-Control": cacheControl } : {}) } });
 
 export const llms = () => text(llmsTxt(), "text/plain; charset=utf-8");
 export const homeMd = () => markdownResponse(homeMarkdown());
@@ -52,7 +53,7 @@ Allow: /
 Sitemap: ${SITE_URL}/sitemap.xml
 `;
 
-export const robots = () => text(ROBOTS_TXT, "text/plain; charset=utf-8");
+export const robots = () => text(ROBOTS_TXT, "text/plain; charset=utf-8", "max-age=14400, s-maxage=31536000");
 
 const SITEMAP = [
 	{ path: "/", changeFrequency: "weekly", priority: 1 },
@@ -70,6 +71,7 @@ export function sitemap() {
 	return text(
 		`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`,
 		"application/xml",
+		"public, max-age=0, must-revalidate",
 	);
 }
 

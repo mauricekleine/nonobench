@@ -7,3 +7,12 @@
 # The build stamp must always be fresh for deploy:verify.
 /api/deploy.json
   Cache-Control: no-store
+
+# Icons revalidate every four hours, as before.
+/favicon.ico
+  Content-Type: image/x-icon
+  Cache-Control: public, max-age=14400, must-revalidate
+/icon.svg
+  Cache-Control: public, max-age=14400, must-revalidate
+/apple-icon.png
+  Cache-Control: public, max-age=14400, must-revalidate
