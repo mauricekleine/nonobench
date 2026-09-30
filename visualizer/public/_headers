@@ -1,0 +1,9 @@
+# Static asset headers (Workers static assets honour this file).
+
+# Vite fingerprints everything under /assets.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The build stamp must always be fresh for deploy:verify.
+/api/deploy.json
+  Cache-Control: no-store

@@ -1,17 +1,16 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 
 import resultsData from "@/app/results.json";
 import { PUZZLES, type Puzzle } from "@/components/puzzles";
 import { parseClues } from "@/lib/nonogram";
 import { applyFilters, resolveModel, variantVersion, type BenchmarkVersion, type Filters } from "@/lib/leaderboard";
 import { PROVIDERS } from "@/lib/providers";
+import { cachedAsset } from "@/lib/assets";
 
 // Read-only views over the exported benchmark data, shared by the REST API,
 // the MCP server and the markdown pages.
 
-// Canonical host: Dokploy redirects the bare domain to www.
+// Canonical host: the bare domain redirects to www.
 export const SITE_URL = "https://www.nonobench.com";
 
 type SizeData = {
@@ -183,8 +182,15 @@ export function getModelNames() {
 	return results.byModel.map((model) => model.model);
 }
 
+const puzzleIds = new Map<Puzzle, string>();
+
 export function getPuzzleId(puzzle: Puzzle): string {
-	return createHash("md5").update(puzzle.solution).digest("hex").slice(0, 16);
+	let id = puzzleIds.get(puzzle);
+	if (!id) {
+		id = createHash("md5").update(puzzle.solution).digest("hex").slice(0, 16);
+		puzzleIds.set(puzzle, id);
+	}
+	return id;
 }
 
 function describePuzzle(puzzle: Puzzle, index: number) {
@@ -237,15 +243,8 @@ type RawRun = {
 	rawOutput: string | null;
 };
 
-let rawRuns: Promise<RawRun[]> | undefined;
-
-// The raw export is several MB, so it is only loaded when runs are requested.
-function loadRawRuns() {
-	rawRuns ??= readFile(path.join(process.cwd(), "public/results-raw.json"), "utf8").then(
-		(json) => (JSON.parse(json) as { runs: RawRun[] }).runs,
-	);
-	return rawRuns;
-}
+// The raw export is over 10 MB, so it is only loaded when runs are requested.
+const loadRawRuns = cachedAsset("/results-raw.json", (data: { runs: RawRun[] }) => data.runs);
 
 export type RunQuery = {
 	model?: string;

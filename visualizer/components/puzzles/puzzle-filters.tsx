@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import resultsData from "@/app/results.json";
 import { EffortToggle, ModelsPopover } from "@/components/filter-bar";
@@ -11,9 +11,9 @@ const models = resultsData.byModel as DisplayModel[];
 export function puzzleModel(id: string) { return models.find((model) => model.model === id); }
 
 export function usePuzzleFilters(puzzleSize?: string) {
-  const params = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
+  const searchStr = useLocation({ select: (location) => location.searchStr });
+  const params = useMemo(() => new URLSearchParams(searchStr), [searchStr]);
+  const navigate = useNavigate();
   const filters: Filters = useMemo(() => ({
     providers: params.get("p") === "~" ? [] : params.get("p")?.split(",").filter(Boolean),
     families: params.get("f") === "~" ? [] : params.get("f")?.split(",").filter(Boolean),
@@ -38,7 +38,7 @@ export function usePuzzleFilters(puzzleSize?: string) {
     if (Object.hasOwn(patch, "reasoning")) { if (patch.reasoning === undefined) next.delete("r"); else next.set("r", String(patch.reasoning)); }
     if (Object.hasOwn(patch, "openWeights")) { if (patch.openWeights === undefined) next.delete("w"); else next.set("w", String(patch.openWeights)); }
     if (Object.hasOwn(patch, "minCorrect")) { if (patch.minCorrect === 0) next.set("z", "1"); else next.delete("z"); }
-    router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
+    void navigate({ to: ".", search: Object.fromEntries(next), replace: true, resetScroll: false });
   };
   return { filters, models: filtered, change, params };
 }

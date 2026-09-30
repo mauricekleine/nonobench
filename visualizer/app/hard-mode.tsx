@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
 import {
   Tooltip,
@@ -95,7 +95,7 @@ export function HardModeIntro() {
       <p>
         Each family runs it at its best Standard effort level, and Best
         shows its best Hard result.{" "}
-        <Link href="/how-it-works" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright">
+        <Link to="/how-it-works" className="text-ember underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ember-bright">
           How it works
         </Link>
       </p>

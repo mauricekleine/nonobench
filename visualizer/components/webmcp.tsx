@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 // WebMCP: exposes the site's actions to AI agents running in the browser.
@@ -57,7 +57,7 @@ export function WebMcp() {
 				if (!response.ok) return text(await response.json());
 				const params = new URLSearchParams();
 				for (const [apiKey, urlKey] of [["provider", "p"], ["family", "f"], ["version", "v"], ["effort", "e"], ["reasoning", "r"], ["open_weights", "w"], ["size", "s"]]) if (input[apiKey] !== undefined && input[apiKey] !== "best") params.set(urlKey, String(input[apiKey]));
-				router.push(`/${params.size ? `?${params}` : ""}`);
+				void router.navigate({ href: `/${params.size ? `?${params}` : ""}` });
 				return text(`Updated leaderboard filters: ${params}`);
 			} },
 			{
@@ -115,7 +115,7 @@ export function WebMcp() {
 				},
 				execute: async ({ index, model }) => {
 					if (!Number.isInteger(Number(index)) || Number(index) < 0 || Number(index) > 39) return text("Puzzle index must be 0 through 39.");
-					router.push(`/puzzles?puzzle=${Number(index)}${model ? `&model=${encodeURIComponent(String(model))}` : ""}`);
+					void router.navigate({ href: `/puzzles?puzzle=${Number(index)}${model ? `&model=${encodeURIComponent(String(model))}` : ""}` });
 					return text(`Opened puzzle ${Number(index)}.`);
 				},
 			},

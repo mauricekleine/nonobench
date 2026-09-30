@@ -2,23 +2,29 @@
   "name": "visualizer",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "bun tools/og-image.tsx && vite dev --port 3000",
+    "build": "node tools/stamp-deploy.mjs && bun tools/og-image.tsx && vite build",
+    "preview": "vite preview",
+    "deploy": "wrangler deploy",
+    "deploy:beta": "CLOUDFLARE_ENV=beta bun run build && wrangler deploy",
+    "deploy:verify": "node tools/deploy-verify.mjs",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource-variable/unbounded": "^5.3.0",
     "@fontsource/figtree": "^5.3.0",
     "@fontsource/fragment-mono": "^5.3.0",
-    "@fontsource/ibm-plex-mono": "^5.3.0",
-    "@fontsource/inter": "^5.3.0",
     "@fontsource/unbounded": "^5.3.0",
     "@modelcontextprotocol/server": "^2.2.0",
     "@phosphor-icons/react": "^2.1.10",
+    "@tanstack/react-router": "~1.170.40",
+    "@tanstack/react-start": "~1.168.59",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "common-tags": "^1.8.2",
@@ -26,7 +32,6 @@
     "html-to-image": "^1.11.13",
     "immer": "^11.1.18",
     "nanoid": "^6.0.1",
-    "next": "^16.3.6",
     "nuqs": "^2.10.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -37,25 +42,34 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "~1.62.2",
+    "@eslint/js": "^9.39.5",
     "@modelcontextprotocol/client": "^2.2.0",
-    "@tailwindcss/postcss": "^4.3.3",
+    "@resvg/resvg-js": "~2.6.2",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/bun": "1.4.2",
     "@types/common-tags": "^1.8.4",
     "@types/node": "^26.6.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "~6.1.1",
     "eslint": "9.39.5",
-    "eslint-config-next": "^16.3.6",
+    "eslint-plugin-react-hooks": "~7.0.1",
+    "globals": "^16",
+    "satori": "~0.33.5",
     "tailwindcss": "^4.3.3",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.71.0",
+    "vite": "~8.3.1",
+    "wrangler": "~4.144.0"
   },
   "ignoreScripts": [
-    "sharp",
-    "unrs-resolver"
+    "sharp"
   ],
   "trustedDependencies": [
+    "esbuild",
     "sharp",
-    "unrs-resolver"
+    "workerd"
   ],
   "engines": {
     "node": "^24.0.0"

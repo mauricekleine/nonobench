@@ -102,6 +102,6 @@ Then check that each effort level really is a different setting: average reasoni
    - scores per size, next to the nearest comparable models;
    - the actual cost against the estimate;
    - any level trims or output-mode choices.
-4. Merging to `main` deploys through Dokploy. Once deployed, confirm the model shows up on https://www.nonobench.com/api/v1/leaderboard.
+4. Merging to `main` deploys the Worker through Cloudflare Workers Builds. Run `bun run deploy:verify <merge-sha>` in `visualizer/` until it passes, then confirm the model shows up on https://www.nonobench.com/api/v1/leaderboard.
 
 **Done when** the model is live on nonobench.com and Maurice has the results summary.

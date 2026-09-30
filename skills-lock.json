@@ -4,7 +4,7 @@
     "add-model": {
       "source": "./skills",
       "sourceType": "local",
-      "computedHash": "d44e0ae1a358eab4a61fbd349aaf12f02b93ec3cbfd050ccf1c42f393a4c136a"
+      "computedHash": "79cac5dbe51b3513db77dae7cfca3e9629ae3f3e70cb3304f74d2a70fa773f37"
     },
     "remotion-best-practices": {
       "source": "remotion-dev/skills",
