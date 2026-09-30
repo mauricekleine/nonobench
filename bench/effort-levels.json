@@ -125,6 +125,26 @@
         "max"
       ]
     },
+    "gpt-6.1-sol": {
+      "modelId": "openai/gpt-6.1-sol",
+      "supportedEfforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "medium",
+      "mandatory": true,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
     "gemini-3.8-flash": {
       "modelId": "google/gemini-3.8-flash",
       "supportedEfforts": [
