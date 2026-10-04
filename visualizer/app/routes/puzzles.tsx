@@ -1,7 +1,7 @@
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { ClientOnly, createFileRoute, Link } from "@tanstack/react-router";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { NonobenchMark } from "@/components/nonobench-mark";
 import { Nonogram } from "@/components/nonogram/nonogram";
 import { useNonogramStore } from "@/components/nonogram/store";
@@ -61,13 +61,12 @@ function PuzzlesContent() {
   // render the section isn't laid out yet, so estimate it from the viewport:
   // the grid then paints at its final size instead of shifting the page.
   const gridSection = useRef<HTMLElement>(null);
-  const zoomSet = useRef(false);
-  if (!zoomSet.current && typeof window !== "undefined") {
-    zoomSet.current = true;
+  useState(() => {
+    if (typeof window === "undefined") return;
     const viewport = window.innerWidth;
     const column = Math.min(viewport, 1280) - (viewport >= 640 ? 48 : 32) - (viewport >= 1024 ? 408 : 0);
     useNonogramStore.getState().setZoomLevel(fitZoom(puzzle, column));
-  }
+  });
   useLayoutEffect(() => {
     if (gridSection.current) useNonogramStore.getState().setZoomLevel(fitZoom(puzzle, gridSection.current.clientWidth));
   }, [puzzle]);
