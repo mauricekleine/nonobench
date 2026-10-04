@@ -1,0 +1,7 @@
+{
+  "name": "nonobench-root",
+  "private": true,
+  "devDependencies": {
+    "taze": "21.3.0"
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DragTooltip } from "./drag-tooltip";
 import { NonogramColumnClues } from "./nonogram-column-clues";
@@ -28,9 +28,9 @@ export function Nonogram({
 }: Props) {
   // Fill the store during the first render, not in an effect, so the grid is
   // never painted empty and never shifts the page when it fills in.
-  const initialized = useRef<string>(null);
-  if (initialized.current !== solution) {
-    initialized.current = solution;
+  const [initialized, setInitialized] = useState<string | null>(null);
+  if (initialized !== solution) {
+    setInitialized(solution);
     useNonogramStore.getState().initialize({ height, solution, width });
   }
 
