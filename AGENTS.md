@@ -7,5 +7,5 @@
 Upgrades follow the `mk-dependency-upgrades` skill; holds live in `taze.config.ts`. `bench`, `video` and `visualizer` are separate Bun projects with no root workspace (the root `package.json` only pins taze); `data` is a uv project.
 
 - Checks: bench `bun run typecheck && bun test`; video `bun run lint && bun run build`; visualizer `bun run lint && bun run typecheck && bun test && bun run build`; data `uv run python -m py_compile *.py`.
-- Groups: `ai` with `@ai-sdk/*` (shared `@ai-sdk/provider-utils`); `@tanstack/react-start` pins `@tanstack/react-router`; `@cloudflare/vite-plugin` pins `wrangler`; all `@remotion/*` and `remotion` at one exact version.
+- Groups: `ai` with `@ai-sdk/*` (shared `@ai-sdk/provider-utils`); `@tanstack/react-start` pins `@tanstack/react-router`; `@cloudflare/vite-plugin` pins `wrangler`; all `@remotion/*` and `remotion` at one exact version; video `overrides.typescript-eslint` replaces the 8.21.0 that `@remotion/eslint-config-flat` pins (eslint 9 only), so move it with eslint and typescript-eslint.
 - Smoke test: visualizer `bun run build && vite preview`, then with `agent-browser` open `/puzzles`, step through puzzles and select a model answer. video `remotion still <composition> out.png --frame=<n>` and look at the frame.
