@@ -1,6 +1,6 @@
 {
   "source": "https://openrouter.ai/api/v1/models",
-  "fetchedAt": "2026-09-29T23:15:31.173Z",
+  "fetchedAt": "2026-10-08T11:37:03.011Z",
   "families": {
     "claude-opus-5.5": {
       "modelId": "anthropic/claude-opus-5.5",
@@ -371,6 +371,26 @@
       ],
       "defaultEffort": "high",
       "mandatory": true,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    "claude-haiku-5.5": {
+      "modelId": "anthropic/claude-haiku-5.5",
+      "supportedEfforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "medium",
+      "mandatory": false,
       "supportsMaxTokens": false,
       "levels": [
         "low",

@@ -744,6 +744,9 @@ const configuredModels: Model[] = ([
   reasoningModel("anthropic/claude-sonnet-5.5", "claude-sonnet-5.5", "low"),
   // New release (2026-09-30): GPT-6.1 Sol, full ladder to compare with GPT-6 Sol.
   reasoningModel("openai/gpt-6.1-sol", "gpt-6.1-sol", "low"),
+  // New release (2026-10-07): Claude Haiku 5.5, full ladder to compare with
+  // Sonnet 5.5 at a twentieth of the price. Anthropic's endpoint supports structured outputs.
+  reasoningModel("anthropic/claude-haiku-5.5", "claude-haiku-5.5", "low"),
   // No effort control on OpenRouter: reasoning on at the provider default.
   { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
   defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
