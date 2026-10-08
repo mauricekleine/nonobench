@@ -1,7 +1,8 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	// nonobench.com as a TanStack Start Worker with static assets.
-	// The top level is production; Workers Builds deploys it from main. Its
+	// Workers Builds owns production deploys from main, using bunx wrangler
+	// deploy with Cloudflare credentials. Local deploy scripts are retired. Its
 	// routes (nonobench.com/* and www.nonobench.com/*, on the existing proxied
 	// DNS records) are managed in the Cloudflare dashboard, so none are listed
 	// here: wrangler deploy leaves routes it doesn't define alone, but routes
@@ -19,8 +20,8 @@
 	"workers_dev": false,
 	"observability": { "enabled": true },
 	"env": {
-		// Built with CLOUDFLARE_ENV=beta (bun run deploy:beta); deploys as the
-		// separate Worker nonobench-beta on beta.nonobench.com only.
+		// CLOUDFLARE_ENV=beta bun run build builds the separate nonobench-beta
+		// Worker for local preview. No Workers Builds trigger deploys beta.
 		"beta": {
 			"routes": [{ "pattern": "beta.nonobench.com", "custom_domain": true }]
 		}

@@ -1,9 +1,9 @@
 import { spawnSync } from "node:child_process";
 
 // Waits until the live Worker runs a build that contains the given commit.
-// Commits on origin/main are checked against production (www.nonobench.com);
-// commits only on other branches against the beta (beta.nonobench.com).
-// DEPLOY_VERIFY_URL overrides the target, DEPLOY_VERIFY_TIMEOUT the wait.
+// Workers Builds deploys origin/main to production (www.nonobench.com).
+// Branch commits need DEPLOY_VERIFY_URL for a separately deployed target;
+// DEPLOY_VERIFY_TIMEOUT overrides the wait.
 
 function git(...args) {
 	const result = spawnSync("git", args, { encoding: "utf8" });
@@ -26,7 +26,10 @@ try {
 	if (!onMain && !git("branch", "--remotes", "--contains", target).output) {
 		throw new Error(`${target} is not on any branch of origin`);
 	}
-	const base = process.env.DEPLOY_VERIFY_URL ?? (onMain ? "https://www.nonobench.com" : "https://beta.nonobench.com");
+	if (!onMain && !process.env.DEPLOY_VERIFY_URL) {
+		throw new Error("branch commits are not automatically deployed; merge to main or set DEPLOY_VERIFY_URL for a separately deployed target");
+	}
+	const base = process.env.DEPLOY_VERIFY_URL ?? "https://www.nonobench.com";
 	process.stdout.write(`Checking ${base} for ${target}${onMain ? " (on origin/main)" : " (branch commit)"}.\n`);
 
 	const deadline = Date.now() + timeout * 1000;

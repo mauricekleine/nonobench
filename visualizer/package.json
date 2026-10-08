@@ -8,8 +8,6 @@
     "dev:local": "./dev-local.sh",
     "build": "node tools/stamp-deploy.mjs && bun tools/og-image.tsx && vite build",
     "preview": "vite preview",
-    "deploy": "wrangler deploy",
-    "deploy:beta": "CLOUDFLARE_ENV=beta bun run build && wrangler deploy",
     "deploy:verify": "node tools/deploy-verify.mjs",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",

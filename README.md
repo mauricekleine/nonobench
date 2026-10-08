@@ -214,10 +214,10 @@ While that server runs, `bun test` in `bench` fails one test: the export-contrac
 
 ### 5. Deploying
 
-The visualizer is a Cloudflare Worker (`visualizer/wrangler.jsonc`). Pages are prerendered at build time and served as static assets; the Worker serves the API, the MCP server and the agent routes, reading the exported JSON through its assets binding. Merging to `main` deploys production through Cloudflare Workers Builds. From `visualizer/`:
+The visualizer is a Cloudflare Worker (`visualizer/wrangler.jsonc`). Pages are prerendered at build time and served as static assets; the Worker serves the API, the MCP server and the agent routes, reading the exported JSON through its assets binding. Workers Builds owns production deploys on merge to `main`: it runs `bun install --frozen-lockfile && bun run build`, then `bunx wrangler deploy`, from `visualizer/` with Cloudflare credentials. Local deploy scripts and Wrangler logins are retired; agents use `cf` for Cloudflare access. From `visualizer/`:
 
-- `bun run deploy:beta` builds the checkout and deploys it to [beta.nonobench.com](https://beta.nonobench.com), a separate Worker that sends `X-Robots-Tag: noindex`.
-- `bun run deploy:verify <sha>` waits until the live Worker runs a build containing that commit: production for commits on `main`, the beta for branch commits.
+- `CLOUDFLARE_ENV=beta bun run build` builds the beta Worker for local preview. The existing [beta.nonobench.com](https://beta.nonobench.com) Worker has no Workers Builds trigger; this command does not deploy it.
+- `bun run deploy:verify <sha>` waits until production runs a build containing that commit on `main`. Branch commits fail immediately unless `DEPLOY_VERIFY_URL` names a separately deployed target.
 
 ## Agent Access
 
