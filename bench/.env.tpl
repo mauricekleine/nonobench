@@ -1,0 +1,1 @@
+OPENROUTER_API_KEY=op://Soliton Agents/NONOBENCH_OPENROUTER_API_KEY/credential

@@ -68,7 +68,7 @@ Estimate cost from a comparable family already on the site: `visualizer/app/resu
 ## 4. Run
 
 ```bash
-OPENROUTER_API_KEY=$(op read "op://Private/NONOBENCH_OPENROUTER_API_KEY/password" --account kaulos.1password.eu) \
+op run --env-file .env.tpl -- \
   bun run bench --model <family>-low --model <family>-medium ... --max-cost <cap> > <scratchpad>/<family>.log 2>&1
 ```
 
