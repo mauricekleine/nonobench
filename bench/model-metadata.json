@@ -243,5 +243,10 @@
     "displayName": "Claude Sonnet 5.5",
     "openWeights": false,
     "addedAt": "2026-09-28T18:04:46.000Z"
+  },
+  "anthropic/claude-haiku-5.5": {
+    "displayName": "Claude Haiku 5.5",
+    "openWeights": false,
+    "addedAt": "2026-10-07T18:31:23.000Z"
   }
 }
