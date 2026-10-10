@@ -2,11 +2,7 @@
 
 import { parseAsString, useQueryStates } from "nuqs";
 import { useEffect } from "react";
-import {
-  availableSizes,
-  sanitizeUrlFilters,
-  type Filters,
-} from "@/lib/leaderboard";
+import { availableSizes, sanitizeUrlFilters, type Filters } from "@/lib/leaderboard";
 import { type XMetric } from "@/lib/chart-data";
 import ResultsPage from "./results-page";
 import resultsData from "./results.json";
@@ -36,22 +32,15 @@ export function UrlResultsPage() {
   useEffect(() => {
     if (!invalidSignature) return;
     const cleared: Partial<Record<keyof typeof parsers, null>> = {};
-    for (const key of invalidSignature.split(",") as (keyof typeof parsers)[])
-      cleared[key] = null;
+    for (const key of invalidSignature.split(",") as (keyof typeof parsers)[]) cleared[key] = null;
     void setQuery(cleared);
   }, [invalidSignature, setQuery]);
   const change = (patch: Partial<Filters>) => {
     void setQuery({
-      ...(Object.hasOwn(patch, "providers")
-        ? { p: patch.providers?.join(",") ?? null }
-        : {}),
+      ...(Object.hasOwn(patch, "providers") ? { p: patch.providers?.join(",") ?? null } : {}),
       ...(Object.hasOwn(patch, "families")
         ? {
-            f: patch.families
-              ? patch.families.length
-                ? patch.families.join(",")
-                : "~"
-              : null,
+            f: patch.families ? (patch.families.length ? patch.families.join(",") : "~") : null,
           }
         : {}),
       ...(Object.hasOwn(patch, "versions")
@@ -68,17 +57,13 @@ export function UrlResultsPage() {
         : {}),
       ...(Object.hasOwn(patch, "openWeights")
         ? {
-            w:
-              patch.openWeights === undefined
-                ? null
-                : String(patch.openWeights),
+            w: patch.openWeights === undefined ? null : String(patch.openWeights),
           }
         : {}),
       ...(Object.hasOwn(patch, "size") ? { s: patch.size ?? null } : {}),
     });
   };
-  const metric: XMetric =
-    query.x === "time" || query.x === "tokens" ? query.x : "cost";
+  const metric: XMetric = query.x === "time" || query.x === "tokens" ? query.x : "cost";
   return (
     <ResultsPage
       // Standard hides variants that solved nothing; Hard mode shows every run.

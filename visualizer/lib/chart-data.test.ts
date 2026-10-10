@@ -83,9 +83,9 @@ describe("chart data", () => {
       providers: ["openai"],
       families: ["Alpha"],
     });
-    expect(
-      ladders.map((ladder) => ladder.variants.map((model) => model.effort)),
-    ).toEqual([["low", "medium"]]);
+    expect(ladders.map((ladder) => ladder.variants.map((model) => model.effort))).toEqual([
+      ["low", "medium"],
+    ]);
     expect(
       effortLadders(variants, { effort: "all", providers: ["google"] }).map(
         (ladder) => ladder.variants[0].family,
@@ -123,10 +123,7 @@ describe("chart data", () => {
       ],
       {},
     );
-    expect(tied.map((group) => group.variants[0].family)).toEqual([
-      "Higher",
-      "Lower",
-    ]);
+    expect(tied.map((group) => group.variants[0].family)).toEqual(["Higher", "Lower"]);
   });
 
   test("insight summarises the selection without singling out a family", () => {
@@ -154,12 +151,12 @@ describe("chart data", () => {
   });
 
   test("insight follows the active size and does not invent declines", () => {
-    expect(
-      effortInsight(effortLadders(variants, { families: ["Alpha"] }), "5x5"),
-    ).toMatch(/^\d of 1 family/);
-    expect(
-      effortInsight(effortLadders(variants, { providers: ["google"] }), "5x5"),
-    ).toMatch(/^1 of 1 family scored higher/);
+    expect(effortInsight(effortLadders(variants, { families: ["Alpha"] }), "5x5")).toMatch(
+      /^\d of 1 family/,
+    );
+    expect(effortInsight(effortLadders(variants, { providers: ["google"] }), "5x5")).toMatch(
+      /^1 of 1 family scored higher/,
+    );
     expect(effortInsight([], "5x5")).toContain("Select families");
   });
 
@@ -176,9 +173,7 @@ describe("chart data", () => {
       ],
       {},
     );
-    expect(
-      groups.find((group) => group.variants[0].family === "Reasoning"),
-    ).toMatchObject({
+    expect(groups.find((group) => group.variants[0].family === "Reasoning")).toMatchObject({
       kind: "reasoning",
       variants: [{ effort: "none" }, { effort: "default" }],
     });
@@ -187,12 +182,10 @@ describe("chart data", () => {
         .find((group) => group.variants[0].family === "Ordered")
         ?.variants.map((model) => model.effort),
     ).toEqual(["none", "high"]);
-    expect(
-      groups.some((group) => group.variants[0].family === "Unordered"),
-    ).toBe(false);
-    expect(
-      effortInsight(groups.filter((group) => group.kind === "reasoning")),
-    ).toContain("Reasoning solved 7 more puzzles with reasoning on than off");
+    expect(groups.some((group) => group.variants[0].family === "Unordered")).toBe(false);
+    expect(effortInsight(groups.filter((group) => group.kind === "reasoning"))).toContain(
+      "Reasoning solved 7 more puzzles with reasoning on than off",
+    );
   });
 });
 

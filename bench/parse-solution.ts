@@ -18,7 +18,9 @@ export function parseSolution(rawOutput: string, expectedLength?: number): strin
   // giving a final answer. This also keeps a labelled final row from merging
   // with the answer on the next line into one oversized whitespace block.
   if (expectedLength !== undefined) {
-    const exactTokens = (rawOutput.match(/[01]{25,}/g) ?? []).filter((match) => match.length === expectedLength);
+    const exactTokens = (rawOutput.match(/[01]{25,}/g) ?? []).filter(
+      (match) => match.length === expectedLength,
+    );
     if (exactTokens.length) return exactTokens.at(-1)!;
   }
 
@@ -33,10 +35,7 @@ export function parseSolution(rawOutput: string, expectedLength?: number): strin
 
     const exactMatch = cleanedMatches.findLast((match) => match.length === expectedLength);
     if (exactMatch) return exactMatch;
-    const longestMatch = cleanedMatches.reduce(
-      (a, b) => (a.length >= b.length ? a : b),
-      ""
-    );
+    const longestMatch = cleanedMatches.reduce((a, b) => (a.length >= b.length ? a : b), "");
     if (longestMatch.length >= 25) return longestMatch;
   }
 
@@ -47,10 +46,7 @@ export function parseSolution(rawOutput: string, expectedLength?: number): strin
   if (continuousMatches) {
     const exactMatch = continuousMatches.find((match) => match.length === expectedLength);
     if (exactMatch) return exactMatch;
-    return continuousMatches.reduce(
-      (a, b) => (a.length >= b.length ? a : b),
-      ""
-    );
+    return continuousMatches.reduce((a, b) => (a.length >= b.length ? a : b), "");
   }
 
   return null;

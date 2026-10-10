@@ -63,7 +63,7 @@ type Actions = {
       isEditing?: boolean;
       reset?: boolean;
       userSolution?: string;
-    }
+    },
   ) => void;
   reset: () => void;
   setHighlightedColumn: (column: number | undefined) => void;
@@ -107,11 +107,7 @@ const initialState: State = {
   zoomLevel: "sm",
 };
 
-function updateCells(
-  state: State,
-  ids: NonogramCell["id"][],
-  value: NonogramCellValue
-) {
+function updateCells(state: State, ids: NonogramCell["id"][], value: NonogramCellValue) {
   const history: HistoryEntry = { cells: [] };
 
   for (const id of ids) {
@@ -136,15 +132,12 @@ function updateCells(
   }
 
   if (history.cells.length > 0) {
-    state.history = [
-      ...state.history.slice(0, state.historyIndex + 1),
-      history,
-    ];
+    state.history = [...state.history.slice(0, state.historyIndex + 1), history];
     state.historyIndex += 1;
   }
 
   const clueCells = Object.values(state.clues.cells).filter((clue) =>
-    clue.cellIds.some((cellId) => ids.includes(cellId))
+    clue.cellIds.some((cellId) => ids.includes(cellId)),
   );
 
   for (const clue of clueCells) {
@@ -158,16 +151,10 @@ function updateCells(
   if (state.isEditing) {
     state.clues.cells = {};
 
-    const clues = getCluesForNonogram(
-      state.grid.map((row) => row.map((id) => state.cells[id]))
-    );
+    const clues = getCluesForNonogram(state.grid.map((row) => row.map((id) => state.cells[id])));
 
-    state.clues.columns = clues.columnClues.map((clue) =>
-      clue.map((clue) => clue.id)
-    );
-    state.clues.rows = clues.rowClues.map((clue) =>
-      clue.map((clue) => clue.id)
-    );
+    state.clues.columns = clues.columnClues.map((clue) => clue.map((clue) => clue.id));
+    state.clues.rows = clues.rowClues.map((clue) => clue.map((clue) => clue.id));
 
     for (const clue of clues.columnClues) {
       for (const cell of clue) {
@@ -197,8 +184,7 @@ export const useNonogramStore = create<Store>()(
 
             if (dragStartCell) {
               const direction =
-                state.dragDirection ??
-                (dragStartCell.row === cell.row ? "horizontal" : "vertical");
+                state.dragDirection ?? (dragStartCell.row === cell.row ? "horizontal" : "vertical");
 
               const newDragEndCellId =
                 direction === "horizontal"
@@ -219,16 +205,10 @@ export const useNonogramStore = create<Store>()(
                 state.markedCellsCount.count = count;
               }
 
-              const cellsInRange = getCellsInRange(
-                state.grid,
-                dragStartCell,
-                newDragEndCell
-              );
+              const cellsInRange = getCellsInRange(state.grid, dragStartCell, newDragEndCell);
 
               state.dragDirection =
-                state.dragStartCellId === state.dragEndCellId
-                  ? undefined
-                  : direction;
+                state.dragStartCellId === state.dragEndCellId ? undefined : direction;
               state.dragEndCellId = newDragEndCellId;
 
               for (const id of cellsInRange) {
@@ -246,9 +226,7 @@ export const useNonogramStore = create<Store>()(
             const grid = getGridFromSolutionString({
               createCell: ({ column, row, value }) => {
                 const actualValue =
-                  value === "1"
-                    ? NonogramCellValue.FILLED
-                    : NonogramCellValue.EMPTY;
+                  value === "1" ? NonogramCellValue.FILLED : NonogramCellValue.EMPTY;
                 let isValid = false;
                 let userValue: NonogramCellValue = NonogramCellValue.EMPTY;
 
@@ -313,12 +291,8 @@ export const useNonogramStore = create<Store>()(
               }
             }
 
-            state.clues.columns = columnClues.map((clue) =>
-              clue.map((clue) => clue.id)
-            );
-            state.clues.rows = rowClues.map((clue) =>
-              clue.map((clue) => clue.id)
-            );
+            state.clues.columns = columnClues.map((clue) => clue.map((clue) => clue.id));
+            state.clues.rows = rowClues.map((clue) => clue.map((clue) => clue.id));
 
             state.grid = grid.map((row) => row.map((cell) => cell.id));
             state.height = input.height;
@@ -384,22 +358,12 @@ export const useNonogramStore = create<Store>()(
             const dragStartCell = state.dragStartCellId
               ? state.cells[state.dragStartCellId]
               : undefined;
-            const dragEndCell = state.dragEndCellId
-              ? state.cells[state.dragEndCellId]
-              : undefined;
+            const dragEndCell = state.dragEndCellId ? state.cells[state.dragEndCellId] : undefined;
 
             if (dragStartCell && dragEndCell) {
-              const cellIds = getCellsInRange(
-                state.grid,
-                dragStartCell,
-                dragEndCell
-              );
+              const cellIds = getCellsInRange(state.grid, dragStartCell, dragEndCell);
 
-              updateCells(
-                state,
-                cellIds,
-                dragStartCell.transientValue ?? dragStartCell.userValue
-              );
+              updateCells(state, cellIds, dragStartCell.transientValue ?? dragStartCell.userValue);
 
               // TODO: check for completion
               // TODO: update clues
@@ -523,7 +487,7 @@ export const useNonogramStore = create<Store>()(
             }
           });
         },
-      }))
-    )
-  )
+      })),
+    ),
+  ),
 );

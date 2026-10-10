@@ -12,11 +12,7 @@ type Props = {
   shouldHighlightMistakes?: boolean;
 };
 
-export function NonogramCluesCell({
-  className,
-  id,
-  shouldHighlightMistakes,
-}: Props) {
+export function NonogramCluesCell({ className, id, shouldHighlightMistakes }: Props) {
   const cell = useNonogramStore((state) => state.clues.cells[id]);
   const toggleClue = useNonogramStore((state) => state.toggleClue);
 
@@ -35,7 +31,7 @@ export function NonogramCluesCell({
         className,
         {
           "text-red-500": !cell.isValid && shouldHighlightMistakes,
-        }
+        },
       )}
       onClick={handleToggleClue}
     >

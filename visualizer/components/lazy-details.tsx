@@ -7,8 +7,15 @@ import { useState, type ReactNode } from "react";
 export function LazyDetails({ summary, children }: { summary: ReactNode; children: ReactNode }) {
   const [opened, setOpened] = useState(false);
   return (
-    <details className="mt-5 border-t border-border pt-3 text-sm" onToggle={(event) => { if (event.currentTarget.open) setOpened(true); }}>
-      <summary className="cursor-pointer text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">{summary}</summary>
+    <details
+      className="mt-5 border-t border-border pt-3 text-sm"
+      onToggle={(event) => {
+        if (event.currentTarget.open) setOpened(true);
+      }}
+    >
+      <summary className="cursor-pointer text-ember focus-visible:outline-2 focus-visible:outline-ember-bright">
+        {summary}
+      </summary>
       {opened && children}
     </details>
   );

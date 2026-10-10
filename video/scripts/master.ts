@@ -9,7 +9,10 @@ const input = process.argv[2] ?? "out/nonobench-v1.2.mp4";
 const output = input.replace(/\.mp4$/, ".master.mp4");
 const TARGET = "I=-14:TP=-1:LRA=11";
 
-const analysis = await $`ffmpeg -hide_banner -i ${input} -af loudnorm=${TARGET}:print_format=json -f null -`.nothrow().quiet();
+const analysis =
+  await $`ffmpeg -hide_banner -i ${input} -af loudnorm=${TARGET}:print_format=json -f null -`
+    .nothrow()
+    .quiet();
 const stats = JSON.parse(analysis.stderr.toString().match(/\{[\s\S]*?\}/)?.[0] ?? "{}");
 const measured = `measured_I=${stats.input_i}:measured_TP=${stats.input_tp}:measured_LRA=${stats.input_lra}:measured_thresh=${stats.input_thresh}:offset=${stats.target_offset}`;
 

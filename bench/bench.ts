@@ -26,7 +26,13 @@ import { gradeOutput } from "./grade";
 import { firstPartyAvailableFor, quantizationFor } from "./provider-pins";
 import { systemPromptFor } from "./prompt";
 import maxOutputEvidence from "./max-output-tokens.json";
-import { answerFormatFor, HARD_MODE_OUTPUT_TOKENS, CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
+import {
+  answerFormatFor,
+  HARD_MODE_OUTPUT_TOKENS,
+  CORE_SIZES,
+  EXTENDED_SIZES,
+  sortSizes,
+} from "./sizes";
 import { isProviderTimeout } from "./timeout";
 
 globalThis.AI_SDK_LOG_WARNINGS = false;
@@ -74,7 +80,11 @@ for (let i = 0; i < args.length; i++) {
     const value = args[++i];
     const validSizes: readonly string[] = [...CORE_SIZES, ...EXTENDED_SIZES];
     const parsed = value?.split(",") ?? [];
-    if (!parsed.length || parsed.some((size) => !validSizes.includes(size)) || new Set(parsed).size !== parsed.length) {
+    if (
+      !parsed.length ||
+      parsed.some((size) => !validSizes.includes(size)) ||
+      new Set(parsed).size !== parsed.length
+    ) {
       console.error(`--sizes needs comma-separated sizes from: ${validSizes.join(", ")}`);
       process.exit(1);
     }
@@ -102,7 +112,9 @@ if (
   selectedModels.some((model) => model.local) &&
   resolve(dbPath) === fileURLToPath(new URL("./results.db", import.meta.url))
 ) {
-  console.error("Local models write to their own database: use bun run bench:local, or set NONOBENCH_DB.");
+  console.error(
+    "Local models write to their own database: use bun run bench:local, or set NONOBENCH_DB.",
+  );
   process.exit(1);
 }
 
@@ -125,29 +137,47 @@ for (const model of selectedModels) {
       const body = (await response.json()) as { data?: { id: string }[] };
       ids = (body.data ?? []).map((entry) => entry.id);
     } else {
-      console.log(`[${model.name}] Server does not list its models (HTTP ${response.status}); skipping the id check.`);
+      console.log(
+        `[${model.name}] Server does not list its models (HTTP ${response.status}); skipping the id check.`,
+      );
     }
   } catch (err) {
-    console.error(`[${model.name}] Cannot reach ${model.localBaseURL} (${(err as Error).message}). Is the server up and reachable from this machine?`);
+    console.error(
+      `[${model.name}] Cannot reach ${model.localBaseURL} (${(err as Error).message}). Is the server up and reachable from this machine?`,
+    );
     process.exit(1);
   }
   if (ids && !ids.includes(model.llm.modelId)) {
-    console.error(`The server at ${model.localBaseURL} has no model '${model.llm.modelId}'. It serves: ${ids.join(", ") || "(nothing)"}`);
+    console.error(
+      `The server at ${model.localBaseURL} has no model '${model.llm.modelId}'. It serves: ${ids.join(", ") || "(nothing)"}`,
+    );
     process.exit(1);
   }
 }
 
 // Remember local models so a later export (without env vars) can label them.
 for (const model of selectedModels) await registerLocalModel(model);
-const plannedPuzzles = PUZZLES.filter((puzzle) => selectedSizes.includes(`${puzzle.width}x${puzzle.height}`));
-const extendedPuzzles = PUZZLES.filter((puzzle) => EXTENDED_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`));
+const plannedPuzzles = PUZZLES.filter((puzzle) =>
+  selectedSizes.includes(`${puzzle.width}x${puzzle.height}`),
+);
+const extendedPuzzles = PUZZLES.filter((puzzle) =>
+  EXTENDED_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`),
+);
 console.log(`Benchmark plan (${dbPath}):`);
 for (const model of MODELS) {
   const success = successfulPuzzlesByModel.get(model.name) ?? new Set();
   const missing = plannedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  const extendedMissing = extendedPuzzles.filter((puzzle) => !success.has(getPuzzleId(puzzle))).length;
-  const availability = model.local ? "" : firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model)) ? "" : ", endpoint unavailable";
-  console.log(`  ${model.name}${NEW_VARIANT_NAMES.has(model.name) ? " [new variant]" : ""} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${availability}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`);
+  const extendedMissing = extendedPuzzles.filter(
+    (puzzle) => !success.has(getPuzzleId(puzzle)),
+  ).length;
+  const availability = model.local
+    ? ""
+    : firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model))
+      ? ""
+      : ", endpoint unavailable";
+  console.log(
+    `  ${model.name}${NEW_VARIANT_NAMES.has(model.name) ? " [new variant]" : ""} [${pinnedProviderFor(model)}, ${outputModeFor(model)}${availability}]: ${missing} missing/retryable of ${plannedPuzzles.length} selected; 20x20: ${extendedMissing} missing/retryable of ${extendedPuzzles.length}`,
+  );
 }
 if (selectedModels.length === 0) {
   console.log("Select --model <name> (repeatable) or --all-missing to run.");
@@ -184,14 +214,10 @@ function printTable<T extends Record<string, unknown>>(data: T[]): void {
   }
 
   // Build separator
-  const sep = columns
-    .map((col) => "─".repeat((colWidths[col] ?? 0) + 2))
-    .join("┼");
+  const sep = columns.map((col) => "─".repeat((colWidths[col] ?? 0) + 2)).join("┼");
 
   // Print header
-  const header = columns
-    .map((col) => ` ${col.padEnd(colWidths[col] ?? 0)} `)
-    .join("│");
+  const header = columns.map((col) => ` ${col.padEnd(colWidths[col] ?? 0)} `).join("│");
   console.log(`┌${"─".repeat(sep.length)}┐`);
   console.log(`│${header}│`);
   console.log(`├${sep}┤`);
@@ -212,33 +238,54 @@ function printTable<T extends Record<string, unknown>>(data: T[]): void {
 // silent requests. Used for models whose endpoints drop responses that take
 // more than five minutes.
 function hardModeOutputTokens(model: Model): number {
-  const endpointMax = (maxOutputEvidence.models as Record<string, number | null>)[model.llm.modelId];
+  const endpointMax = (maxOutputEvidence.models as Record<string, number | null>)[
+    model.llm.modelId
+  ];
   return Math.min(HARD_MODE_OUTPUT_TOKENS, endpointMax ?? HARD_MODE_OUTPUT_TOKENS);
 }
 
 async function callModel(model: Model, options: Parameters<typeof generateText>[0]) {
   if (!model.stream) return generateText(options);
   let streamError: unknown;
-  const result = streamText({ ...options, onError: ({ error }) => { streamError = error; } } as Parameters<typeof streamText>[0]);
-  const [text, usage, providerMetadata, response, finishReason] = await Promise.all([result.text, result.totalUsage, result.providerMetadata, result.response, result.finishReason]);
+  const result = streamText({
+    ...options,
+    onError: ({ error }) => {
+      streamError = error;
+    },
+  } as Parameters<typeof streamText>[0]);
+  const [text, usage, providerMetadata, response, finishReason] = await Promise.all([
+    result.text,
+    result.totalUsage,
+    result.providerMetadata,
+    result.response,
+    result.finishReason,
+  ]);
   if (streamError) throw streamError;
   return { text, usage, providerMetadata, response, finishReason };
 }
 
 // OpenRouter records each generation's cost; stats can lag a few seconds.
-async function fetchGenerationDetails(id: string | undefined): Promise<{ cost: number; providerName: string | null } | null> {
+async function fetchGenerationDetails(
+  id: string | undefined,
+): Promise<{ cost: number; providerName: string | null } | null> {
   if (!id) return null;
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      const response = await fetch(`https://openrouter.ai/api/v1/generation?id=${encodeURIComponent(id)}`, {
-        headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
-      });
+      const response = await fetch(
+        `https://openrouter.ai/api/v1/generation?id=${encodeURIComponent(id)}`,
+        {
+          headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
+        },
+      );
       if (response.ok) {
-        const body = (await response.json()) as { data?: { total_cost?: number; provider_name?: string } };
-        if (typeof body.data?.total_cost === "number") return {
-          cost: body.data.total_cost,
-          providerName: body.data.provider_name || null,
+        const body = (await response.json()) as {
+          data?: { total_cost?: number; provider_name?: string };
         };
+        if (typeof body.data?.total_cost === "number")
+          return {
+            cost: body.data.total_cost,
+            providerName: body.data.provider_name || null,
+          };
       }
     } catch {
       // Retry below.
@@ -248,10 +295,7 @@ async function fetchGenerationDetails(id: string | undefined): Promise<{ cost: n
   return null;
 }
 
-async function runBenchmark(
-  puzzle: Puzzle,
-  model: Model
-): Promise<BenchmarkResult> {
+async function runBenchmark(puzzle: Puzzle, model: Model): Promise<BenchmarkResult> {
   const start = performance.now();
   const size = `${puzzle.height}x${puzzle.width}`;
   const puzzleId = getPuzzleId(puzzle);
@@ -288,29 +332,33 @@ async function runBenchmark(
       timeout: REQUEST_TIMEOUT_MS,
       providerOptions: requestProviderOptions(model),
       ...(answerFormat === "rows" ? { maxOutputTokens: hardModeOutputTokens(model) } : {}),
-      ...(outputMode === "json_schema" ? { output: Output.object({
-        name: "nonogram_solution",
-        schema: jsonSchema<{ solution: string | string[] }>({
-          type: "object",
-          properties: {
-            solution: answerFormat === "flat"
-              ? {
-                type: "string",
-                description: `The solved grid as exactly ${cells} characters of "1" (filled) and "0" (empty), row by row.`,
-              }
-              : {
-                // Counts live in the description: not every provider accepts
-                // minItems/maxItems in strict schemas. The grader checks them.
-                type: "array",
-                items: { type: "string" },
-                description: `The solved grid as exactly ${puzzle.height} strings, one per row from top to bottom, each exactly ${puzzle.width} characters of "1" (filled) and "0" (empty).`,
-              },
-          },
-          required: ["solution"],
-          additionalProperties: false,
-        }),
-      }),
-      } : {}),
+      ...(outputMode === "json_schema"
+        ? {
+            output: Output.object({
+              name: "nonogram_solution",
+              schema: jsonSchema<{ solution: string | string[] }>({
+                type: "object",
+                properties: {
+                  solution:
+                    answerFormat === "flat"
+                      ? {
+                          type: "string",
+                          description: `The solved grid as exactly ${cells} characters of "1" (filled) and "0" (empty), row by row.`,
+                        }
+                      : {
+                          // Counts live in the description: not every provider accepts
+                          // minItems/maxItems in strict schemas. The grader checks them.
+                          type: "array",
+                          items: { type: "string" },
+                          description: `The solved grid as exactly ${puzzle.height} strings, one per row from top to bottom, each exactly ${puzzle.width} characters of "1" (filled) and "0" (empty).`,
+                        },
+                },
+                required: ["solution"],
+                additionalProperties: false,
+              }),
+            }),
+          }
+        : {}),
     });
     attemptDurationMs = performance.now() - requestStart;
 
@@ -318,7 +366,11 @@ async function runBenchmark(
     correct = gradeOutput(puzzle, resp.text);
 
     const openrouterMeta = resp.providerMetadata?.openrouter as
-      | { provider?: string; quantization?: string; usage?: { costDetails?: { upstreamInferenceCost?: number }; cost?: number } }
+      | {
+          provider?: string;
+          quantization?: string;
+          usage?: { costDetails?: { upstreamInferenceCost?: number }; cost?: number };
+        }
       | undefined;
     providerName = openrouterMeta?.provider || null;
     quantization = openrouterMeta?.quantization ?? quantizationFor(model.llm.modelId, providerName);
@@ -352,24 +404,24 @@ async function runBenchmark(
       status = "success";
       errorMessage = `Schema validation failed${generation === null ? " (cost unavailable)" : ""}: ${err.message}`;
     } else {
-    console.error(
-      `[${model.name}] Error:`,
-      err?.message ? JSON.stringify(err, null, 2) : String(err)
-    );
+      console.error(
+        `[${model.name}] Error:`,
+        err?.message ? JSON.stringify(err, null, 2) : String(err),
+      );
 
-    status = "failed";
-    const httpStatus = err?.statusCode ?? err?.status ?? err?.response?.status;
-    errorMessage = err?.message ?? (httpStatus ? `HTTP ${httpStatus}` : String(err));
-    correct = false;
-    cost = 0;
-    tokens = 0;
-    // A request that dies at a provider's documented time limit will die
-    // there again: record it as a final, unsolved attempt instead of retrying.
-    const limit = model.providerTimeLimit;
-    if (limit && isProviderTimeout(err, attemptDurationMs, limit.seconds)) {
-      status = "timeout";
-      errorMessage = `${limit.note}: ${errorMessage}`;
-    }
+      status = "failed";
+      const httpStatus = err?.statusCode ?? err?.status ?? err?.response?.status;
+      errorMessage = err?.message ?? (httpStatus ? `HTTP ${httpStatus}` : String(err));
+      correct = false;
+      cost = 0;
+      tokens = 0;
+      // A request that dies at a provider's documented time limit will die
+      // there again: record it as a final, unsolved attempt instead of retrying.
+      const limit = model.providerTimeLimit;
+      if (limit && isProviderTimeout(err, attemptDurationMs, limit.seconds)) {
+        status = "timeout";
+        errorMessage = `${limit.note}: ${errorMessage}`;
+      }
     }
   }
 
@@ -437,7 +489,9 @@ function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean
 // Run benchmark for a single model (puzzles in parallel with concurrency limit)
 async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
   if (!model.local && !firstPartyAvailableFor(model.llm.modelId, pinnedProviderFor(model))) {
-    console.log(`[${model.name}] Skipping: no first-party endpoint in provider-pins.json. Run refresh-provider-pins after endpoint availability changes.`);
+    console.log(
+      `[${model.name}] Skipping: no first-party endpoint in provider-pins.json. Run refresh-provider-pins after endpoint availability changes.`,
+    );
     return [];
   }
   const puzzlesBySize = groupPuzzlesBySize(plannedPuzzles);
@@ -451,9 +505,13 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
     // Counts come from the database, so earlier sessions are included.
     if (size !== "5x5" && outputModeFor(model) === "json_schema") {
       const tally = getSizeTally(model.name, "5x5");
-      const fiveByFive = PUZZLES.filter((puzzle) => puzzle.width === 5 && puzzle.height === 5).length;
+      const fiveByFive = PUZZLES.filter(
+        (puzzle) => puzzle.width === 5 && puzzle.height === 5,
+      ).length;
       if (tally.answered === fiveByFive && tally.correct === 0) {
-        console.log(`[${model.name}] Stopped: 0/${tally.answered} on 5x5 with structured output; likely a format issue. Check it in text mode.`);
+        console.log(
+          `[${model.name}] Stopped: 0/${tally.answered} on 5x5 with structured output; likely a format issue. Check it in text mode.`,
+        );
         return allResults;
       }
     }
@@ -464,7 +522,7 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
 
     if (puzzlesToRun.length === 0) {
       console.log(
-        `[${model.name}] Skipping ${size} (all ${puzzles.length} puzzles successfully benchmarked)`
+        `[${model.name}] Skipping ${size} (all ${puzzles.length} puzzles successfully benchmarked)`,
       );
       continue;
     }
@@ -472,11 +530,11 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
     const skippedCount = puzzles.length - puzzlesToRun.length;
     if (skippedCount > 0) {
       console.log(
-        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, ${skippedCount} skipped, max ${maxParallel} parallel)`
+        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, ${skippedCount} skipped, max ${maxParallel} parallel)`,
       );
     } else {
       console.log(
-        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, max ${maxParallel} parallel)`
+        `[${model.name}] Starting ${size} (${puzzlesToRun.length} puzzles, max ${maxParallel} parallel)`,
       );
     }
 
@@ -491,14 +549,17 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
         await Promise.race(pending);
       }
       if (reasoningLooksBroken(model, allResults)) {
-        console.log(`[${model.name}] Stopped: most runs report zero reasoning tokens; check the endpoint.`);
+        console.log(
+          `[${model.name}] Stopped: most runs report zero reasoning tokens; check the endpoint.`,
+        );
         await Promise.all(pending);
         return allResults;
       }
       // Budget guard: stop launching once this session's spend reaches the cap.
       // In-flight requests still finish, so overshoot is bounded by them.
       if (sessionCost >= maxCost) {
-        if (!budgetExhausted) console.log(`Budget of $${maxCost} reached; not starting further puzzles.`);
+        if (!budgetExhausted)
+          console.log(`Budget of $${maxCost} reached; not starting further puzzles.`);
         budgetExhausted = true;
         break;
       }
@@ -514,13 +575,9 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
 
         // Log progress
         completedCount++;
-        const status = result.correct
-          ? "✓"
-          : result.status === "failed"
-          ? "✗"
-          : "○";
+        const status = result.correct ? "✓" : result.status === "failed" ? "✗" : "○";
         console.log(
-          `[${model.name}] ${size} puzzle ${completedCount}/${puzzlesToRun.length}: ${status}`
+          `[${model.name}] ${size} puzzle ${completedCount}/${puzzlesToRun.length}: ${status}`,
         );
       })();
 
@@ -537,9 +594,8 @@ async function runModelBenchmark(model: Model): Promise<BenchmarkResult[]> {
     const correctCount = sizeResults.filter((r) => r.correct).length;
     const failedCount = sizeResults.filter((r) => r.status === "failed").length;
     console.log(
-      `[${model.name}] Completed ${size}: ${correctCount}/${sizeResults.length} correct, ${failedCount} failed`
+      `[${model.name}] Completed ${size}: ${correctCount}/${sizeResults.length} correct, ${failedCount} failed`,
     );
-
   }
 
   return allResults;
@@ -550,16 +606,12 @@ console.log("\n" + "=".repeat(60));
 console.log("STARTING BENCHMARK");
 console.log("=".repeat(60));
 console.log(`Models: ${selectedModels.map((m) => m.name).join(", ")}`);
-console.log(
-  `Sizes: ${selectedSizes.join(", ")}`
-);
+console.log(`Sizes: ${selectedSizes.join(", ")}`);
 console.log(`Parallel runs per model: ${maxParallel}`);
 console.log(`Database: ${dbPath}`);
 console.log("=".repeat(60) + "\n");
 
-const allResults = await Promise.all(
-  selectedModels.map((model) => runModelBenchmark(model))
-);
+const allResults = await Promise.all(selectedModels.map((model) => runModelBenchmark(model)));
 const flatResults = allResults.flat();
 
 // Aggregate results by model and size for display
@@ -767,13 +819,8 @@ if (modelRankings.length > 0) {
 if (flatResults.length > 0) {
   const globalTotalRuns = flatResults.length;
   const globalTotalCorrect = flatResults.filter((r) => r.correct).length;
-  const globalTotalFailed = flatResults.filter(
-    (r) => r.status === "failed"
-  ).length;
-  const globalTotalDuration = flatResults.reduce(
-    (sum, r) => sum + r.durationMs,
-    0
-  );
+  const globalTotalFailed = flatResults.filter((r) => r.status === "failed").length;
+  const globalTotalDuration = flatResults.reduce((sum, r) => sum + r.durationMs, 0);
   const globalTotalTokens = flatResults.reduce((sum, r) => sum + r.tokens, 0);
   const globalTotalCost = flatResults.reduce((sum, r) => sum + r.cost, 0);
 
@@ -784,21 +831,20 @@ if (flatResults.length > 0) {
     `Total Correct:    ${globalTotalCorrect.toLocaleString()} (${(
       (globalTotalCorrect / globalTotalRuns) *
       100
-    ).toFixed(2)}%)`
+    ).toFixed(2)}%)`,
   );
   console.log(
     `Total Failed:     ${globalTotalFailed.toLocaleString()} (${(
       (globalTotalFailed / globalTotalRuns) *
       100
-    ).toFixed(2)}%)`
+    ).toFixed(2)}%)`,
   );
   console.log(
-    `Total Run Time:   ${(globalTotalDuration / 1000).toLocaleString(
-      undefined,
-      { maximumFractionDigits: 2 }
-    )}s (${globalTotalDuration.toLocaleString(undefined, {
+    `Total Run Time:   ${(globalTotalDuration / 1000).toLocaleString(undefined, {
+      maximumFractionDigits: 2,
+    })}s (${globalTotalDuration.toLocaleString(undefined, {
       maximumFractionDigits: 0,
-    })}ms)`
+    })}ms)`,
   );
   console.log(`Total Tokens:     ${globalTotalTokens.toLocaleString()}`);
   console.log(`Total Cost:       $${globalTotalCost.toFixed(5)}`);

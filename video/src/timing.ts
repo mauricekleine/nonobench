@@ -13,14 +13,14 @@ export const TRANSITION = 14;
 
 // Bars each scene owns on the timeline, in order.
 export const SCENE_BARS = {
-	intro: 3,
-	puzzle: 3,
-	wall: 5,
-	perfect: 5,
-	leaderboard: 3,
-	hard: 6,
-	whatsNew: 6,
-	outro: 3,
+  intro: 3,
+  puzzle: 3,
+  wall: 5,
+  perfect: 5,
+  leaderboard: 3,
+  hard: 6,
+  whatsNew: 6,
+  outro: 3,
 } as const;
 
 export type SceneKey = keyof typeof SCENE_BARS;
@@ -29,11 +29,15 @@ const keys = Object.keys(SCENE_BARS) as SceneKey[];
 
 // Sequence lengths: every scene but the last also covers the fade into the next.
 export const SCENES = Object.fromEntries(
-	keys.map((key, i) => [key, SCENE_BARS[key] * FRAMES_PER_BAR + (i < keys.length - 1 ? TRANSITION : 0)]),
+  keys.map((key, i) => [
+    key,
+    SCENE_BARS[key] * FRAMES_PER_BAR + (i < keys.length - 1 ? TRANSITION : 0),
+  ]),
 ) as Record<SceneKey, number>;
 
 export const TOTAL_BARS = keys.reduce((sum, key) => sum + SCENE_BARS[key], 0);
 export const TOTAL_FRAMES = TOTAL_BARS * FRAMES_PER_BAR;
 
 /** Local frame of a beat within a scene (bar and beat count from 0). */
-export const beat = (bar: number, beatInBar = 0) => bar * FRAMES_PER_BAR + beatInBar * FRAMES_PER_BEAT;
+export const beat = (bar: number, beatInBar = 0) =>
+  bar * FRAMES_PER_BAR + beatInBar * FRAMES_PER_BEAT;

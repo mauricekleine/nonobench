@@ -24,9 +24,7 @@ export function NonogramRowClues({ shouldHighlightMistakes, violatedRows }: Prop
 
     // And add empty cells to the start of each row or column
     return cluesGrid.map((clueList) => [
-      ...Array.from({ length: clueCount - clueList.length }).map(
-        (_, index) => `empty-${index}`
-      ),
+      ...Array.from({ length: clueCount - clueList.length }).map((_, index) => `empty-${index}`),
       ...clueList,
     ]);
   }, [cluesGrid]);
@@ -39,12 +37,15 @@ export function NonogramRowClues({ shouldHighlightMistakes, violatedRows }: Prop
             "flex flex-row justify-end border-foreground not-last:border-b not-last:nth-[5n]:border-b-2 font-mono text-xs",
             {
               "bg-border": highlightedRow === index,
-              "bg-[#D871A1]/20 outline outline-2 outline-dashed outline-[#D871A1]": violatedRows?.includes(index + 1),
-            }
+              "bg-[#D871A1]/20 outline outline-2 outline-dashed outline-[#D871A1]":
+                violatedRows?.includes(index + 1),
+            },
           )}
           key={`row-${index}`}
           role={violatedRows?.includes(index + 1) ? "group" : undefined}
-          aria-label={violatedRows?.includes(index + 1) ? `Row ${index + 1} clue not satisfied` : undefined}
+          aria-label={
+            violatedRows?.includes(index + 1) ? `Row ${index + 1} clue not satisfied` : undefined
+          }
         >
           {row.map((id) => (
             <NonogramCluesCell

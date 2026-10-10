@@ -11,7 +11,12 @@ import { join } from "node:path";
 const dir = mkdtempSync(join(tmpdir(), "nonobench-local-models-"));
 const registryPath = join(dir, "local-models.json");
 const seededRegistry = {
-  "Registry-Only": { baseURL: "http://127.0.0.1:9/v1", modelId: "registry-32b", family: "Registry-Only", effort: "xhigh" },
+  "Registry-Only": {
+    baseURL: "http://127.0.0.1:9/v1",
+    modelId: "registry-32b",
+    family: "Registry-Only",
+    effort: "xhigh",
+  },
   "Env-Override": { baseURL: "http://127.0.0.1:9/v1", family: "Env-Override", effort: "low" },
 };
 writeFileSync(registryPath, `${JSON.stringify(seededRegistry, null, 2)}\n`);
@@ -29,7 +34,11 @@ type Probe = { exitCode: number; stdout: string; stderr: string };
 
 // Run a snippet against constants.ts with the local-model env set. The snippet
 // prints its findings as JSON on the last line.
-const probe = (script: string, registry = registryPath, extraEnv: Record<string, string> = {}): Probe => {
+const probe = (
+  script: string,
+  registry = registryPath,
+  extraEnv: Record<string, string> = {},
+): Probe => {
   const constantsPath = join(import.meta.dir, "constants.ts");
   const proc = Bun.spawnSync({
     cmd: ["bun", "-e", `const m = await import(${JSON.stringify(constantsPath)});\n${script}`],
@@ -110,14 +119,20 @@ console.log(JSON.stringify({
 });
 
 test("an absent registry is empty, not an error", () => {
-  const out = probeJson(`console.log(JSON.stringify(m.localRegistryEntryFor("Never-Benched") ?? null));`, join(dir, "absent.json"));
+  const out = probeJson(
+    `console.log(JSON.stringify(m.localRegistryEntryFor("Never-Benched") ?? null));`,
+    join(dir, "absent.json"),
+  );
   expect(out).toBeNull();
 });
 
 test("a malformed registry fails loudly, not as an empty registry", () => {
   const brokenPath = join(dir, "broken.json");
   writeFileSync(brokenPath, "{ truncated");
-  const result = probe(`console.log(JSON.stringify(m.localRegistryEntryFor("Registry-Only") ?? null));`, brokenPath);
+  const result = probe(
+    `console.log(JSON.stringify(m.localRegistryEntryFor("Registry-Only") ?? null));`,
+    brokenPath,
+  );
   expect(result.exitCode).not.toBe(0);
   expect(result.stderr).toContain("not valid JSON");
 });
@@ -149,7 +164,9 @@ const scratchExport = (dbFile: string, model: string) => {
 test("export refuses an unknown model instead of calling it local", () => {
   const { proc } = scratchExport("ghost.db", "Ghost-9B");
   expect(proc.exitCode).not.toBe(0);
-  expect(new TextDecoder().decode(proc.stderr)).toContain("Cannot export unknown DB model: Ghost-9B");
+  expect(new TextDecoder().decode(proc.stderr)).toContain(
+    "Cannot export unknown DB model: Ghost-9B",
+  );
 });
 
 test("export labels a model the registry knows as local", () => {
@@ -158,7 +175,9 @@ test("export labels a model the registry knows as local", () => {
   expect(stderr).toBe("");
   expect(proc.exitCode).toBe(0);
   const summary = JSON.parse(readFileSync(paths.NONOBENCH_RESULTS_JSON, "utf8"));
-  const model = summary.byModel.find((candidate: { model: string }) => candidate.model === "Registry-Only");
+  const model = summary.byModel.find(
+    (candidate: { model: string }) => candidate.model === "Registry-Only",
+  );
   expect(model.provider).toBe("local");
   expect(model.effort).toBe("xhigh");
   // reasoning is DB-driven (this scratch row stored no reasoning flag); the registry's effort only feeds the synthesized metadata.
@@ -177,7 +196,10 @@ test("a local name that shadows a cloud model fails loudly", () => {
 
 test("a registry entry that shadows a cloud model fails loudly", () => {
   const shadowedPath = join(dir, "shadowed.json");
-  writeFileSync(shadowedPath, `${JSON.stringify({ "qwen3.8-27b-low": { baseURL: "http://127.0.0.1:9/v1" } }, null, 2)}\n`);
+  writeFileSync(
+    shadowedPath,
+    `${JSON.stringify({ "qwen3.8-27b-low": { baseURL: "http://127.0.0.1:9/v1" } }, null, 2)}\n`,
+  );
   const result = probe(`console.log(JSON.stringify(m.MODELS.length));`, shadowedPath);
   expect(result.exitCode).not.toBe(0);
   expect(result.stderr).toContain("shadows a cloud model");
@@ -199,7 +221,13 @@ const fakeServer = (modelIds: string[]) =>
           object: "chat.completion",
           created: 0,
           model: modelIds[0] ?? "fake",
-          choices: [{ index: 0, message: { role: "assistant", content: "not a real answer" }, finish_reason: "stop" }],
+          choices: [
+            {
+              index: 0,
+              message: { role: "assistant", content: "not a real answer" },
+              finish_reason: "stop",
+            },
+          ],
           usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
         });
       }
@@ -228,7 +256,10 @@ const runBench = async (args: string[], env: Record<string, string> = {}) => {
 test("bench refuses to write a local model to the shared database, however it is spelled", async () => {
   // The guard exits before the server check, so the unreachable server in localEnv is never called.
   for (const db of [undefined, "results.db", "./results.db", join(import.meta.dir, "results.db")]) {
-    const out = await runBench(["--model", "Env-Override"], db === undefined ? {} : { NONOBENCH_DB: db });
+    const out = await runBench(
+      ["--model", "Env-Override"],
+      db === undefined ? {} : { NONOBENCH_DB: db },
+    );
     expect(out.exitCode).toBe(1);
     expect(out.stderr).toContain("Local models write to their own database");
   }
@@ -282,11 +313,19 @@ test("dev-local refuses to start over uncommitted export edits", () => {
   const repo = mkdtempSync(join(tmpdir(), "nonobench-dev-local-"));
   const gitEnv = {
     ...process.env,
-    GIT_AUTHOR_NAME: "test", GIT_AUTHOR_EMAIL: "test@example.com",
-    GIT_COMMITTER_NAME: "test", GIT_COMMITTER_EMAIL: "test@example.com",
+    GIT_AUTHOR_NAME: "test",
+    GIT_AUTHOR_EMAIL: "test@example.com",
+    GIT_COMMITTER_NAME: "test",
+    GIT_COMMITTER_EMAIL: "test@example.com",
   };
   const git = (args: string[]) =>
-    Bun.spawnSync({ cmd: ["git", ...args], cwd: repo, env: gitEnv, stdout: "pipe", stderr: "pipe" });
+    Bun.spawnSync({
+      cmd: ["git", ...args],
+      cwd: repo,
+      env: gitEnv,
+      stdout: "pipe",
+      stderr: "pipe",
+    });
   const runScript = () => {
     const proc = Bun.spawnSync({
       cmd: ["bash", "visualizer/dev-local.sh"],
@@ -301,8 +340,15 @@ test("dev-local refuses to start over uncommitted export edits", () => {
   mkdirSync(join(repo, "visualizer/app"), { recursive: true });
   mkdirSync(join(repo, "visualizer/public"), { recursive: true });
   mkdirSync(join(repo, "bench"), { recursive: true });
-  copyFileSync(join(import.meta.dir, "..", "visualizer", "dev-local.sh"), join(repo, "visualizer", "dev-local.sh"));
-  for (const file of ["visualizer/app/results.json", "visualizer/public/results-raw.json", "visualizer/public/puzzle-results.json"]) {
+  copyFileSync(
+    join(import.meta.dir, "..", "visualizer", "dev-local.sh"),
+    join(repo, "visualizer", "dev-local.sh"),
+  );
+  for (const file of [
+    "visualizer/app/results.json",
+    "visualizer/public/results-raw.json",
+    "visualizer/public/puzzle-results.json",
+  ]) {
     writeFileSync(join(repo, file), "{}\n");
   }
   writeFileSync(join(repo, "bench", "local-results.db"), "");

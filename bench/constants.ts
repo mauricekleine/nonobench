@@ -1,7 +1,4 @@
-import {
-  createOpenRouter,
-  type OpenRouterChatSettings,
-} from "@openrouter/ai-sdk-provider";
+import { createOpenRouter, type OpenRouterChatSettings } from "@openrouter/ai-sdk-provider";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { JSONObject } from "@ai-sdk/provider";
 import type { LanguageModel } from "ai";
@@ -32,14 +29,26 @@ const defaultProviderOptions: OpenRouterChatSettings = {
 // OpenRouter endpoint tags are verified by refresh-provider-pins.ts. A base
 // provider slug includes its normal quantized endpoint variants.
 const firstPartyProviders: Record<string, string> = {
-  allenai: "allenai", anthropic: "anthropic", "bytedance-seed": "seed",
-  deepseek: "deepseek", google: "google-ai-studio", meta: "meta",
-  minimax: "minimax", mistralai: "mistral", moonshotai: "moonshotai",
-  openai: "openai", qwen: "alibaba", "x-ai": "xai",
-  xiaomi: "xiaomi", "z-ai": "z-ai",
+  allenai: "allenai",
+  anthropic: "anthropic",
+  "bytedance-seed": "seed",
+  deepseek: "deepseek",
+  google: "google-ai-studio",
+  meta: "meta",
+  minimax: "minimax",
+  mistralai: "mistral",
+  moonshotai: "moonshotai",
+  openai: "openai",
+  qwen: "alibaba",
+  "x-ai": "xai",
+  xiaomi: "xiaomi",
+  "z-ai": "z-ai",
 };
 
-export function pinnedSettings(id: string, settings: OpenRouterChatSettings = defaultProviderOptions): OpenRouterChatSettings {
+export function pinnedSettings(
+  id: string,
+  settings: OpenRouterChatSettings = defaultProviderOptions,
+): OpenRouterChatSettings {
   const maker = id.split("/")[0] ?? "";
   const slug = settings.provider?.only?.[0] ?? firstPartyProviders[maker];
   if (!slug) throw new Error(`No first-party provider configured for ${id}`);
@@ -60,10 +69,15 @@ export function pinnedProviderFor(model: Model): string {
 
 export function requestProviderOptions(model: Model): Record<string, JSONObject> {
   if (model.local) return {};
-  return { openrouter: { provider: {
-    order: [pinnedProviderFor(model)], allow_fallbacks: false,
-    ...(outputModeFor(model) === "json_schema" ? { require_parameters: true as const } : {}),
-  } } };
+  return {
+    openrouter: {
+      provider: {
+        order: [pinnedProviderFor(model)],
+        allow_fallbacks: false,
+        ...(outputModeFor(model) === "json_schema" ? { require_parameters: true as const } : {}),
+      },
+    },
+  };
 }
 
 export type Model = {
@@ -141,631 +155,667 @@ function defaultReasoningModel(id: string, family: string): Model {
   };
 }
 
-const configuredModels: Model[] = ([
-  {
-    llm: pinnedModel("allenai/olmo-3.1-32b-think", defaultProviderOptions),
-    name: "olmo-3.1-32b-think",
-    family: "olmo-3.1-32b-think",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("anthropic/claude-opus-4.5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "low", exclude: true },
-      },
-    }),
-    name: "claude-4.5-opus-low",
-    family: "claude-4.5-opus",
-    effort: "low",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("anthropic/claude-opus-4.5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "claude-4.5-opus-high",
-    family: "claude-4.5-opus",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("anthropic/claude-sonnet-4.5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { enabled: false, exclude: true },
-      },
-    }),
-    name: "claude-4.5-sonnet-non-reasoning",
-    family: "claude-4.5-sonnet",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("anthropic/claude-sonnet-4.5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { enabled: true, exclude: true },
-      },
-    }),
-    name: "claude-4.5-sonnet-reasoning",
-    family: "claude-4.5-sonnet",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("bytedance-seed/seed-1.6", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "seed-1.6-high",
-    family: "seed-1.6",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("bytedance-seed/seed-1.6-flash", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "seed-1.6-flash-high",
-    family: "seed-1.6-flash",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("deepseek/deepseek-v3.2", defaultProviderOptions),
-    name: "deepseek-v3.2",
-    family: "deepseek-v3.2",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("deepseek/deepseek-v3.2", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "deepseek-v3.2-high",
-    family: "deepseek-v3.2",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("deepseek/deepseek-v3.2-speciale", defaultProviderOptions),
-    name: "deepseek-v3.2-speciale",
-    family: "deepseek-v3.2-speciale",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("deepseek/deepseek-v3.2-speciale", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "deepseek-v3.2-speciale-high",
-    family: "deepseek-v3.2-speciale",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("google/gemini-3-flash-preview", {
-      ...defaultProviderOptions,
-      extraBody: { reasoning: { effort: "minimal", exclude: true } },
-    }),
-    name: "gemini-3-flash-preview-minimal",
-    family: "gemini-3-flash-preview",
-    effort: "minimal",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("google/gemini-3-flash-preview", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high" },
-      },
-      provider: {
-        allow_fallbacks: false,
-        only: ["google-vertex"],
-      },
-    }),
-    name: "gemini-3-flash-preview-high",
-    family: "gemini-3-flash-preview",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("google/gemini-3-pro-preview", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "low", exclude: true },
-      },
-    }),
-    name: "gemini-3-pro-preview-low",
-    family: "gemini-3-pro-preview",
-    effort: "low",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("google/gemini-3-pro-preview", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high" },
-      },
-      provider: {
-        allow_fallbacks: false,
-        only: ["google-vertex"],
-      },
-    }),
-    name: "gemini-3-pro-preview-high",
-    family: "gemini-3-pro-preview",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("google/gemini-3.1-pro-preview", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "low", exclude: true },
-      },
-    }),
-    name: "gemini-3.1-pro-preview-low",
-    family: "gemini-3.1-pro-preview",
-    effort: "low",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("google/gemini-3.1-pro-preview", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high" },
-      },
-      provider: {
-        allow_fallbacks: false,
-        only: ["google-vertex"],
-      },
-    }),
-    name: "gemini-3.1-pro-preview-high",
-    family: "gemini-3.1-pro-preview",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("minimax/minimax-m2.1", defaultProviderOptions),
-    name: "minimax-m2.1",
-    family: "minimax-m2.1",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("minimax/minimax-m2.1", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "minimax-m2.1-high",
-    family: "minimax-m2.1",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("minimax/minimax-m2.5", defaultProviderOptions),
-    name: "minimax-m2.5",
-    family: "minimax-m2.5",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("minimax/minimax-m2.5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "minimax-m2.5-high",
-    family: "minimax-m2.5",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("mistralai/ministral-14b-2512", defaultProviderOptions),
-    name: "ministral-14b-2512",
-    family: "ministral-14b-2512",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("mistralai/mistral-large-2512", defaultProviderOptions),
-    name: "mistral-large-2512",
-    family: "mistral-large-2512",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("moonshotai/kimi-k2-0905", defaultProviderOptions),
-    name: "kimi-k2",
-    family: "kimi-k2",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("moonshotai/kimi-k2-thinking", defaultProviderOptions),
-    name: "kimi-k2-thinking",
-    family: "kimi-k2-thinking",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("moonshotai/kimi-k2.5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { enabled: false, exclude: true },
-      },
-    }),
-    name: "kimi-k2.5-non-reasoning",
-    family: "kimi-k2.5",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("moonshotai/kimi-k2.5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "kimi-k2.5-high",
-    family: "kimi-k2.5",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("openai/gpt-5.2", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: {
-          effort: "low",
-          exclude: true,
+const configuredModels: Model[] = (
+  [
+    {
+      llm: pinnedModel("allenai/olmo-3.1-32b-think", defaultProviderOptions),
+      name: "olmo-3.1-32b-think",
+      family: "olmo-3.1-32b-think",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("anthropic/claude-opus-4.5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "low", exclude: true },
         },
-      },
-    }),
-    name: "gpt-5.2-low",
-    family: "gpt-5.2",
-    effort: "low",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("openai/gpt-5.2", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: {
-          effort: "high",
-          exclude: true,
+      }),
+      name: "claude-4.5-opus-low",
+      family: "claude-4.5-opus",
+      effort: "low",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("anthropic/claude-opus-4.5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
         },
-      },
-    }),
-    name: "gpt-5.2-high",
-    family: "gpt-5.2",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("openai/gpt-5.2", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: {
-          effort: "xhigh",
-          exclude: true,
+      }),
+      name: "claude-4.5-opus-high",
+      family: "claude-4.5-opus",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("anthropic/claude-sonnet-4.5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { enabled: false, exclude: true },
         },
-      },
-    }),
-    name: "gpt-5.2-xhigh",
-    family: "gpt-5.2",
-    effort: "xhigh",
-    reasoning: true,
-  },
-  // {
-  // 	llm: pinnedModel("openai/gpt-5.2-pro", defaultProviderOptions),
-  // 	name: "gpt-5.2-pro",
-  // 	family: "gpt-5.2-pro",
-  // 	effort: "default",
-  // 	reasoning: true,
-  // },
-  // {
-  // 	name: "gpt-5.2-pro-high",
-  // 	family: "gpt-5.2-pro",
-  // 	effort: "high",
-  // 	reasoning: true,
-  // 	llm: pinnedModel("openai/gpt-5.2-pro", {
-  // 		...defaultProviderOptions,
-  // 		reasoning: {
-  // 			effort: "high",
-  // 			exclude: true,
-  // 		},
-  // 	}),
-  // },
-  {
-    llm: pinnedModel("openai/gpt-5.4", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: {
-          effort: "low",
-          exclude: true,
+      }),
+      name: "claude-4.5-sonnet-non-reasoning",
+      family: "claude-4.5-sonnet",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("anthropic/claude-sonnet-4.5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { enabled: true, exclude: true },
         },
-      },
-    }),
-    name: "gpt-5.4-low",
-    family: "gpt-5.4",
-    effort: "low",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("openai/gpt-5.4", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: {
-          effort: "high",
-          exclude: true,
+      }),
+      name: "claude-4.5-sonnet-reasoning",
+      family: "claude-4.5-sonnet",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("bytedance-seed/seed-1.6", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
         },
-      },
-    }),
-    name: "gpt-5.4-high",
-    family: "gpt-5.4",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("openai/gpt-5.4", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: {
-          effort: "xhigh",
-          exclude: true,
+      }),
+      name: "seed-1.6-high",
+      family: "seed-1.6",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("bytedance-seed/seed-1.6-flash", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
         },
-      },
-    }),
-    name: "gpt-5.4-xhigh",
-    family: "gpt-5.4",
-    effort: "xhigh",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("openai/gpt-oss-120b", {
-      ...defaultProviderOptions,
-      extraBody: { reasoning: { effort: "low", exclude: true } },
-    }),
-    name: "gpt-oss-120b-low",
-    family: "gpt-oss-120b",
-    effort: "low",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("openai/gpt-oss-120b", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "gpt-oss-120b-high",
-    family: "gpt-oss-120b",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("qwen/qwen3-next-80b-a3b-thinking", defaultProviderOptions),
-    name: "qwen3-next-80b-a3b-thinking",
-    family: "qwen3-next-80b-a3b-thinking",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("z-ai/glm-4.7", {
-      ...defaultProviderOptions,
-      extraBody: { reasoning: { enabled: false, exclude: true } },
-    }),
-    name: "glm-4.7-non-reasoning",
-    family: "glm-4.7",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("z-ai/glm-4.7", defaultProviderOptions),
-    name: "glm-4.7-reasoning",
-    family: "glm-4.7",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("z-ai/glm-4.7", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "glm-4.7-reasoning-high",
-    family: "glm-4.7",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("z-ai/glm-5", {
-      ...defaultProviderOptions,
-      extraBody: { reasoning: { enabled: false, exclude: true } },
-    }),
-    name: "glm-5-non-reasoning",
-    family: "glm-5",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("z-ai/glm-5", defaultProviderOptions),
-    name: "glm-5-reasoning",
-    family: "glm-5",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("z-ai/glm-5", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "glm-5-reasoning-high",
-    family: "glm-5",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("x-ai/grok-4", defaultProviderOptions),
-    name: "grok-4",
-    family: "grok-4",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("x-ai/grok-4.1-fast", {
-      ...defaultProviderOptions,
-      extraBody: { reasoning: { enabled: false } },
-    }),
-    name: "grok-4.1-fast-non-reasoning",
-    family: "grok-4.1-fast",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("x-ai/grok-4.1-fast", defaultProviderOptions),
-    name: "grok-4.1-fast-reasoning",
-    family: "grok-4.1-fast",
-    effort: "default",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("x-ai/grok-4.1-fast", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "grok-4.1-fast-reasoning-high",
-    family: "grok-4.1-fast",
-    effort: "high",
-    reasoning: true,
-  },
-  {
-    llm: pinnedModel("xiaomi/mimo-v2-flash:free", {
-      ...defaultProviderOptions,
-      extraBody: { reasoning: { enabled: false } },
-    }),
-    name: "mimo-v2-flash",
-    family: "mimo-v2-flash",
-    effort: "none",
-    reasoning: false,
-  },
-  {
-    llm: pinnedModel("xiaomi/mimo-v2-flash:free", {
-      ...defaultProviderOptions,
-      extraBody: {
-        reasoning: { effort: "high", exclude: true },
-      },
-    }),
-    name: "mimo-v2-flash-high",
-    family: "mimo-v2-flash",
-    effort: "high",
-    reasoning: true,
-  },
+      }),
+      name: "seed-1.6-flash-high",
+      family: "seed-1.6-flash",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("deepseek/deepseek-v3.2", defaultProviderOptions),
+      name: "deepseek-v3.2",
+      family: "deepseek-v3.2",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("deepseek/deepseek-v3.2", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "deepseek-v3.2-high",
+      family: "deepseek-v3.2",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("deepseek/deepseek-v3.2-speciale", defaultProviderOptions),
+      name: "deepseek-v3.2-speciale",
+      family: "deepseek-v3.2-speciale",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("deepseek/deepseek-v3.2-speciale", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "deepseek-v3.2-speciale-high",
+      family: "deepseek-v3.2-speciale",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("google/gemini-3-flash-preview", {
+        ...defaultProviderOptions,
+        extraBody: { reasoning: { effort: "minimal", exclude: true } },
+      }),
+      name: "gemini-3-flash-preview-minimal",
+      family: "gemini-3-flash-preview",
+      effort: "minimal",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("google/gemini-3-flash-preview", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high" },
+        },
+        provider: {
+          allow_fallbacks: false,
+          only: ["google-vertex"],
+        },
+      }),
+      name: "gemini-3-flash-preview-high",
+      family: "gemini-3-flash-preview",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("google/gemini-3-pro-preview", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "low", exclude: true },
+        },
+      }),
+      name: "gemini-3-pro-preview-low",
+      family: "gemini-3-pro-preview",
+      effort: "low",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("google/gemini-3-pro-preview", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high" },
+        },
+        provider: {
+          allow_fallbacks: false,
+          only: ["google-vertex"],
+        },
+      }),
+      name: "gemini-3-pro-preview-high",
+      family: "gemini-3-pro-preview",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("google/gemini-3.1-pro-preview", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "low", exclude: true },
+        },
+      }),
+      name: "gemini-3.1-pro-preview-low",
+      family: "gemini-3.1-pro-preview",
+      effort: "low",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("google/gemini-3.1-pro-preview", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high" },
+        },
+        provider: {
+          allow_fallbacks: false,
+          only: ["google-vertex"],
+        },
+      }),
+      name: "gemini-3.1-pro-preview-high",
+      family: "gemini-3.1-pro-preview",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("minimax/minimax-m2.1", defaultProviderOptions),
+      name: "minimax-m2.1",
+      family: "minimax-m2.1",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("minimax/minimax-m2.1", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "minimax-m2.1-high",
+      family: "minimax-m2.1",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("minimax/minimax-m2.5", defaultProviderOptions),
+      name: "minimax-m2.5",
+      family: "minimax-m2.5",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("minimax/minimax-m2.5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "minimax-m2.5-high",
+      family: "minimax-m2.5",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("mistralai/ministral-14b-2512", defaultProviderOptions),
+      name: "ministral-14b-2512",
+      family: "ministral-14b-2512",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("mistralai/mistral-large-2512", defaultProviderOptions),
+      name: "mistral-large-2512",
+      family: "mistral-large-2512",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("moonshotai/kimi-k2-0905", defaultProviderOptions),
+      name: "kimi-k2",
+      family: "kimi-k2",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("moonshotai/kimi-k2-thinking", defaultProviderOptions),
+      name: "kimi-k2-thinking",
+      family: "kimi-k2-thinking",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("moonshotai/kimi-k2.5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { enabled: false, exclude: true },
+        },
+      }),
+      name: "kimi-k2.5-non-reasoning",
+      family: "kimi-k2.5",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("moonshotai/kimi-k2.5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "kimi-k2.5-high",
+      family: "kimi-k2.5",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("openai/gpt-5.2", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: {
+            effort: "low",
+            exclude: true,
+          },
+        },
+      }),
+      name: "gpt-5.2-low",
+      family: "gpt-5.2",
+      effort: "low",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("openai/gpt-5.2", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: {
+            effort: "high",
+            exclude: true,
+          },
+        },
+      }),
+      name: "gpt-5.2-high",
+      family: "gpt-5.2",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("openai/gpt-5.2", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: {
+            effort: "xhigh",
+            exclude: true,
+          },
+        },
+      }),
+      name: "gpt-5.2-xhigh",
+      family: "gpt-5.2",
+      effort: "xhigh",
+      reasoning: true,
+    },
+    // {
+    // 	llm: pinnedModel("openai/gpt-5.2-pro", defaultProviderOptions),
+    // 	name: "gpt-5.2-pro",
+    // 	family: "gpt-5.2-pro",
+    // 	effort: "default",
+    // 	reasoning: true,
+    // },
+    // {
+    // 	name: "gpt-5.2-pro-high",
+    // 	family: "gpt-5.2-pro",
+    // 	effort: "high",
+    // 	reasoning: true,
+    // 	llm: pinnedModel("openai/gpt-5.2-pro", {
+    // 		...defaultProviderOptions,
+    // 		reasoning: {
+    // 			effort: "high",
+    // 			exclude: true,
+    // 		},
+    // 	}),
+    // },
+    {
+      llm: pinnedModel("openai/gpt-5.4", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: {
+            effort: "low",
+            exclude: true,
+          },
+        },
+      }),
+      name: "gpt-5.4-low",
+      family: "gpt-5.4",
+      effort: "low",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("openai/gpt-5.4", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: {
+            effort: "high",
+            exclude: true,
+          },
+        },
+      }),
+      name: "gpt-5.4-high",
+      family: "gpt-5.4",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("openai/gpt-5.4", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: {
+            effort: "xhigh",
+            exclude: true,
+          },
+        },
+      }),
+      name: "gpt-5.4-xhigh",
+      family: "gpt-5.4",
+      effort: "xhigh",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("openai/gpt-oss-120b", {
+        ...defaultProviderOptions,
+        extraBody: { reasoning: { effort: "low", exclude: true } },
+      }),
+      name: "gpt-oss-120b-low",
+      family: "gpt-oss-120b",
+      effort: "low",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("openai/gpt-oss-120b", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "gpt-oss-120b-high",
+      family: "gpt-oss-120b",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("qwen/qwen3-next-80b-a3b-thinking", defaultProviderOptions),
+      name: "qwen3-next-80b-a3b-thinking",
+      family: "qwen3-next-80b-a3b-thinking",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("z-ai/glm-4.7", {
+        ...defaultProviderOptions,
+        extraBody: { reasoning: { enabled: false, exclude: true } },
+      }),
+      name: "glm-4.7-non-reasoning",
+      family: "glm-4.7",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("z-ai/glm-4.7", defaultProviderOptions),
+      name: "glm-4.7-reasoning",
+      family: "glm-4.7",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("z-ai/glm-4.7", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "glm-4.7-reasoning-high",
+      family: "glm-4.7",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("z-ai/glm-5", {
+        ...defaultProviderOptions,
+        extraBody: { reasoning: { enabled: false, exclude: true } },
+      }),
+      name: "glm-5-non-reasoning",
+      family: "glm-5",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("z-ai/glm-5", defaultProviderOptions),
+      name: "glm-5-reasoning",
+      family: "glm-5",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("z-ai/glm-5", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "glm-5-reasoning-high",
+      family: "glm-5",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("x-ai/grok-4", defaultProviderOptions),
+      name: "grok-4",
+      family: "grok-4",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("x-ai/grok-4.1-fast", {
+        ...defaultProviderOptions,
+        extraBody: { reasoning: { enabled: false } },
+      }),
+      name: "grok-4.1-fast-non-reasoning",
+      family: "grok-4.1-fast",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("x-ai/grok-4.1-fast", defaultProviderOptions),
+      name: "grok-4.1-fast-reasoning",
+      family: "grok-4.1-fast",
+      effort: "default",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("x-ai/grok-4.1-fast", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "grok-4.1-fast-reasoning-high",
+      family: "grok-4.1-fast",
+      effort: "high",
+      reasoning: true,
+    },
+    {
+      llm: pinnedModel("xiaomi/mimo-v2-flash:free", {
+        ...defaultProviderOptions,
+        extraBody: { reasoning: { enabled: false } },
+      }),
+      name: "mimo-v2-flash",
+      family: "mimo-v2-flash",
+      effort: "none",
+      reasoning: false,
+    },
+    {
+      llm: pinnedModel("xiaomi/mimo-v2-flash:free", {
+        ...defaultProviderOptions,
+        extraBody: {
+          reasoning: { effort: "high", exclude: true },
+        },
+      }),
+      name: "mimo-v2-flash-high",
+      family: "mimo-v2-flash",
+      effort: "high",
+      reasoning: true,
+    },
 
-  // --- September 2026 batch: strict structured output, effort ladder ---
-  // Each family starts at its lowest effort and steps up while it pays off.
-  // outputMode "text": a 5x5 A/B (same prompt, 10 puzzles) showed structured
-  // output costing these models 3+ puzzles (Qwen 3.8 Max 0 vs 10, Qwen 3.8
-  // Flash 2 vs 10, Mistral Medium 3.5 6 vs 9, Claude Fable 5.1 6 vs 9).
-  reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "low"),
-  { ...reasoningModel("anthropic/claude-fable-5.1", "claude-fable-5.1", "low"), outputMode: "text" },
-  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "low"),
-  reasoningModel("openai/gpt-6-luna", "gpt-6-luna", "low"),
-  reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "low"),
-  reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "low"),
-  reasoningModel("x-ai/grok-4.7", "grok-4.7", "low"),
-  { ...reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "low"), outputMode: "text" },
-  { ...reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "low"), outputMode: "text" },
-  { ...reasoningModel("qwen/qwen3.8-max-0902", "qwen3.8-max", "low"), outputMode: "text" },
-  { ...reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"), outputMode: "text" },
-  { ...reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"), outputMode: "text" },
-  // Moonshot's endpoint answered 0/30 with schema-forced output (short reasoning); text mode like DeepSeek/GLM.
-  { ...reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"), outputMode: "text" },
-  { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
-  { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"), outputMode: "text" },
-  // Mistral Medium 3.5 only exposes "high" or "none" (bench/effort-levels.json);
-  // the earlier "low" request may have been served at the default (high).
-  { ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "high"), outputMode: "text" },
-  // Muse Spark: Meta caps non-streaming requests at ~5 minutes (504; streaming
-  // is exempt per its docs), and schema-constrained responses still hit the
-  // cap through OpenRouter, so it streams in text mode. Its 5x5 A/B showed no
-  // format effect (10/10 either way).
-  // Effort ladder, step 1: the cheapest promising models at medium effort.
-  // DeepSeek V4 and Kimi K3 expose only low/high/max (bench/effort-levels.json), so
-  // their earlier "medium" variants were retired when they moved to first-party.
-  reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "medium"),
-  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "medium"),
-  { ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"), outputMode: "text", stream: true, providerTimeLimit: MUSE_TIME_LIMIT },
-  // Effort ladder, step 2: step 1 gained 2+ puzzles (Sol 17 to 21, Gemini
-  // 3.8 Flash 11 to 20), plus a first step for the pricier leaders.
-  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "high"),
-  reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "high"),
-  reasoningModel("x-ai/grok-4.7", "grok-4.7", "medium"),
-  reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "medium"),
-  // Effort ladder, step 3: Sol gained 5 at high; Opus gets its first step.
-  reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "xhigh"),
-  reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "medium"),
-  // Step 4: Opus gained 9 at medium (18 to 27); Sol lost 2 at xhigh and stops.
-  reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "high"),
-  // Reader request (r/LocalLLaMA, V1.2 launch): is GPT-5.6 Sol better than
-  // GPT-6 Sol? Full ladder at the same levels, from effort-levels.json.
-  reasoningModel("openai/gpt-5.6-sol", "gpt-5.6-sol", "low"),
-  // Reader run (r/LocalLLaMA): Qwen3.8 27B scored 7/10/16 at low/medium/xhigh
-  // on their machine. Re-run here so every answer is stored and inspectable.
-  // Its three OpenRouter levels are Qwen's native ones.
-  { ...reasoningModel("qwen/qwen3.8-27b", "qwen3.8-27b", "low"), outputMode: "text" },
-  // New release (2026-09-28): full ladder, the natural comparison to Opus 5.5
-  // at half the price. Anthropic's endpoint supports structured outputs.
-  reasoningModel("anthropic/claude-sonnet-5.5", "claude-sonnet-5.5", "low"),
-  // New release (2026-09-30): GPT-6.1 Sol, full ladder to compare with GPT-6 Sol.
-  reasoningModel("openai/gpt-6.1-sol", "gpt-6.1-sol", "low"),
-  // New release (2026-10-07): Claude Haiku 5.5, full ladder to compare with
-  // Sonnet 5.5 at a twentieth of the price. Anthropic's endpoint supports structured outputs.
-  reasoningModel("anthropic/claude-haiku-5.5", "claude-haiku-5.5", "low"),
-  // No effort control on OpenRouter: reasoning on at the provider default.
-  { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
-  defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
-  defaultReasoningModel("xiaomi/mimo-v2.6-flash", "mimo-v2.6-flash"),
-  defaultReasoningModel("bytedance-seed/seed-2-1-turbo", "seed-2.1-turbo"),
-  // minimax/minimax-m3 is left out: every endpoint that enforces the schema
-  // (Together, CoreWeave) drops reasoning, so it cannot be measured fairly.
-// These makers' advertised first-party endpoints do not support structured
-// outputs; text mode avoids require_parameters excluding the only legal route.
-] as Model[]).map((model) => model.llm.modelId.startsWith("deepseek/") || model.llm.modelId.startsWith("z-ai/")
-  || model.llm.modelId.startsWith("minimax/") || model.llm.modelId === "qwen/qwen3-next-80b-a3b-thinking"
-  ? { ...model, outputMode: "text" as const }
-  : model);
+    // --- September 2026 batch: strict structured output, effort ladder ---
+    // Each family starts at its lowest effort and steps up while it pays off.
+    // outputMode "text": a 5x5 A/B (same prompt, 10 puzzles) showed structured
+    // output costing these models 3+ puzzles (Qwen 3.8 Max 0 vs 10, Qwen 3.8
+    // Flash 2 vs 10, Mistral Medium 3.5 6 vs 9, Claude Fable 5.1 6 vs 9).
+    reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "low"),
+    {
+      ...reasoningModel("anthropic/claude-fable-5.1", "claude-fable-5.1", "low"),
+      outputMode: "text",
+    },
+    reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "low"),
+    reasoningModel("openai/gpt-6-luna", "gpt-6-luna", "low"),
+    reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "low"),
+    reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "low"),
+    reasoningModel("x-ai/grok-4.7", "grok-4.7", "low"),
+    {
+      ...reasoningModel("deepseek/deepseek-v4-pro-0813", "deepseek-v4-pro", "low"),
+      outputMode: "text",
+    },
+    {
+      ...reasoningModel("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash", "low"),
+      outputMode: "text",
+    },
+    { ...reasoningModel("qwen/qwen3.8-max-0902", "qwen3.8-max", "low"), outputMode: "text" },
+    { ...reasoningModel("z-ai/glm-5.3", "glm-5.3", "low"), outputMode: "text" },
+    { ...reasoningModel("z-ai/glm-5.3-flash", "glm-5.3-flash", "low"), outputMode: "text" },
+    // Moonshot's endpoint answered 0/30 with schema-forced output (short reasoning); text mode like DeepSeek/GLM.
+    { ...reasoningModel("moonshotai/kimi-k3", "kimi-k3", "low"), outputMode: "text" },
+    {
+      ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "low"),
+      outputMode: "text",
+      stream: true,
+      providerTimeLimit: MUSE_TIME_LIMIT,
+    },
+    {
+      ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "low"),
+      outputMode: "text",
+    },
+    // Mistral Medium 3.5 only exposes "high" or "none" (bench/effort-levels.json);
+    // the earlier "low" request may have been served at the default (high).
+    {
+      ...reasoningModel("mistralai/mistral-medium-3-5", "mistral-medium-3.5", "high"),
+      outputMode: "text",
+    },
+    // Muse Spark: Meta caps non-streaming requests at ~5 minutes (504; streaming
+    // is exempt per its docs), and schema-constrained responses still hit the
+    // cap through OpenRouter, so it streams in text mode. Its 5x5 A/B showed no
+    // format effect (10/10 either way).
+    // Effort ladder, step 1: the cheapest promising models at medium effort.
+    // DeepSeek V4 and Kimi K3 expose only low/high/max (bench/effort-levels.json), so
+    // their earlier "medium" variants were retired when they moved to first-party.
+    reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "medium"),
+    reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "medium"),
+    {
+      ...reasoningModel("meta/muse-spark-1.3", "muse-spark-1.3", "medium"),
+      outputMode: "text",
+      stream: true,
+      providerTimeLimit: MUSE_TIME_LIMIT,
+    },
+    // Effort ladder, step 2: step 1 gained 2+ puzzles (Sol 17 to 21, Gemini
+    // 3.8 Flash 11 to 20), plus a first step for the pricier leaders.
+    reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "high"),
+    reasoningModel("google/gemini-3.8-flash", "gemini-3.8-flash", "high"),
+    reasoningModel("x-ai/grok-4.7", "grok-4.7", "medium"),
+    reasoningModel("openai/gpt-6-astra", "gpt-6-astra", "medium"),
+    // Effort ladder, step 3: Sol gained 5 at high; Opus gets its first step.
+    reasoningModel("openai/gpt-6-sol", "gpt-6-sol", "xhigh"),
+    reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "medium"),
+    // Step 4: Opus gained 9 at medium (18 to 27); Sol lost 2 at xhigh and stops.
+    reasoningModel("anthropic/claude-opus-5.5", "claude-opus-5.5", "high"),
+    // Reader request (r/LocalLLaMA, V1.2 launch): is GPT-5.6 Sol better than
+    // GPT-6 Sol? Full ladder at the same levels, from effort-levels.json.
+    reasoningModel("openai/gpt-5.6-sol", "gpt-5.6-sol", "low"),
+    // Reader run (r/LocalLLaMA): Qwen3.8 27B scored 7/10/16 at low/medium/xhigh
+    // on their machine. Re-run here so every answer is stored and inspectable.
+    // Its three OpenRouter levels are Qwen's native ones.
+    { ...reasoningModel("qwen/qwen3.8-27b", "qwen3.8-27b", "low"), outputMode: "text" },
+    // New release (2026-09-28): full ladder, the natural comparison to Opus 5.5
+    // at half the price. Anthropic's endpoint supports structured outputs.
+    reasoningModel("anthropic/claude-sonnet-5.5", "claude-sonnet-5.5", "low"),
+    // New release (2026-09-30): GPT-6.1 Sol, full ladder to compare with GPT-6 Sol.
+    reasoningModel("openai/gpt-6.1-sol", "gpt-6.1-sol", "low"),
+    // New release (2026-10-07): Claude Haiku 5.5, full ladder to compare with
+    // Sonnet 5.5 at a twentieth of the price. Anthropic's endpoint supports structured outputs.
+    reasoningModel("anthropic/claude-haiku-5.5", "claude-haiku-5.5", "low"),
+    // No effort control on OpenRouter: reasoning on at the provider default.
+    { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
+    defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
+    defaultReasoningModel("xiaomi/mimo-v2.6-flash", "mimo-v2.6-flash"),
+    defaultReasoningModel("bytedance-seed/seed-2-1-turbo", "seed-2.1-turbo"),
+    // minimax/minimax-m3 is left out: every endpoint that enforces the schema
+    // (Together, CoreWeave) drops reasoning, so it cannot be measured fairly.
+    // These makers' advertised first-party endpoints do not support structured
+    // outputs; text mode avoids require_parameters excluding the only legal route.
+  ] as Model[]
+).map((model) =>
+  model.llm.modelId.startsWith("deepseek/") ||
+  model.llm.modelId.startsWith("z-ai/") ||
+  model.llm.modelId.startsWith("minimax/") ||
+  model.llm.modelId === "qwen/qwen3-next-80b-a3b-thinking"
+    ? { ...model, outputMode: "text" as const }
+    : model,
+);
 
-const effortFamilies = effortEvidence.families as Record<string, { modelId: string; levels: string[] }>;
+const effortFamilies = effortEvidence.families as Record<
+  string,
+  { modelId: string; levels: string[] }
+>;
 const configuredNames = new Set(configuredModels.map((model) => model.name));
 const addedModels: Model[] = [];
 for (const [family, evidence] of Object.entries(effortFamilies)) {
-  const representative = configuredModels.find((model) => model.family === family && model.llm.modelId === evidence.modelId);
+  const representative = configuredModels.find(
+    (model) => model.family === family && model.llm.modelId === evidence.modelId,
+  );
   if (!representative) throw new Error(`No configured model for effort evidence: ${family}`);
   const settings = (representative.llm as { settings?: OpenRouterChatSettings }).settings;
   if (!settings) throw new Error(`Missing provider settings for ${family}`);
@@ -801,26 +851,29 @@ export const NEW_VARIANT_NAMES = new Set(addedModels.map((model) => model.name))
 const localBaseUrl = process.env.NONOBENCH_LOCAL_BASE_URL;
 const localModelId = process.env.NONOBENCH_LOCAL_MODEL;
 const localEffort = process.env.NONOBENCH_LOCAL_EFFORT ?? "none";
-const localModels: Model[] = localBaseUrl && localModelId
-  ? [{
-    llm: createOpenAICompatible({
-      name: "local",
-      baseURL: localBaseUrl,
-      apiKey: process.env.NONOBENCH_LOCAL_API_KEY ?? "local",
-      fetch: fetchWithoutIdleTimeout,
-    })(localModelId),
-    name: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
-    family: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
-    // Label only: the runner never sends reasoning settings to a local
-    // server, so this records what the user configured there.
-    effort: localEffort,
-    // Label only, like effort: the dashboard's reasoning filter uses it.
-    reasoning: localEffort !== "none",
-    outputMode: "text",
-    local: true,
-    localBaseURL: localBaseUrl,
-  }]
-  : [];
+const localModels: Model[] =
+  localBaseUrl && localModelId
+    ? [
+        {
+          llm: createOpenAICompatible({
+            name: "local",
+            baseURL: localBaseUrl,
+            apiKey: process.env.NONOBENCH_LOCAL_API_KEY ?? "local",
+            fetch: fetchWithoutIdleTimeout,
+          })(localModelId),
+          name: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
+          family: process.env.NONOBENCH_LOCAL_NAME ?? localModelId,
+          // Label only: the runner never sends reasoning settings to a local
+          // server, so this records what the user configured there.
+          effort: localEffort,
+          // Label only, like effort: the dashboard's reasoning filter uses it.
+          reasoning: localEffort !== "none",
+          outputMode: "text",
+          local: true,
+          localBaseURL: localBaseUrl,
+        },
+      ]
+    : [];
 
 // Local model registry: models benched against the user's own server, persisted
 // so exports, the visualizer, and re-runs recognize them without env vars.
@@ -866,7 +919,12 @@ export function localRegistryEntryFor(name: string): LocalModelRegistryEntry | u
 export async function registerLocalModel(model: Model): Promise<void> {
   if (!model.localBaseURL) return;
   const registry = readLocalRegistry();
-  registry[model.name] = { baseURL: model.localBaseURL, modelId: model.llm.modelId, family: model.family, effort: model.effort };
+  registry[model.name] = {
+    baseURL: model.localBaseURL,
+    modelId: model.llm.modelId,
+    family: model.family,
+    effort: model.effort,
+  };
   await Bun.write(localRegistryPath, JSON.stringify(registry, null, 2) + "\n");
 }
 const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, entry]) => ({
@@ -875,8 +933,8 @@ const registryModels: Model[] = Object.entries(readLocalRegistry()).map(([name, 
     baseURL: entry.baseURL,
     apiKey: "local",
     fetch: fetchWithoutIdleTimeout,
-  // Without a stored model id, the name is the id: hand-written entries
-  // predate the field, and the name is usually the server's id anyway.
+    // Without a stored model id, the name is the id: hand-written entries
+    // predate the field, and the name is usually the server's id anyway.
   })(entry.modelId ?? name),
   name,
   family: entry.family ?? name,
@@ -903,7 +961,10 @@ export const MODELS: Model[] = [
   const counts = new Map<string, number>();
   for (const model of MODELS) counts.set(model.name, (counts.get(model.name) ?? 0) + 1);
   const shadowed = [...counts.entries()].find(([, count]) => count > 1)?.[0];
-  if (shadowed) throw new Error(`Local model name '${shadowed}' shadows a cloud model; choose another NONOBENCH_LOCAL_NAME (or rename the registry entry)`);
+  if (shadowed)
+    throw new Error(
+      `Local model name '${shadowed}' shadows a cloud model; choose another NONOBENCH_LOCAL_NAME (or rename the registry entry)`,
+    );
 }
 // OpenRouter-facing list for the refresh-* and backfill-* scripts: their ids are
 // OpenRouter ids, and a local model's id is not one.

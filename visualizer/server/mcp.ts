@@ -4,48 +4,59 @@ import { SITE_URL } from "@/lib/data";
 import { createMcpServer } from "@/lib/mcp";
 
 const site = new URL(SITE_URL);
-const allowedSiteOrigins = new Set([site.origin, `${site.protocol}//${site.hostname.replace(/^www\./, "")}`]);
+const allowedSiteOrigins = new Set([
+  site.origin,
+  `${site.protocol}//${site.hostname.replace(/^www\./, "")}`,
+]);
 const handler = createMcpHandler(createMcpServer);
 
 function allowedOrigin(origin: string) {
-	if (allowedSiteOrigins.has(origin)) return true;
-	try {
-		const url = new URL(origin);
-		return url.origin === origin && url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
-	} catch {
-		return false;
-	}
+  if (allowedSiteOrigins.has(origin)) return true;
+  try {
+    const url = new URL(origin);
+    return (
+      url.origin === origin &&
+      url.protocol === "http:" &&
+      (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+    );
+  } catch {
+    return false;
+  }
 }
 
 function validateOrigin(request: Request) {
-	const origin = request.headers.get("Origin");
-	if (origin && !allowedOrigin(origin)) return new Response(null, { status: 403 });
+  const origin = request.headers.get("Origin");
+  if (origin && !allowedOrigin(origin)) return new Response(null, { status: 403 });
 }
 
 function withCors(response: Response, request: Request) {
-	const origin = request.headers.get("Origin");
-	if (origin && allowedOrigin(origin)) {
-		response.headers.set("Access-Control-Allow-Origin", origin);
-	}
-	response.headers.append("Vary", "Origin");
-	return response;
+  const origin = request.headers.get("Origin");
+  if (origin && allowedOrigin(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+  }
+  response.headers.append("Vary", "Origin");
+  return response;
 }
 
 // Stateless Streamable HTTP: every POST gets a fresh server; GET and DELETE
 // (SSE streams and sessions) are not offered.
 export async function handleMcp(request: Request) {
-	const rejected = validateOrigin(request);
-	if (rejected) return withCors(rejected, request);
-	if (request.method === "POST") return withCors(await handler.fetch(request), request);
-	if (request.method === "OPTIONS") {
-		return withCors(new Response(null, {
-			status: 204,
-			headers: {
-				"Access-Control-Allow-Methods": "POST, OPTIONS",
-				"Access-Control-Allow-Headers": "Content-Type, MCP-Protocol-Version, Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID",
-				"Access-Control-Max-Age": "3600",
-			},
-		}), request);
-	}
-	return withCors(new Response(null, { status: 405, headers: { Allow: "POST" } }), request);
+  const rejected = validateOrigin(request);
+  if (rejected) return withCors(rejected, request);
+  if (request.method === "POST") return withCors(await handler.fetch(request), request);
+  if (request.method === "OPTIONS") {
+    return withCors(
+      new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers":
+            "Content-Type, MCP-Protocol-Version, Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID",
+          "Access-Control-Max-Age": "3600",
+        },
+      }),
+      request,
+    );
+  }
+  return withCors(new Response(null, { status: 405, headers: { Allow: "POST" } }), request);
 }

@@ -34,7 +34,7 @@ Each model gets the same system prompt and a puzzle's row and column clues, and 
 - Hard mode: 10 random 20x20 puzzles, each with a single solution. Answers are written one row per line. Each family runs it at its best Standard effort level, and its results stay separate from the overall score. Query it with \`size=20x20\`.`;
 
 export function llmsTxt() {
-	return `# Nonobench
+  return `# Nonobench
 
 > Nonobench is a benchmark of how well large language models solve nonogram (picross) puzzles. Results last updated ${RESULTS_TIMESTAMP}.
 
@@ -55,7 +55,7 @@ ${ACCESS}
 }
 
 export function skillMd() {
-	return `---
+  return `---
 name: nonobench
 description: Look up Nonobench results (how well LLMs solve nonogram/picross puzzles), fetch the benchmark puzzles, and check nonogram solutions. Use when asked how a model performs on Nonobench or on logic puzzles, to compare models on it, or to verify a nonogram grid.
 ---
@@ -81,33 +81,35 @@ ${ACCESS}
 }
 
 function markdownTable(headers: string[], rows: (string | number)[][]) {
-	return [
-		`| ${headers.join(" | ")} |`,
-		`| ${headers.map(() => "---").join(" | ")} |`,
-		...rows.map((row) => `| ${row.join(" | ")} |`),
-	].join("\n");
+  return [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows.map((row) => `| ${row.join(" | ")} |`),
+  ].join("\n");
 }
 
 export function homeMarkdown() {
-	const leaderboard = getLeaderboard();
-	const bySize = new Map(SIZES.map((size) => [size, new Map(getLeaderboard(size).map((row) => [row.model, row]))]));
-	return `# Nonobench leaderboard
+  const leaderboard = getLeaderboard();
+  const bySize = new Map(
+    SIZES.map((size) => [size, new Map(getLeaderboard(size).map((row) => [row.model, row]))]),
+  );
+  return `# Nonobench leaderboard
 
 How well large language models solve nonogram (picross) puzzles. Results last updated ${RESULTS_TIMESTAMP}.
 
 ${markdownTable(
-	["Rank", "Model", "Reasoning", "Accuracy", ...SIZES, "Total cost (USD)"],
-	leaderboard.map((row) => [
-		row.rank,
-		row.model,
-		row.reasoning ? "yes" : "no",
-		`${row.accuracy}% (${row.correct}/${row.total})`,
-		...SIZES.map((size) => {
-			const entry = bySize.get(size)?.get(row.model);
-			return entry ? `${entry.accuracy}%` : "-";
-		}),
-		row.totalCostUsd.toFixed(2),
-	]),
+  ["Rank", "Model", "Reasoning", "Accuracy", ...SIZES, "Total cost (USD)"],
+  leaderboard.map((row) => [
+    row.rank,
+    row.model,
+    row.reasoning ? "yes" : "no",
+    `${row.accuracy}% (${row.correct}/${row.total})`,
+    ...SIZES.map((size) => {
+      const entry = bySize.get(size)?.get(row.model);
+      return entry ? `${entry.accuracy}%` : "-";
+    }),
+    row.totalCostUsd.toFixed(2),
+  ]),
 )}
 
 ${METHOD}
@@ -117,20 +119,20 @@ ${ACCESS}
 }
 
 export function puzzlesMarkdown() {
-	const puzzles = listPuzzles();
-	return `# Nonobench puzzles
+  const puzzles = listPuzzles();
+  return `# Nonobench puzzles
 
 ${puzzles.length} puzzles used by Nonobench. Clues list the lengths of consecutive filled cells, left to right for rows and top to bottom for columns.
 
 ${puzzles
-	.map(
-		(puzzle) => `## Puzzle ${puzzle.index + 1} (${puzzle.size}, id \`${puzzle.id}\`)
+  .map(
+    (puzzle) => `## Puzzle ${puzzle.index + 1} (${puzzle.size}, id \`${puzzle.id}\`)
 
 - Rows: ${puzzle.rowClues.map((clue) => clue.join(" ")).join(" | ")}
 - Columns: ${puzzle.columnClues.map((clue) => clue.join(" ")).join(" | ")}
 - Explore: ${puzzle.url}`,
-	)
-	.join("\n\n")}
+  )
+  .join("\n\n")}
 
 Check a solution with \`POST ${SITE_URL}/api/v1/puzzles/{id}/check\` or the MCP tool \`check_solution\`.
 `;
@@ -138,11 +140,11 @@ Check a solution with \`POST ${SITE_URL}/api/v1/puzzles/{id}/check\` or the MCP 
 
 // Rough token estimate for the x-markdown-tokens header (~4 characters per token).
 export function markdownResponse(markdown: string) {
-	return new Response(markdown, {
-		headers: {
-			"Content-Type": "text/markdown; charset=utf-8",
-			"x-markdown-tokens": String(Math.ceil(markdown.length / 4)),
-			Vary: "Accept",
-		},
-	});
+  return new Response(markdown, {
+    headers: {
+      "Content-Type": "text/markdown; charset=utf-8",
+      "x-markdown-tokens": String(Math.ceil(markdown.length / 4)),
+      Vary: "Accept",
+    },
+  });
 }

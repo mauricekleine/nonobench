@@ -1,0 +1,27 @@
+{
+  "$schema": "./bench/node_modules/oxfmt/configuration_schema.json",
+  "useTabs": false,
+  "tabWidth": 2,
+  "bracketSpacing": true,
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/out/**",
+    "**/coverage/**",
+    "**/.wrangler/**",
+    "**/.tanstack/**",
+    "visualizer/app/routeTree.gen.ts",
+    "visualizer/public/opengraph-image.png",
+    "visualizer/public/api/deploy.json",
+    "bench/results.db",
+    "bench/effort-levels.json",
+    "bench/provider-pins.json",
+    "bench/model-metadata.json",
+    "video/src/data/nonobench.json",
+    "video/public/music/candidate-*.json",
+    "visualizer/app/results.json",
+    "visualizer/public/results-raw.json",
+    "visualizer/public/puzzle-results.json",
+    "visualizer/components/puzzles/puzzles-20x20.ts"
+  ]
+}

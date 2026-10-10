@@ -1,9 +1,5 @@
 import { EFFORT_ORDER, effortRank, paretoFrontier } from "./insights";
-import {
-  applyFilters,
-  type Filters,
-  type LeaderboardVariant,
-} from "./leaderboard";
+import { applyFilters, type Filters, type LeaderboardVariant } from "./leaderboard";
 
 export type ChartVariant = Omit<LeaderboardVariant, "bySize"> & {
   displayName: string;
@@ -21,19 +17,10 @@ export type ChartVariant = Omit<LeaderboardVariant, "bySize"> & {
 export type XMetric = "cost" | "time" | "tokens";
 
 export function decadeTicks(lower: number, upper: number): number[] {
-  if (
-    !Number.isFinite(lower) ||
-    !Number.isFinite(upper) ||
-    !(lower > 0) ||
-    !(upper >= lower)
-  )
+  if (!Number.isFinite(lower) || !Number.isFinite(upper) || !(lower > 0) || !(upper >= lower))
     return [];
   const ticks: number[] = [];
-  for (
-    let power = Math.ceil(Math.log10(lower));
-    power <= Math.floor(Math.log10(upper));
-    power++
-  ) {
+  for (let power = Math.ceil(Math.log10(lower)); power <= Math.floor(Math.log10(upper)); power++) {
     ticks.push(10 ** power);
   }
   return ticks;
@@ -42,7 +29,8 @@ export function decadeTicks(lower: number, upper: number): number[] {
 // 1-2-5 steps per decade, so a log axis reads as one: every tenfold step is a
 // major gridline, with 2x and 5x as minor lines in between.
 export function logTicks(lower: number, upper: number): { value: number; major: boolean }[] {
-  if (!Number.isFinite(lower) || !Number.isFinite(upper) || !(lower > 0) || !(upper >= lower)) return [];
+  if (!Number.isFinite(lower) || !Number.isFinite(upper) || !(lower > 0) || !(upper >= lower))
+    return [];
   const ticks: { value: number; major: boolean }[] = [];
   for (let power = Math.floor(Math.log10(lower)); power <= Math.ceil(Math.log10(upper)); power++) {
     for (const step of [1, 2, 5]) {
@@ -101,36 +89,30 @@ export function effortLadders<T extends ChartVariant>(
 ): EffortGroup<T>[] {
   const all = applyFilters(models, { ...filters, effort: "all" });
   const groups = new Map<string, T[]>();
-  for (const model of all)
-    groups.set(model.family, [...(groups.get(model.family) ?? []), model]);
-  return [...groups.values()]
-    .flatMap((variants): EffortGroup<T>[] => {
-      const ordered = variants
-        .filter((model) => effortRank(model.effort) < EFFORT_ORDER.length)
-        .sort((a, b) => effortRank(a.effort) - effortRank(b.effort));
-      if (new Set(ordered.map((model) => model.effort)).size >= 2)
-        return [{ kind: "ordered", variants: ordered }];
-      const off = variants.find((model) => model.effort === "none");
-      const on = variants.find((model) => model.effort === "default");
-      return off && on ? [{ kind: "reasoning", variants: [off, on] }] : [];
-    })
-    // Newest models first, so the current generation leads.
-    .sort(
-      (a, b) =>
-        (b.variants[0].addedAt ?? "").localeCompare(a.variants[0].addedAt ?? "") ||
-        a.variants[0].familyDisplayName.localeCompare(
-          b.variants[0].familyDisplayName,
-        ),
-    );
+  for (const model of all) groups.set(model.family, [...(groups.get(model.family) ?? []), model]);
+  return (
+    [...groups.values()]
+      .flatMap((variants): EffortGroup<T>[] => {
+        const ordered = variants
+          .filter((model) => effortRank(model.effort) < EFFORT_ORDER.length)
+          .sort((a, b) => effortRank(a.effort) - effortRank(b.effort));
+        if (new Set(ordered.map((model) => model.effort)).size >= 2)
+          return [{ kind: "ordered", variants: ordered }];
+        const off = variants.find((model) => model.effort === "none");
+        const on = variants.find((model) => model.effort === "default");
+        return off && on ? [{ kind: "reasoning", variants: [off, on] }] : [];
+      })
+      // Newest models first, so the current generation leads.
+      .sort(
+        (a, b) =>
+          (b.variants[0].addedAt ?? "").localeCompare(a.variants[0].addedAt ?? "") ||
+          a.variants[0].familyDisplayName.localeCompare(b.variants[0].familyDisplayName),
+      )
+  );
 }
 
-export function effortRowDomain<T extends ChartVariant>(
-  group: EffortGroup<T>,
-  size?: string,
-) {
-  const scores = group.variants.map(
-    (model) => chartStats(model, size).accuracy,
-  );
+export function effortRowDomain<T extends ChartVariant>(group: EffortGroup<T>, size?: string) {
+  const scores = group.variants.map((model) => chartStats(model, size).accuracy);
   const min = Math.min(...scores);
   const max = Math.max(...scores);
   const padding = Math.max(5, (max - min) * 0.2);
@@ -140,24 +122,16 @@ export function effortRowDomain<T extends ChartVariant>(
   };
 }
 
-export function effortInsight<T extends ChartVariant>(
-  ladders: EffortGroup<T>[],
-  size?: string,
-) {
+export function effortInsight<T extends ChartVariant>(ladders: EffortGroup<T>[], size?: string) {
   const ordered = ladders.filter((group) => group.kind === "ordered");
   // Describe the whole selection rather than singling out one family.
   const scores = ordered.map((group) =>
     group.variants.map((model) => chartStats(model, size).accuracy),
   );
-  const improved = scores.filter(
-    (row) => row[row.length - 1] > row[0] + 0.05,
-  ).length;
-  const topNotBest = scores.filter(
-    (row) => Math.max(...row) > row[row.length - 1] + 0.05,
-  ).length;
+  const improved = scores.filter((row) => row[row.length - 1] > row[0] + 0.05).length;
+  const topNotBest = scores.filter((row) => Math.max(...row) > row[row.length - 1] + 0.05).length;
   if (improved || topNotBest) {
-    const families = (count: number) =>
-      `${count} ${count === 1 ? "family" : "families"}`;
+    const families = (count: number) => `${count} ${count === 1 ? "family" : "families"}`;
     const first = `${improved} of ${families(ordered.length)} scored higher at their top effort level than at their lowest.`;
     return topNotBest
       ? `${first} For ${families(topNotBest)}, the top level was not their best.`
