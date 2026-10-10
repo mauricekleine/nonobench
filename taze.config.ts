@@ -22,5 +22,6 @@ export default defineConfig({
   maturityPeriod: (gated ? install.minimumReleaseAge : 259_200) / 86_400,
   maturityPeriodExclude: gated ? (install.minimumReleaseAgeExcludes ?? []) : [],
   // Holds: `name` or `name@range` (e.g. 'typescript@7'), each with its reason above it.
-  exclude: [],
+  // typescript: `bun --check` uses the TypeScript that Bun bundles, so it moves with packageManager's Bun.
+  exclude: ['typescript'],
 })
