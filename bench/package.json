@@ -3,6 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "packageManager": "bun@1.4.3",
   "scripts": {
     "bench": "bun run bench.ts",
     "bench:local": "NONOBENCH_DB=local-results.db bun run bench.ts",
@@ -12,13 +13,13 @@
     "refresh-effort-levels": "bun run refresh-effort-levels.ts",
     "backfill-providers": "bun run backfill-providers.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --check",
     "regrade": "bun run regrade.ts",
     "generate-puzzles": "bun run generate-puzzles.ts"
   },
   "devDependencies": {
     "@types/bun": "1.4.2",
-    "typescript": "^7.0.2"
+    "typescript": "7.0.2"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.62",

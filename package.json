@@ -1,6 +1,7 @@
 {
   "name": "nonobench-root",
   "private": true,
+  "packageManager": "bun@1.4.3",
   "devDependencies": {
     "taze": "21.3.0"
   }

@@ -5,6 +5,7 @@
   "repository": {},
   "license": "UNLICENSED",
   "private": true,
+  "packageManager": "bun@1.4.3",
   "dependencies": {
     "@remotion/cli": "4.0.532",
     "@remotion/google-fonts": "4.0.532",
@@ -18,7 +19,6 @@
     "@remotion/eslint-config-flat": "4.0.532",
     "@types/bun": "^1.4.2",
     "@types/react": "19.3.0",
-    "@typescript/native": "npm:typescript@7.0.2",
     "eslint": "10.11.0",
     "prettier": "3.9.9",
     "typescript": "npm:@typescript/typescript6@6.0.2"
@@ -27,7 +27,7 @@
     "dev": "remotion studio",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
-    "lint": "eslint src && tsc",
+    "lint": "eslint src && bun --check",
     "render": "remotion render",
     "sync-data": "bun scripts/sync-data.ts",
     "synth-sfx": "bun scripts/synth-sfx.ts",
