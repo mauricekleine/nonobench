@@ -14,10 +14,17 @@ import { PROVIDERS } from "@/lib/providers";
 
 type FamilySource = { family: string; familyDisplayName: string; provider: string };
 
-const focus = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
+const focus =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-bright";
 export const filterPill = `inline-flex min-h-9 items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 text-sm text-foreground hover:bg-foreground/10 ${focus}`;
 
-export function Segmented<T extends string>({ value, options, onChange, label, size = "md" }: {
+export function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+  size = "md",
+}: {
   value: T;
   options: { value: T; label: string }[];
   onChange: (value: T) => void;
@@ -26,7 +33,12 @@ export function Segmented<T extends string>({ value, options, onChange, label, s
 }) {
   // Radio-group keyboard behaviour: one tab stop, arrows move the selection.
   const move = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+    const step =
+      event.key === "ArrowRight" || event.key === "ArrowDown"
+        ? 1
+        : event.key === "ArrowLeft" || event.key === "ArrowUp"
+          ? -1
+          : 0;
     if (!step) return;
     event.preventDefault();
     const index = options.findIndex((option) => option.value === value);
@@ -37,7 +49,12 @@ export function Segmented<T extends string>({ value, options, onChange, label, s
   };
   const selected = options.some((option) => option.value === value);
   return (
-    <div role="radiogroup" aria-label={label} onKeyDown={move} className="inline-flex rounded-full border border-border bg-foreground/5 p-0.5">
+    <div
+      role="radiogroup"
+      aria-label={label}
+      onKeyDown={move}
+      className="inline-flex rounded-full border border-border bg-foreground/5 p-0.5"
+    >
       {options.map((option, index) => (
         <button
           key={option.value}
@@ -55,7 +72,13 @@ export function Segmented<T extends string>({ value, options, onChange, label, s
   );
 }
 
-export function EffortToggle({ filters, change }: { filters: Filters; change: (patch: Partial<Filters>) => void }) {
+export function EffortToggle({
+  filters,
+  change,
+}: {
+  filters: Filters;
+  change: (patch: Partial<Filters>) => void;
+}) {
   const effort = filters.effort ?? "best";
   // Older links can pin one level (?e=low); show it as the active option.
   const pinned = effort !== "best" && effort !== "all" ? effort : null;
@@ -73,7 +96,11 @@ export function EffortToggle({ filters, change }: { filters: Filters; change: (p
   );
 }
 
-export function ModelsPopover({ filters, change, sources }: {
+export function ModelsPopover({
+  filters,
+  change,
+  sources,
+}: {
   filters: Filters;
   change: (patch: Partial<Filters>) => void;
   sources: FamilySource[];
@@ -84,16 +111,23 @@ export function ModelsPopover({ filters, change, sources }: {
   // A provider filter (from a shared link) selects that provider's families.
   const selected = new Set(
     families
-      .filter((family) =>
-        (!filters.families || filters.families.includes(family.family)) &&
-        (!filters.providers || filters.providers.includes(family.provider)))
+      .filter(
+        (family) =>
+          (!filters.families || filters.families.includes(family.family)) &&
+          (!filters.providers || filters.providers.includes(family.provider)),
+      )
       .map((family) => family.family),
   );
   const setSelected = (next: Set<string>) =>
-    change({ providers: undefined, families: next.size === families.length ? undefined : [...next] });
+    change({
+      providers: undefined,
+      families: next.size === families.length ? undefined : [...next],
+    });
   const toggle = (ids: string[], on: boolean) => {
     const next = new Set(selected);
-    for (const id of ids) if (on) next.add(id); else next.delete(id);
+    for (const id of ids)
+      if (on) next.add(id);
+      else next.delete(id);
     setSelected(next);
   };
   const versions = new Set(filters.versions ?? VERSIONS);
@@ -103,31 +137,58 @@ export function ModelsPopover({ filters, change, sources }: {
     (filters.reasoning !== undefined ? 1 : 0) +
     (filters.openWeights !== undefined ? 1 : 0);
   const match = (family: FamilySource) =>
-    `${family.familyDisplayName} ${family.provider} ${PROVIDERS[family.provider]?.name ?? ""}`.toLowerCase().includes(query.toLowerCase());
+    `${family.familyDisplayName} ${family.provider} ${PROVIDERS[family.provider]?.name ?? ""}`
+      .toLowerCase()
+      .includes(query.toLowerCase());
 
   return (
     <Popover>
       <PopoverTrigger type="button" className={filterPill}>
         Models
-        <span className="font-mono text-xs text-muted-foreground">{selected.size}/{families.length}</span>
+        <span className="font-mono text-xs text-muted-foreground">
+          {selected.size}/{families.length}
+        </span>
         {active > 0 && (
           <span className="rounded-full bg-ember px-1.5 font-mono text-[10px] text-background">
-            {active}<span className="sr-only"> active filters</span>
+            {active}
+            <span className="sr-only"> active filters</span>
           </span>
         )}
         <CaretDown size={13} />
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" collisionAvoidance={{ side: "none" }} className="w-auto max-w-none p-0">
+      <PopoverContent
+        side="bottom"
+        align="start"
+        collisionAvoidance={{ side: "none" }}
+        className="w-auto max-w-none p-0"
+      >
         <div className="flex max-h-[min(34rem,max(18rem,calc(var(--available-height,80vh)-0.5rem)))] w-[min(24rem,calc(100vw-2rem))] flex-col text-sm text-foreground">
           <div className="border-b border-border p-3">
             <label className="flex items-center gap-2 rounded-md border border-border bg-background px-2.5 focus-within:border-ember">
               <MagnifyingGlass size={14} className="text-muted-foreground" aria-hidden="true" />
               <span className="sr-only">Search models or providers</span>
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search models or providers" className="w-full bg-transparent py-2 text-sm outline-none" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search models or providers"
+                className="w-full bg-transparent py-2 text-sm outline-none"
+              />
             </label>
             <div className="mt-2 flex gap-3 text-xs">
-              <button type="button" className="text-ember hover:underline" onClick={() => setSelected(new Set(families.map((family) => family.family)))}>Select all</button>
-              <button type="button" className="text-ember hover:underline" onClick={() => setSelected(new Set())}>Clear</button>
+              <button
+                type="button"
+                className="text-ember hover:underline"
+                onClick={() => setSelected(new Set(families.map((family) => family.family)))}
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                className="text-ember hover:underline"
+                onClick={() => setSelected(new Set())}
+              >
+                Clear
+              </button>
             </div>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-2">
@@ -139,13 +200,29 @@ export function ModelsPopover({ filters, change, sources }: {
               return (
                 <div key={provider} className="py-1">
                   <label className="flex items-center gap-2 px-1 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    <input type="checkbox" checked={all} onChange={() => toggle(group.map((family) => family.family), !all)} />
+                    <input
+                      type="checkbox"
+                      checked={all}
+                      onChange={() =>
+                        toggle(
+                          group.map((family) => family.family),
+                          !all,
+                        )
+                      }
+                    />
                     <ProviderLogo provider={provider} size={13} />
                     {PROVIDERS[provider]?.name ?? provider}
                   </label>
                   {shown.map((family) => (
-                    <label key={family.family} className="flex items-center gap-2 rounded px-1 py-1 pl-6 hover:bg-foreground/5">
-                      <input type="checkbox" checked={selected.has(family.family)} onChange={() => toggle([family.family], !selected.has(family.family))} />
+                    <label
+                      key={family.family}
+                      className="flex items-center gap-2 rounded px-1 py-1 pl-6 hover:bg-foreground/5"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected.has(family.family)}
+                        onChange={() => toggle([family.family], !selected.has(family.family))}
+                      />
                       {family.familyDisplayName}
                     </label>
                   ))}
@@ -166,7 +243,8 @@ export function ModelsPopover({ filters, change, sources }: {
                       aria-pressed={on}
                       onClick={() => {
                         const next = new Set(versions);
-                        if (on) next.delete(version); else next.add(version);
+                        if (on) next.delete(version);
+                        else next.add(version);
                         change({ versions: next.size === VERSIONS.length ? undefined : [...next] });
                       }}
                       className={`rounded-full border px-2.5 py-0.5 font-mono text-xs ${focus} ${on ? "border-ember/60 bg-ember/15 text-foreground" : "border-border text-muted-foreground"}`}
@@ -183,8 +261,14 @@ export function ModelsPopover({ filters, change, sources }: {
                 size="sm"
                 label="Reasoning"
                 value={filters.reasoning === undefined ? "any" : filters.reasoning ? "on" : "off"}
-                onChange={(value) => change({ reasoning: value === "any" ? undefined : value === "on" })}
-                options={[{ value: "any", label: "Any" }, { value: "on", label: "On" }, { value: "off", label: "Off" }]}
+                onChange={(value) =>
+                  change({ reasoning: value === "any" ? undefined : value === "on" })
+                }
+                options={[
+                  { value: "any", label: "Any" },
+                  { value: "on", label: "On" },
+                  { value: "off", label: "Off" },
+                ]}
               />
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -192,15 +276,35 @@ export function ModelsPopover({ filters, change, sources }: {
               <Segmented
                 size="sm"
                 label="Weights"
-                value={filters.openWeights === undefined ? "any" : filters.openWeights ? "open" : "closed"}
-                onChange={(value) => change({ openWeights: value === "any" ? undefined : value === "open" })}
-                options={[{ value: "any", label: "Any" }, { value: "open", label: "Open" }, { value: "closed", label: "Closed" }]}
+                value={
+                  filters.openWeights === undefined
+                    ? "any"
+                    : filters.openWeights
+                      ? "open"
+                      : "closed"
+                }
+                onChange={(value) =>
+                  change({ openWeights: value === "any" ? undefined : value === "open" })
+                }
+                options={[
+                  { value: "any", label: "Any" },
+                  { value: "open", label: "Open" },
+                  { value: "closed", label: "Closed" },
+                ]}
               />
             </div>
             <button
               type="button"
               className="text-xs text-ember hover:underline"
-              onClick={() => change({ providers: undefined, families: undefined, versions: undefined, reasoning: undefined, openWeights: undefined })}
+              onClick={() =>
+                change({
+                  providers: undefined,
+                  families: undefined,
+                  versions: undefined,
+                  reasoning: undefined,
+                  openWeights: undefined,
+                })
+              }
             >
               Reset model filters
             </button>

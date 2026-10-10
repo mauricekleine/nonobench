@@ -58,7 +58,7 @@ export function Nonogram({
         cancelAnimationFrame(tooltipAnimationFrameReference.current);
       }
     },
-    []
+    [],
   );
 
   return (
@@ -69,7 +69,12 @@ export function Nonogram({
 
       <NonogramRowClues violatedRows={violatedRows} />
 
-      <NonogramsGrid onDragMove={handleDragMove} overlay={overlay} violatedRows={violatedRows} violatedColumns={violatedColumns} />
+      <NonogramsGrid
+        onDragMove={handleDragMove}
+        overlay={overlay}
+        violatedRows={violatedRows}
+        violatedColumns={violatedColumns}
+      />
 
       <DragTooltip ref={tooltipReference} />
     </div>

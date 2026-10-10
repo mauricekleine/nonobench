@@ -8,16 +8,8 @@ import {
   type NonogramInput,
 } from "./types";
 
-export function createEmptySolutionString({
-  height,
-  width,
-}: {
-  height: number;
-  width: number;
-}) {
-  return Array.from({ length: height }, () =>
-    Array.from({ length: width }, () => "0")
-  )
+export function createEmptySolutionString({ height, width }: { height: number; width: number }) {
+  return Array.from({ length: height }, () => Array.from({ length: width }, () => "0"))
     .flat()
     .join("");
 }
@@ -25,7 +17,7 @@ export function createEmptySolutionString({
 function getClues(
   columnOrRow: NonogramCell[],
   index: number,
-  type: "column" | "row"
+  type: "column" | "row",
 ): NonogramClue[] {
   const clues: NonogramClue[] = [];
 
@@ -92,9 +84,7 @@ export function getCluesForNonogram(grid: NonogramGrid): {
 } {
   const columnClues: NonogramClue[][] = [];
   for (let index = 0; index < (grid[0]?.length ?? 0); index++) {
-    const column = grid
-      .map((row) => row[index])
-      .filter((cell) => cell !== undefined);
+    const column = grid.map((row) => row[index]).filter((cell) => cell !== undefined);
     const clues = getClues(column, index, "column");
     columnClues.push(clues);
   }
@@ -111,7 +101,7 @@ export function getCluesForNonogram(grid: NonogramGrid): {
 export function getCellsInRange(
   grid: NonogramCell["id"][][],
   cellOne: NonogramCell,
-  cellTwo: NonogramCell
+  cellTwo: NonogramCell,
 ): NonogramCell["id"][] {
   const cells: NonogramCell["id"][] = [];
 
@@ -260,7 +250,7 @@ export function getMarkedCells({
 
 export function getUserSolutionStringFromGrid(
   grid: NonogramCell["id"][][],
-  cells: Record<NonogramCell["id"], NonogramCell>
+  cells: Record<NonogramCell["id"], NonogramCell>,
 ): string {
   return grid
     .flat()
@@ -282,17 +272,12 @@ export function getUserSolutionStringFromGrid(
     .join("");
 }
 
-export function isCellValid(
-  cell: Pick<NonogramCell, "userValue" | "value">
-): boolean {
+export function isCellValid(cell: Pick<NonogramCell, "userValue" | "value">): boolean {
   if (cell.value === cell.userValue) {
     return true;
   }
 
-  if (
-    cell.value === NonogramCellValue.EMPTY &&
-    cell.userValue === NonogramCellValue.MARKED
-  ) {
+  if (cell.value === NonogramCellValue.EMPTY && cell.userValue === NonogramCellValue.MARKED) {
     return true;
   }
 

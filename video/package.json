@@ -1,28 +1,10 @@
 {
   "name": "nonobench-video",
   "version": "1.0.0",
-  "description": "Nonobench announcement videos (Remotion)",
-  "repository": {},
-  "license": "UNLICENSED",
   "private": true,
-  "packageManager": "bun@1.4.3",
-  "dependencies": {
-    "@remotion/cli": "4.0.532",
-    "@remotion/google-fonts": "4.0.532",
-    "@remotion/media": "4.0.532",
-    "@remotion/transitions": "4.0.532",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "remotion": "4.0.532"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.4.2",
-    "@types/react": "19.3.0",
-    "typescript": "7.0.2",
-    "oxlint": "~1.87.0",
-    "oxfmt": "~0.72.0",
-    "oxlint-tsgolint": "~7.0.2003"
-  },
+  "description": "Nonobench announcement videos (Remotion)",
+  "license": "UNLICENSED",
+  "repository": {},
   "scripts": {
     "dev": "remotion studio",
     "build": "remotion bundle",
@@ -38,5 +20,23 @@
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
     "typecheck": "bun --check"
-  }
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.532",
+    "@remotion/google-fonts": "4.0.532",
+    "@remotion/media": "4.0.532",
+    "@remotion/transitions": "4.0.532",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.532"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "@types/react": "19.3.0",
+    "oxfmt": "~0.72.0",
+    "oxlint": "~1.87.0",
+    "oxlint-tsgolint": "~7.0.2003",
+    "typescript": "7.0.2"
+  },
+  "packageManager": "bun@1.4.3"
 }

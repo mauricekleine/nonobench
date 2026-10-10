@@ -17,7 +17,7 @@ export function DragTooltip({ ref }: Props) {
         "-mr-6 -mt-8 pointer-events-none fixed flex size-10 items-center justify-center whitespace-nowrap rounded-full border border-border bg-background font-mono text-xs shadow-sm",
         {
           hidden: markedCellsCount.count < 2,
-        }
+        },
       )}
       ref={ref}
     >

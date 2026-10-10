@@ -5,10 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { XIcon } from "@phosphor-icons/react";
 
 import { useNonogramStore } from "./store";
-import {
-  type NonogramCell as NonogramCellType,
-  NonogramCellValue,
-} from "./types";
+import { type NonogramCell as NonogramCellType, NonogramCellValue } from "./types";
 
 type Props = {
   id: NonogramCellType["id"];
@@ -61,7 +58,7 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
         "relative border-foreground not-last:border-r not-last:nth-[5n]:border-r-2 p-px",
         {
           "bg-red-500": !cell.isValid && shouldHighlightMistakes,
-        }
+        },
       )}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
@@ -69,16 +66,13 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
     >
       <motion.div
         animate={value}
-        className={cn(
-          "relative aspect-square items-center justify-center rounded-xs",
-          {
-            "size-4": zoomLevel === "xs",
-            "size-6": zoomLevel === "sm",
-            "size-8": zoomLevel === "md",
-            "size-10": zoomLevel === "lg",
-            "size-12": zoomLevel === "xl",
-          }
-        )}
+        className={cn("relative aspect-square items-center justify-center rounded-xs", {
+          "size-4": zoomLevel === "xs",
+          "size-6": zoomLevel === "sm",
+          "size-8": zoomLevel === "md",
+          "size-10": zoomLevel === "lg",
+          "size-12": zoomLevel === "xl",
+        })}
         initial={false}
         role="button"
         tabIndex={0}
@@ -121,7 +115,7 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
           className={cn(
             "absolute right-1 bottom-0 text-[10px] text-muted-foreground",
             zoomLevel === "xs" && "right-px text-[8px]",
-            zoomLevel === "sm" && "right-0.5 text-[10px]"
+            zoomLevel === "sm" && "right-0.5 text-[10px]",
           )}
         >
           {cell.row + 1}
@@ -133,7 +127,7 @@ export function NonogramGridCell({ id, shouldHighlightMistakes }: Props) {
           className={cn(
             "absolute right-1 bottom-0 text-[10px] text-muted-foreground",
             zoomLevel === "xs" && "right-px text-[8px]",
-            zoomLevel === "sm" && "right-0.5 text-[10px]"
+            zoomLevel === "sm" && "right-0.5 text-[10px]",
           )}
         >
           {cell.column + 1}

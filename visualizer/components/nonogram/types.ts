@@ -4,8 +4,7 @@ export const NonogramCellValue = {
   MARKED: "MARKED",
 } as const;
 
-export type NonogramCellValue =
-  (typeof NonogramCellValue)[keyof typeof NonogramCellValue];
+export type NonogramCellValue = (typeof NonogramCellValue)[keyof typeof NonogramCellValue];
 
 export type NonogramCell = {
   column: number;

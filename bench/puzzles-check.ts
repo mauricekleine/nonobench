@@ -10,14 +10,21 @@ import { solveByLines } from "./line-solver";
 export const MULTIPLE_SOLUTION_PUZZLE_NUMBERS = [9, 11, 12, 15, 19, 22, 23, 25, 27, 30] as const;
 const ambiguousPuzzleNumbers = new Set<number>(MULTIPLE_SOLUTION_PUZZLE_NUMBERS);
 const LINE_SOLVABLE_20X20_IDS = new Set([
-  "25677390118fa7cc", "3d8afcff157bdda2", "9c91e6ce44d449f8",
-  "4a976d8421fcedf1", "f98dc30979502dd7",
+  "25677390118fa7cc",
+  "3d8afcff157bdda2",
+  "9c91e6ce44d449f8",
+  "4a976d8421fcedf1",
+  "f98dc30979502dd7",
 ]);
 const DEEP_20X20_IDS = new Set([
-  "9a605e5dc10f01dd", "68fd544267c515a6", "8e224e8f59aa3182",
-  "f2d167937d03f656", "81dbced2856d1007",
+  "9a605e5dc10f01dd",
+  "68fd544267c515a6",
+  "8e224e8f59aa3182",
+  "f2d167937d03f656",
+  "81dbced2856d1007",
 ]);
-const uniquenessSolver = process.env.NONOGRAM_SOLVER ?? "/Users/maurice/Projects/nonogram-solver/build/nonogram_hybrid";
+const uniquenessSolver =
+  process.env.NONOGRAM_SOLVER ?? "/Users/maurice/Projects/nonogram-solver/build/nonogram_hybrid";
 
 function clue(line: string): number[] {
   return (line.match(/1+/g) ?? []).map((run) => run.length);
@@ -43,22 +50,39 @@ function patterns(length: number, runs: number[]): number[] {
 
 function checkPuzzle(puzzle: Puzzle, index: number): void {
   const lines = puzzle.clues.canonical.split("\n");
-  const rowClues = lines.filter((line) => /^Row \d+:/.test(line.trim())).map((line) => line.split(":")[1]!.trim().split(/\s+/).map(Number));
-  const columnClues = lines.filter((line) => /^Column \d+:/.test(line.trim())).map((line) => line.split(":")[1]!.trim().split(/\s+/).map(Number));
+  const rowClues = lines
+    .filter((line) => /^Row \d+:/.test(line.trim()))
+    .map((line) => line.split(":")[1]!.trim().split(/\s+/).map(Number));
+  const columnClues = lines
+    .filter((line) => /^Column \d+:/.test(line.trim()))
+    .map((line) => line.split(":")[1]!.trim().split(/\s+/).map(Number));
   assert.equal(rowClues.length, puzzle.height);
   assert.equal(columnClues.length, puzzle.width);
   const solution = puzzle.solution.replace(/\s+/g, "");
   assert.equal(solution.length, puzzle.width * puzzle.height);
   assert.match(solution, /^[01]+$/);
   for (let row = 0; row < puzzle.height; row++) {
-    assert.deepEqual(clue(solution.slice(row * puzzle.width, (row + 1) * puzzle.width)), rowClues[row]!);
+    assert.deepEqual(
+      clue(solution.slice(row * puzzle.width, (row + 1) * puzzle.width)),
+      rowClues[row]!,
+    );
   }
   for (let col = 0; col < puzzle.width; col++) {
-    assert.deepEqual(clue(Array.from({ length: puzzle.height }, (_, row) => solution[row * puzzle.width + col]).join("")), columnClues[col]!);
+    assert.deepEqual(
+      clue(
+        Array.from({ length: puzzle.height }, (_, row) => solution[row * puzzle.width + col]).join(
+          "",
+        ),
+      ),
+      columnClues[col]!,
+    );
   }
   if (puzzle.width === 20 && puzzle.height === 20) {
     const id = getPuzzleId(puzzle);
-    assert.ok(LINE_SOLVABLE_20X20_IDS.has(id) || DEEP_20X20_IDS.has(id), `Unpinned 20x20 puzzle: ${id}`);
+    assert.ok(
+      LINE_SOLVABLE_20X20_IDS.has(id) || DEEP_20X20_IDS.has(id),
+      `Unpinned 20x20 puzzle: ${id}`,
+    );
     const expectedLineSolvable = LINE_SOLVABLE_20X20_IDS.has(id);
     const result = solveByLines(puzzle.width, puzzle.height, rowClues, columnClues);
     assert.equal(result.solved, expectedLineSolvable);
@@ -66,17 +90,29 @@ function checkPuzzle(puzzle: Puzzle, index: number): void {
     else assert.ok(result.grid.split("?").length - 1 >= 20);
     if (existsSync(uniquenessSolver)) {
       const check = spawnSync(uniquenessSolver, ["--check-unique", "-"], {
-        input: JSON.stringify({ rows: rowClues, columns: columnClues }), encoding: "utf8", timeout: 30000,
+        input: JSON.stringify({ rows: rowClues, columns: columnClues }),
+        encoding: "utf8",
+        timeout: 30000,
       });
       assert.equal(check.status, 0, check.error?.message ?? check.stderr);
-      const verified = JSON.parse(check.stdout) as { solved: boolean; unique: boolean; lineSolvable: boolean; solution: string; timeMs: number };
+      const verified = JSON.parse(check.stdout) as {
+        solved: boolean;
+        unique: boolean;
+        lineSolvable: boolean;
+        solution: string;
+        timeMs: number;
+      };
       assert.equal(verified.solved, true);
       assert.equal(verified.unique, true);
       assert.equal(verified.lineSolvable, expectedLineSolvable);
       assert.equal(verified.solution, solution);
-      console.log(`20x20 puzzle ${index + 1} (${id}): unique, lineSolvable=${result.solved}, unknown=${result.grid.split("?").length - 1}, cppTimeMs=${verified.timeMs}`);
+      console.log(
+        `20x20 puzzle ${index + 1} (${id}): unique, lineSolvable=${result.solved}, unknown=${result.grid.split("?").length - 1}, cppTimeMs=${verified.timeMs}`,
+      );
     } else {
-      console.log(`20x20 puzzle ${index + 1} (${id}): C++ uniqueness check skipped (solver missing), lineSolvable=${result.solved}`);
+      console.log(
+        `20x20 puzzle ${index + 1} (${id}): C++ uniqueness check skipped (solver missing), lineSolvable=${result.solved}`,
+      );
     }
     return;
   }
@@ -95,8 +131,12 @@ function checkPuzzle(puzzle: Puzzle, index: number): void {
     let changed: boolean;
     do {
       changed = false;
-      const rowDomains = rows.map((options) => Array.from({ length: puzzle.width }, (_, col) => domain(options, col)));
-      const columnDomains = columns.map((options) => Array.from({ length: puzzle.height }, (_, row) => domain(options, row)));
+      const rowDomains = rows.map((options) =>
+        Array.from({ length: puzzle.width }, (_, col) => domain(options, col)),
+      );
+      const columnDomains = columns.map((options) =>
+        Array.from({ length: puzzle.height }, (_, row) => domain(options, row)),
+      );
       for (let row = 0; row < puzzle.height; row++) {
         for (let col = 0; col < puzzle.width; col++) {
           const rowValues = rowDomains[row]![col]!;
@@ -126,14 +166,20 @@ function checkPuzzle(puzzle: Puzzle, index: number): void {
     let selectedLine = -1;
     let selectedOptions: number[] = [];
     for (let row = 0; row < rows.length; row++) {
-      if (rows[row]!.length > 1 && (selectedAxis === null || rows[row]!.length < selectedOptions.length)) {
+      if (
+        rows[row]!.length > 1 &&
+        (selectedAxis === null || rows[row]!.length < selectedOptions.length)
+      ) {
         selectedAxis = "row";
         selectedLine = row;
         selectedOptions = rows[row]!;
       }
     }
     for (let col = 0; col < columns.length; col++) {
-      if (columns[col]!.length > 1 && (selectedAxis === null || columns[col]!.length < selectedOptions.length)) {
+      if (
+        columns[col]!.length > 1 &&
+        (selectedAxis === null || columns[col]!.length < selectedOptions.length)
+      ) {
         selectedAxis = "column";
         selectedLine = col;
         selectedOptions = columns[col]!;
@@ -154,7 +200,9 @@ function checkPuzzle(puzzle: Puzzle, index: number): void {
     }
   }
   search(rowOptions, columnOptions);
-  console.log(`${puzzle.width}x${puzzle.height} puzzle ${index + 1} (${getPuzzleId(puzzle)}): ${count === 1 ? "unique" : `${count} solutions (capped at 2)`}`);
+  console.log(
+    `${puzzle.width}x${puzzle.height} puzzle ${index + 1} (${getPuzzleId(puzzle)}): ${count === 1 ? "unique" : `${count} solutions (capped at 2)`}`,
+  );
   assert.equal(count, ambiguousPuzzleNumbers.has(index + 1) ? 2 : 1);
 }
 

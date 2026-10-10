@@ -3,18 +3,14 @@
   "source": "https://openrouter.ai/api/v1/models/{author}/{slug}/endpoints",
   "models": {
     "allenai/olmo-3.1-32b-think": {
-      "pins": [
-        "allenai"
-      ],
+      "pins": ["allenai"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
       "endpoints": []
     },
     "anthropic/claude-fable-5.1": {
-      "pins": [
-        "anthropic"
-      ],
+      "pins": ["anthropic"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -46,9 +42,7 @@
       ]
     },
     "anthropic/claude-haiku-5.5": {
-      "pins": [
-        "anthropic"
-      ],
+      "pins": ["anthropic"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -116,9 +110,7 @@
       ]
     },
     "anthropic/claude-opus-4.5": {
-      "pins": [
-        "anthropic"
-      ],
+      "pins": ["anthropic"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -162,9 +154,7 @@
       ]
     },
     "anthropic/claude-opus-5.5": {
-      "pins": [
-        "anthropic"
-      ],
+      "pins": ["anthropic"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -238,9 +228,7 @@
       ]
     },
     "anthropic/claude-sonnet-4.5": {
-      "pins": [
-        "anthropic"
-      ],
+      "pins": ["anthropic"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -290,9 +278,7 @@
       ]
     },
     "anthropic/claude-sonnet-5.5": {
-      "pins": [
-        "anthropic"
-      ],
+      "pins": ["anthropic"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -348,9 +334,7 @@
       ]
     },
     "bytedance-seed/seed-1.6": {
-      "pins": [
-        "seed"
-      ],
+      "pins": ["seed"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "fp8",
@@ -364,9 +348,7 @@
       ]
     },
     "bytedance-seed/seed-1.6-flash": {
-      "pins": [
-        "seed"
-      ],
+      "pins": ["seed"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "fp8",
@@ -380,9 +362,7 @@
       ]
     },
     "bytedance-seed/seed-2-1-turbo": {
-      "pins": [
-        "seed"
-      ],
+      "pins": ["seed"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "fp8",
@@ -396,9 +376,7 @@
       ]
     },
     "deepseek/deepseek-v3.2": {
-      "pins": [
-        "deepseek"
-      ],
+      "pins": ["deepseek"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
@@ -490,18 +468,14 @@
       ]
     },
     "deepseek/deepseek-v3.2-speciale": {
-      "pins": [
-        "deepseek"
-      ],
+      "pins": ["deepseek"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
       "endpoints": []
     },
     "deepseek/deepseek-v4-pro-0813": {
-      "pins": [
-        "deepseek"
-      ],
+      "pins": ["deepseek"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "unknown",
@@ -653,9 +627,7 @@
       ]
     },
     "deepseek/deepseek-v4.1-flash": {
-      "pins": [
-        "deepseek"
-      ],
+      "pins": ["deepseek"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "unknown",
@@ -825,10 +797,7 @@
       ]
     },
     "google/gemini-3-flash-preview": {
-      "pins": [
-        "google-ai-studio",
-        "google-vertex"
-      ],
+      "pins": ["google-ai-studio", "google-vertex"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -872,20 +841,14 @@
       ]
     },
     "google/gemini-3-pro-preview": {
-      "pins": [
-        "google-ai-studio",
-        "google-vertex"
-      ],
+      "pins": ["google-ai-studio", "google-vertex"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
       "endpoints": []
     },
     "google/gemini-3.1-pro-preview": {
-      "pins": [
-        "google-ai-studio",
-        "google-vertex"
-      ],
+      "pins": ["google-ai-studio", "google-vertex"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -929,9 +892,7 @@
       ]
     },
     "google/gemini-3.8-flash": {
-      "pins": [
-        "google-ai-studio"
-      ],
+      "pins": ["google-ai-studio"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -975,9 +936,7 @@
       ]
     },
     "meta/muse-spark-1.3": {
-      "pins": [
-        "meta"
-      ],
+      "pins": ["meta"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -991,9 +950,7 @@
       ]
     },
     "minimax/minimax-m2.1": {
-      "pins": [
-        "minimax"
-      ],
+      "pins": ["minimax"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "fp8",
@@ -1019,9 +976,7 @@
       ]
     },
     "minimax/minimax-m2.5": {
-      "pins": [
-        "minimax"
-      ],
+      "pins": ["minimax"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "fp8",
@@ -1077,9 +1032,7 @@
       ]
     },
     "mistralai/ministral-14b-2512": {
-      "pins": [
-        "mistral"
-      ],
+      "pins": ["mistral"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1105,9 +1058,7 @@
       ]
     },
     "mistralai/mistral-large-2512": {
-      "pins": [
-        "mistral"
-      ],
+      "pins": ["mistral"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1127,9 +1078,7 @@
       ]
     },
     "mistralai/mistral-medium-3-5": {
-      "pins": [
-        "mistral"
-      ],
+      "pins": ["mistral"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1155,9 +1104,7 @@
       ]
     },
     "moonshotai/kimi-k2-0905": {
-      "pins": [
-        "moonshotai"
-      ],
+      "pins": ["moonshotai"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
@@ -1171,9 +1118,7 @@
       ]
     },
     "moonshotai/kimi-k2-thinking": {
-      "pins": [
-        "moonshotai"
-      ],
+      "pins": ["moonshotai"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
@@ -1193,9 +1138,7 @@
       ]
     },
     "moonshotai/kimi-k2.5": {
-      "pins": [
-        "moonshotai"
-      ],
+      "pins": ["moonshotai"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
@@ -1233,9 +1176,7 @@
       ]
     },
     "moonshotai/kimi-k3": {
-      "pins": [
-        "moonshotai"
-      ],
+      "pins": ["moonshotai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "mxfp4",
@@ -1357,9 +1298,7 @@
       ]
     },
     "openai/gpt-5.2": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1391,9 +1330,7 @@
       ]
     },
     "openai/gpt-5.4": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1443,9 +1380,7 @@
       ]
     },
     "openai/gpt-5.6-sol": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1495,9 +1430,7 @@
       ]
     },
     "openai/gpt-6-astra": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1541,9 +1474,7 @@
       ]
     },
     "openai/gpt-6-luna": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1593,9 +1524,7 @@
       ]
     },
     "openai/gpt-6-sol": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1645,9 +1574,7 @@
       ]
     },
     "openai/gpt-6.1-sol": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1691,9 +1618,7 @@
       ]
     },
     "openai/gpt-oss-120b": {
-      "pins": [
-        "openai"
-      ],
+      "pins": ["openai"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
@@ -1845,9 +1770,7 @@
       ]
     },
     "qwen/qwen3-next-80b-a3b-thinking": {
-      "pins": [
-        "alibaba"
-      ],
+      "pins": ["alibaba"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "unknown",
@@ -1867,9 +1790,7 @@
       ]
     },
     "qwen/qwen3.8-27b": {
-      "pins": [
-        "alibaba"
-      ],
+      "pins": ["alibaba"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "unknown",
@@ -1973,9 +1894,7 @@
       ]
     },
     "qwen/qwen3.8-flash": {
-      "pins": [
-        "alibaba"
-      ],
+      "pins": ["alibaba"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -1989,9 +1908,7 @@
       ]
     },
     "qwen/qwen3.8-max-0902": {
-      "pins": [
-        "alibaba"
-      ],
+      "pins": ["alibaba"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -2005,27 +1922,21 @@
       ]
     },
     "x-ai/grok-4": {
-      "pins": [
-        "xai"
-      ],
+      "pins": ["xai"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
       "endpoints": []
     },
     "x-ai/grok-4.1-fast": {
-      "pins": [
-        "xai"
-      ],
+      "pins": ["xai"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
       "endpoints": []
     },
     "x-ai/grok-4.7": {
-      "pins": [
-        "xai"
-      ],
+      "pins": ["xai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "unknown",
@@ -2057,18 +1968,14 @@
       ]
     },
     "xiaomi/mimo-v2-flash:free": {
-      "pins": [
-        "xiaomi"
-      ],
+      "pins": ["xiaomi"],
       "firstPartyAvailable": false,
       "firstPartyStructuredOutputs": null,
       "firstPartyQuantization": null,
       "endpoints": []
     },
     "xiaomi/mimo-v2.6-flash": {
-      "pins": [
-        "xiaomi"
-      ],
+      "pins": ["xiaomi"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "fp8",
@@ -2088,9 +1995,7 @@
       ]
     },
     "xiaomi/mimo-v2.6-pro": {
-      "pins": [
-        "xiaomi"
-      ],
+      "pins": ["xiaomi"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": true,
       "firstPartyQuantization": "fp8",
@@ -2110,9 +2015,7 @@
       ]
     },
     "z-ai/glm-4.7": {
-      "pins": [
-        "z-ai"
-      ],
+      "pins": ["z-ai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "fp4",
@@ -2162,9 +2065,7 @@
       ]
     },
     "z-ai/glm-5": {
-      "pins": [
-        "z-ai"
-      ],
+      "pins": ["z-ai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "fp8",
@@ -2220,9 +2121,7 @@
       ]
     },
     "z-ai/glm-5.3": {
-      "pins": [
-        "z-ai"
-      ],
+      "pins": ["z-ai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "fp8",
@@ -2452,9 +2351,7 @@
       ]
     },
     "z-ai/glm-5.3-flash": {
-      "pins": [
-        "z-ai"
-      ],
+      "pins": ["z-ai"],
       "firstPartyAvailable": true,
       "firstPartyStructuredOutputs": false,
       "firstPartyQuantization": "fp8",

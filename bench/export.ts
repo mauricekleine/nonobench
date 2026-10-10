@@ -17,30 +17,42 @@ if (!db) throw new Error("Database does not exist");
 const puzzlesById = new Map(PUZZLES.map((puzzle) => [getPuzzleId(puzzle), puzzle]));
 const correctRuns = new Set<string>();
 for (const row of db
-	.query<{ model: string; puzzle_id: string; status: string; correct: number; raw_output: string | null }, []>(
-		"SELECT model, puzzle_id, status, correct, raw_output FROM runs",
-	)
-	.all()) {
-	const puzzle = puzzlesById.get(row.puzzle_id);
-	const correct = row.status === "success" && (puzzle ? gradeOutput(puzzle, row.raw_output) : row.correct === 1);
-	if (correct) correctRuns.add(`${row.model}\u0000${row.puzzle_id}`);
+  .query<
+    {
+      model: string;
+      puzzle_id: string;
+      status: string;
+      correct: number;
+      raw_output: string | null;
+    },
+    []
+  >("SELECT model, puzzle_id, status, correct, raw_output FROM runs")
+  .all()) {
+  const puzzle = puzzlesById.get(row.puzzle_id);
+  const correct =
+    row.status === "success" && (puzzle ? gradeOutput(puzzle, row.raw_output) : row.correct === 1);
+  if (correct) correctRuns.add(`${row.model}\u0000${row.puzzle_id}`);
 }
 const correctRunsJson = JSON.stringify([...correctRuns]);
 
 const timeoutNotes = new Map(
-	db
-		.query<{ model: string; error_message: string }, []>(
-			"SELECT model, MAX(error_message) AS error_message FROM runs WHERE status = 'timeout' GROUP BY model",
-		)
-		.all()
-		.map((row) => [row.model, row.error_message]),
+  db
+    .query<{ model: string; error_message: string }, []>(
+      "SELECT model, MAX(error_message) AS error_message FROM runs WHERE status = 'timeout' GROUP BY model",
+    )
+    .all()
+    .map((row) => [row.model, row.error_message]),
 );
-const corePuzzleIds = PUZZLES.filter((puzzle) => CORE_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`)).map(getPuzzleId);
+const corePuzzleIds = PUZZLES.filter((puzzle) =>
+  CORE_SIZES.some((size) => size === `${puzzle.width}x${puzzle.height}`),
+).map(getPuzzleId);
 const successfulRuns = new Set(
-	db
-		.query<{ model: string; puzzle_id: string }, []>("SELECT model, puzzle_id FROM runs WHERE status = 'success'")
-		.all()
-		.map((row) => `${row.model}\u0000${row.puzzle_id}`),
+  db
+    .query<{ model: string; puzzle_id: string }, []>(
+      "SELECT model, puzzle_id FROM runs WHERE status = 'success'",
+    )
+    .all()
+    .map((row) => `${row.model}\u0000${row.puzzle_id}`),
 );
 
 // Runs from the original benchmark have no output_mode (older databases lack
@@ -48,88 +60,103 @@ const successfulRuns = new Set(
 // that earlier batch; the site fades those so new runs stand out. New runs
 // always record their mode, whether structured output or text.
 const hasOutputMode = db
-	.query<{ name: string }, []>("PRAGMA table_info(runs)")
-	.all()
-	.some((column) => column.name === "output_mode");
-const runColumns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((column) => column.name));
-const optionalColumn = (name: string) => runColumns.has(name) ? name : `NULL AS ${name}`;
+  .query<{ name: string }, []>("PRAGMA table_info(runs)")
+  .all()
+  .some((column) => column.name === "output_mode");
+const runColumns = new Set(
+  db
+    .query<{ name: string }, []>("PRAGMA table_info(runs)")
+    .all()
+    .map((column) => column.name),
+);
+const optionalColumn = (name: string) => (runColumns.has(name) ? name : `NULL AS ${name}`);
 const firstRunByModel = new Map(
-	db.query<{ model: string; first_run: string }, []>("SELECT model, MIN(timestamp) AS first_run FROM runs GROUP BY model")
-		.all().map((row) => [row.model, row.first_run]),
+  db
+    .query<{ model: string; first_run: string }, []>(
+      "SELECT model, MIN(timestamp) AS first_run FROM runs GROUP BY model",
+    )
+    .all()
+    .map((row) => [row.model, row.first_run]),
 );
 function versionFor(model: string): "1.0" | "1.1" | "1.2" {
-	const first = firstRunByModel.get(model);
-	if (!first) throw new Error(`Missing first run for ${model}`);
-	return first < "2026-02-01" ? "1.0" : first < "2026-09-01" ? "1.1" : "1.2";
+  const first = firstRunByModel.get(model);
+  if (!first) throw new Error(`Missing first run for ${model}`);
+  return first < "2026-02-01" ? "1.0" : first < "2026-09-01" ? "1.1" : "1.2";
 }
 const structuredModels = new Set(
-	hasOutputMode
-		? db
-				.query<{ model: string }, []>("SELECT DISTINCT model FROM runs WHERE output_mode IS NOT NULL")
-				.all()
-				.map((row) => row.model)
-		: [],
+  hasOutputMode
+    ? db
+        .query<{ model: string }, []>(
+          "SELECT DISTINCT model FROM runs WHERE output_mode IS NOT NULL",
+        )
+        .all()
+        .map((row) => row.model)
+    : [],
 );
 
 // Output paths
-const resultsPath = process.env.NONOBENCH_RESULTS_JSON ?? new URL("../visualizer/app/results.json", import.meta.url).pathname;
-const resultsRawPath = process.env.NONOBENCH_RESULTS_RAW_JSON ?? new URL("../visualizer/public/results-raw.json", import.meta.url).pathname;
+const resultsPath =
+  process.env.NONOBENCH_RESULTS_JSON ??
+  new URL("../visualizer/app/results.json", import.meta.url).pathname;
+const resultsRawPath =
+  process.env.NONOBENCH_RESULTS_RAW_JSON ??
+  new URL("../visualizer/public/results-raw.json", import.meta.url).pathname;
 
 // Types for the JSON output (matching existing format)
 type SizeData = {
-	size: string;
-	timestamp: string;
-	accuracy: number;
-	correct: number;
-	failed: number;
-	timeouts: number;
-	total: number;
-	runs: number;
-	avgDurationMs: number;
-	totalDurationMs: number;
-	avgTokens: number;
-	totalTokens: number;
-	avgCost: number;
-	totalCost: number;
+  size: string;
+  timestamp: string;
+  accuracy: number;
+  correct: number;
+  failed: number;
+  timeouts: number;
+  total: number;
+  runs: number;
+  avgDurationMs: number;
+  totalDurationMs: number;
+  avgTokens: number;
+  totalTokens: number;
+  avgCost: number;
+  totalCost: number;
 };
 
 type ModelData = {
-	model: string;
-	displayName: string;
-	familyDisplayName: string;
-	providerName: string;
-	openWeights: boolean | null;
-	addedAt: string | null;
-	provider: string;
-	family: string;
-	effort: string;
-	legacy: boolean;
-	harness: "v1.0" | "v1.2";
-	version: "1.0" | "1.1" | "1.2";
-	// True when every core puzzle has a successful run; partial results must
-	// not be read as finished ones.
-	complete: boolean;
-	// Core puzzles cut off by a provider time limit (counted as unsolved).
-	timeouts: number;
-	timeoutNote: string | null;
-	reasoning: boolean;
-	overallAccuracy: number;
-	overallCorrect: number;
-	overallFailed: number;
-	overallTotal: number;
-	overallRuns: number;
-	bySize: SizeData[];
+  model: string;
+  displayName: string;
+  familyDisplayName: string;
+  providerName: string;
+  openWeights: boolean | null;
+  addedAt: string | null;
+  provider: string;
+  family: string;
+  effort: string;
+  legacy: boolean;
+  harness: "v1.0" | "v1.2";
+  version: "1.0" | "1.1" | "1.2";
+  // True when every core puzzle has a successful run; partial results must
+  // not be read as finished ones.
+  complete: boolean;
+  // Core puzzles cut off by a provider time limit (counted as unsolved).
+  timeouts: number;
+  timeoutNote: string | null;
+  reasoning: boolean;
+  overallAccuracy: number;
+  overallCorrect: number;
+  overallFailed: number;
+  overallTotal: number;
+  overallRuns: number;
+  bySize: SizeData[];
 };
 
 type ErrorMessageData = {
-	message: string;
-	count: number;
+  message: string;
+  count: number;
 };
 
 type ModelErrorData = {
-	model: string;
-	totalErrors: number;
-	errors: ErrorMessageData[];
+  model: string;
+  totalErrors: number;
+  errors: ErrorMessageData[];
 };
 
 // How close each Hard-mode answer came. Every Hard-mode puzzle has exactly
@@ -138,100 +165,116 @@ type ModelErrorData = {
 type HardModeOutcome = "solved" | "wrong-grid" | "no-grid";
 type HardModeReason = "timed-out" | "cut-off" | "wrong-size" | "gave-up" | "empty" | "no-grid";
 type HardModeData = {
-	size: string;
-	puzzles: number;
-	models: {
-		model: string;
-		runs: { puzzle: number; outcome: HardModeOutcome; cellsOff?: number; linesSatisfied?: number; reason?: HardModeReason }[];
-	}[];
+  size: string;
+  puzzles: number;
+  models: {
+    model: string;
+    runs: {
+      puzzle: number;
+      outcome: HardModeOutcome;
+      cellsOff?: number;
+      linesSatisfied?: number;
+      reason?: HardModeReason;
+    }[];
+  }[];
 };
 
 type BenchmarkResults = {
-	timestamp: string;
-	summary: {
-		models: string[];
-		sizes: string[];
-		coreSizes: string[];
-	};
-	byModel: ModelData[];
-	hardMode: HardModeData;
-	chartData: Array<{ model: string; provider: string; family: string; effort: string; legacy: boolean; harness: "v1.0" | "v1.2"; version: "1.0" | "1.1" | "1.2" } & SizeData>;
-	errorsByModel: ModelErrorData[];
+  timestamp: string;
+  summary: {
+    models: string[];
+    sizes: string[];
+    coreSizes: string[];
+  };
+  byModel: ModelData[];
+  hardMode: HardModeData;
+  chartData: Array<
+    {
+      model: string;
+      provider: string;
+      family: string;
+      effort: string;
+      legacy: boolean;
+      harness: "v1.0" | "v1.2";
+      version: "1.0" | "1.1" | "1.2";
+    } & SizeData
+  >;
+  errorsByModel: ModelErrorData[];
 };
 
 // Query type for aggregated stats
 type AggregatedRow = {
-	model: string;
-	size: string;
-	timestamp: string;
-	reasoning: number;
-	total: number;
-	runs: number;
-	correct: number;
-	failed: number;
-	timeouts: number;
-	avg_duration_ms: number;
-	total_duration_ms: number;
-	avg_tokens: number;
-	total_tokens: number;
-	avg_cost: number;
-	total_cost: number;
+  model: string;
+  size: string;
+  timestamp: string;
+  reasoning: number;
+  total: number;
+  runs: number;
+  correct: number;
+  failed: number;
+  timeouts: number;
+  avg_duration_ms: number;
+  total_duration_ms: number;
+  avg_tokens: number;
+  total_tokens: number;
+  avg_cost: number;
+  total_cost: number;
 };
 
 // Query type for raw results
 type RawRow = {
-	model: string;
-	puzzle_id: string;
-	size: string;
-	timestamp: string;
-	reasoning: number;
-	correct: number;
-	status: string;
-	duration_ms: number;
-	tokens: number;
-	cost: number;
-	error_message: string | null;
-	raw_input: string | null;
-	raw_output: string | null;
-	output_mode: string | null;
-	provider_name: string | null;
-	quantization: string | null;
-	generation_id: string | null;
-	reasoning_tokens: number | null;
-	finish_reason: string | null;
-	answer_format: string | null;
+  model: string;
+  puzzle_id: string;
+  size: string;
+  timestamp: string;
+  reasoning: number;
+  correct: number;
+  status: string;
+  duration_ms: number;
+  tokens: number;
+  cost: number;
+  error_message: string | null;
+  raw_input: string | null;
+  raw_output: string | null;
+  output_mode: string | null;
+  provider_name: string | null;
+  quantization: string | null;
+  generation_id: string | null;
+  reasoning_tokens: number | null;
+  finish_reason: string | null;
+  answer_format: string | null;
 };
 
 // Output type for raw results JSON
 type RawResult = {
-	model: string;
-	puzzleId: string;
-	size: string;
-	timestamp: string;
-	reasoning: boolean;
-	correct: boolean;
-	status: string;
-	durationMs: number;
-	tokens: number;
-	cost: number;
-	errorMessage: string | null;
-	rawInput: string | null;
-	rawOutput: string | null;
-	outputMode: string;
-	harness: "v1.0" | "v1.2";
-	version: "1.0" | "1.1" | "1.2";
-	reasoningTokens: number | null;
-	finishReason: string | null;
-	// "flat" (one string) or "rows" (one line per row, Hard mode).
-	answerFormat: "flat" | "rows";
-	providerName: string | null;
-	quantization: string | null;
-	generationId: string | null;
+  model: string;
+  puzzleId: string;
+  size: string;
+  timestamp: string;
+  reasoning: boolean;
+  correct: boolean;
+  status: string;
+  durationMs: number;
+  tokens: number;
+  cost: number;
+  errorMessage: string | null;
+  rawInput: string | null;
+  rawOutput: string | null;
+  outputMode: string;
+  harness: "v1.0" | "v1.2";
+  version: "1.0" | "1.1" | "1.2";
+  reasoningTokens: number | null;
+  finishReason: string | null;
+  // "flat" (one string) or "rows" (one line per row, Hard mode).
+  answerFormat: "flat" | "rows";
+  providerName: string | null;
+  quantization: string | null;
+  generationId: string | null;
 };
 
 type RawResults = {
-	timestamp: string;
-	runs: RawResult[];
+  timestamp: string;
+  runs: RawResult[];
 };
 
 // Aggregate stats from the runs table
@@ -239,8 +282,8 @@ type RawResults = {
 // Timeouts (a documented provider time limit) are final attempts: they count
 // as runs, never as correct, and their real duration and cost are included.
 const aggregatedResults = db
-	.query<AggregatedRow, { $correctRuns: string }>(
-		`
+  .query<AggregatedRow, { $correctRuns: string }>(
+    `
     SELECT
       model,
       size,
@@ -261,24 +304,24 @@ const aggregatedResults = db
     GROUP BY model, size
     ORDER BY model, size
   `,
-	)
-	.all({ $correctRuns: correctRunsJson });
+  )
+  .all({ $correctRuns: correctRunsJson });
 
 if (aggregatedResults.length === 0) {
-	console.log("No runs found in database. Nothing to export.");
-	process.exit(0);
+  console.log("No runs found in database. Nothing to export.");
+  process.exit(0);
 }
 
 // Query error messages grouped by model
 type ErrorRow = {
-	model: string;
-	error_message: string;
-	count: number;
+  model: string;
+  error_message: string;
+  count: number;
 };
 
 const errorResults = db
-	.query<ErrorRow, []>(
-		`
+  .query<ErrorRow, []>(
+    `
     SELECT 
       model,
       error_message,
@@ -288,28 +331,28 @@ const errorResults = db
     GROUP BY model, error_message
     ORDER BY model, count DESC
   `,
-	)
-	.all();
+  )
+  .all();
 
 // Build errorsByModel structure
 const errorMap = new Map<string, ErrorMessageData[]>();
 for (const row of errorResults) {
-	if (!errorMap.has(row.model)) {
-		errorMap.set(row.model, []);
-	}
-	errorMap.get(row.model)!.push({
-		message: row.error_message,
-		count: row.count,
-	});
+  if (!errorMap.has(row.model)) {
+    errorMap.set(row.model, []);
+  }
+  errorMap.get(row.model)!.push({
+    message: row.error_message,
+    count: row.count,
+  });
 }
 
 const errorsByModel: ModelErrorData[] = [];
 for (const [model, errors] of errorMap) {
-	errorsByModel.push({
-		model,
-		totalErrors: errors.reduce((sum, e) => sum + e.count, 0),
-		errors,
-	});
+  errorsByModel.push({
+    model,
+    totalErrors: errors.reduce((sum, e) => sum + e.count, 0),
+    errors,
+  });
 }
 // Sort by total errors descending
 errorsByModel.sort((a, b) => b.totalErrors - a.totalErrors);
@@ -320,187 +363,230 @@ const modelReasoningMap = new Map<string, boolean>();
 const allSizes = new Set(PUZZLES.map((puzzle) => `${puzzle.width}x${puzzle.height}`));
 
 for (const row of aggregatedResults) {
-	if (!modelMap.has(row.model)) {
-		modelMap.set(row.model, []);
-	}
-	// Store reasoning for each model (use first value seen, should be consistent)
-	if (!modelReasoningMap.has(row.model)) {
-		modelReasoningMap.set(row.model, row.reasoning === 1);
-	}
+  if (!modelMap.has(row.model)) {
+    modelMap.set(row.model, []);
+  }
+  // Store reasoning for each model (use first value seen, should be consistent)
+  if (!modelReasoningMap.has(row.model)) {
+    modelReasoningMap.set(row.model, row.reasoning === 1);
+  }
 
-	// Accuracy is calculated from runs (excluding failed), not total
-	const sizeData: SizeData = {
-		size: row.size,
-		timestamp: row.timestamp,
-		accuracy: row.runs > 0 ? (row.correct / row.runs) * 100 : 0,
-		correct: row.correct,
-		failed: row.failed,
-		timeouts: row.timeouts,
-		total: row.total,
-		runs: row.runs,
-		avgDurationMs: row.avg_duration_ms ?? 0,
-		totalDurationMs: row.total_duration_ms,
-		avgTokens: row.avg_tokens ?? 0,
-		totalTokens: row.total_tokens,
-		avgCost: row.avg_cost ?? 0,
-		totalCost: row.total_cost,
-	};
+  // Accuracy is calculated from runs (excluding failed), not total
+  const sizeData: SizeData = {
+    size: row.size,
+    timestamp: row.timestamp,
+    accuracy: row.runs > 0 ? (row.correct / row.runs) * 100 : 0,
+    correct: row.correct,
+    failed: row.failed,
+    timeouts: row.timeouts,
+    total: row.total,
+    runs: row.runs,
+    avgDurationMs: row.avg_duration_ms ?? 0,
+    totalDurationMs: row.total_duration_ms,
+    avgTokens: row.avg_tokens ?? 0,
+    totalTokens: row.total_tokens,
+    avgCost: row.avg_cost ?? 0,
+    totalCost: row.total_cost,
+  };
 
-	modelMap.get(row.model)!.push(sizeData);
-	allSizes.add(row.size);
+  modelMap.get(row.model)!.push(sizeData);
+  allSizes.add(row.size);
 }
 
 // Build byModel array
 const byModel: ModelData[] = [];
 const chartData: BenchmarkResults["chartData"] = [];
 const knownProviders = new Set([
-	"openai", "anthropic", "google", "x-ai", "deepseek", "qwen", "z-ai",
-	"moonshotai", "xiaomi", "bytedance-seed", "minimax", "mistralai", "meta", "allenai",
+  "openai",
+  "anthropic",
+  "google",
+  "x-ai",
+  "deepseek",
+  "qwen",
+  "z-ai",
+  "moonshotai",
+  "xiaomi",
+  "bytedance-seed",
+  "minimax",
+  "mistralai",
+  "meta",
+  "allenai",
 ]);
-const modelsByName = new Map(MODELS.map((model) => {
-	const provider = model.local ? "local" : model.llm.modelId.split("/")[0] ?? "";
-	if (!model.local && (!provider || !knownProviders.has(provider))) throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
-	return [model.name, { ...model, provider }] as const;
-}));
+const modelsByName = new Map(
+  MODELS.map((model) => {
+    const provider = model.local ? "local" : (model.llm.modelId.split("/")[0] ?? "");
+    if (!model.local && (!provider || !knownProviders.has(provider)))
+      throw new Error(`Unmapped OpenRouter provider '${provider}' for ${model.name}`);
+    return [model.name, { ...model, provider }] as const;
+  }),
+);
 
 for (const [model, sizeDatas] of modelMap) {
-	// A local model benched in an earlier session is in local-models.json, not in
-	// MODELS (its env vars are unset). Synthesize its metadata from that entry.
-	// Only the registry counts as evidence: an unknown cloud model name must stay
-	// a hard error, not a silent $0 local run.
-	const registryEntry = localRegistryEntryFor(model);
-	const metadata = modelsByName.get(model) ?? (registryEntry
-		? {
-			llm: { modelId: model } as Model["llm"],
-			name: model,
-			family: registryEntry.family ?? model,
-			effort: registryEntry.effort ?? "none",
-			// Label only, like the runner: the dashboard's reasoning filter uses it.
-			reasoning: (registryEntry.effort ?? "none") !== "none",
-			local: true as const,
-			provider: "local",
-		}
-		: undefined);
-	if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
-	const { provider } = metadata;
-	const catalog = metadata.local
-		? null
-		: (modelMetadata as Record<string, { displayName: string; openWeights: boolean | null; addedAt: string | null }>)[metadata.llm.modelId];
-	if (!metadata.local && !catalog) throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
-	const familyDisplayName = (familyDisplayNames as Record<string, string>)[metadata.family] ?? (metadata.local ? model : undefined);
-	if (!familyDisplayName) throw new Error(`Missing family display name for ${metadata.family}`);
-	const displayName = metadata.local
-		? model
-		: `${familyDisplayName} (${metadata.effort === "none" ? "no reasoning" : metadata.effort === "default" ? "reasoning" : metadata.effort})`;
-	const weightOverride = (metadataOverrides as Record<string, { openWeights: boolean; sourceUrl: string }>)[metadata.llm.modelId];
-	// Sort size data by size
-	const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map(
-		(size) => sizeDatas.find((s) => s.size === size)!,
-	);
+  // A local model benched in an earlier session is in local-models.json, not in
+  // MODELS (its env vars are unset). Synthesize its metadata from that entry.
+  // Only the registry counts as evidence: an unknown cloud model name must stay
+  // a hard error, not a silent $0 local run.
+  const registryEntry = localRegistryEntryFor(model);
+  const metadata =
+    modelsByName.get(model) ??
+    (registryEntry
+      ? {
+          llm: { modelId: model } as Model["llm"],
+          name: model,
+          family: registryEntry.family ?? model,
+          effort: registryEntry.effort ?? "none",
+          // Label only, like the runner: the dashboard's reasoning filter uses it.
+          reasoning: (registryEntry.effort ?? "none") !== "none",
+          local: true as const,
+          provider: "local",
+        }
+      : undefined);
+  if (!metadata) throw new Error(`Cannot export unknown DB model: ${model}`);
+  const { provider } = metadata;
+  const catalog = metadata.local
+    ? null
+    : (
+        modelMetadata as Record<
+          string,
+          { displayName: string; openWeights: boolean | null; addedAt: string | null }
+        >
+      )[metadata.llm.modelId];
+  if (!metadata.local && !catalog)
+    throw new Error(`Missing metadata for ${metadata.llm.modelId}; run bun run refresh-metadata`);
+  const familyDisplayName =
+    (familyDisplayNames as Record<string, string>)[metadata.family] ??
+    (metadata.local ? model : undefined);
+  if (!familyDisplayName) throw new Error(`Missing family display name for ${metadata.family}`);
+  const displayName = metadata.local
+    ? model
+    : `${familyDisplayName} (${metadata.effort === "none" ? "no reasoning" : metadata.effort === "default" ? "reasoning" : metadata.effort})`;
+  const weightOverride = (
+    metadataOverrides as Record<string, { openWeights: boolean; sourceUrl: string }>
+  )[metadata.llm.modelId];
+  // Sort size data by size
+  const sortedSizeDatas = sortSizes(sizeDatas.map((s) => s.size)).map((size) =>
+    sizeDatas.find((s) => s.size === size)!,
+  );
 
-	// Calculate overall stats
-	let overallCorrect = 0;
-	let overallFailed = 0;
-	let overallTotal = 0;
-	let overallRuns = 0;
+  // Calculate overall stats
+  let overallCorrect = 0;
+  let overallFailed = 0;
+  let overallTotal = 0;
+  let overallRuns = 0;
 
-	for (const sizeData of sortedSizeDatas) {
-		if (CORE_SIZES.some((size) => size === sizeData.size)) {
-			overallCorrect += sizeData.correct;
-			overallFailed += sizeData.failed;
-			overallTotal += sizeData.total;
-			overallRuns += sizeData.runs;
-		}
+  for (const sizeData of sortedSizeDatas) {
+    if (CORE_SIZES.some((size) => size === sizeData.size)) {
+      overallCorrect += sizeData.correct;
+      overallFailed += sizeData.failed;
+      overallTotal += sizeData.total;
+      overallRuns += sizeData.runs;
+    }
 
-		// Add to chartData
-		chartData.push({
-			model,
-			provider,
-			family: metadata.family,
-			effort: metadata.effort,
-			legacy: !structuredModels.has(model),
-			harness: structuredModels.has(model) ? "v1.2" : "v1.0",
-			version: versionFor(model),
-			...sizeData,
-		});
-	}
+    // Add to chartData
+    chartData.push({
+      model,
+      provider,
+      family: metadata.family,
+      effort: metadata.effort,
+      legacy: !structuredModels.has(model),
+      harness: structuredModels.has(model) ? "v1.2" : "v1.0",
+      version: versionFor(model),
+      ...sizeData,
+    });
+  }
 
-	// Overall accuracy uses runs (excluding failed), not total
-	byModel.push({
-		model,
-		displayName,
-		familyDisplayName,
-		providerName: PROVIDERS[provider]?.name ?? provider,
-		// A model you serve yourself runs open weights by definition; the catalog has
-		// no entry for it, so the catalog lookup alone would report "unknown".
-		openWeights: weightOverride?.openWeights ?? catalog?.openWeights ?? (metadata.local ? true : null),
-		addedAt: catalog?.addedAt ?? null,
-		provider,
-		family: metadata.family,
-		effort: metadata.effort,
-		legacy: !structuredModels.has(model),
-		harness: structuredModels.has(model) ? "v1.2" : "v1.0",
-		version: versionFor(model),
-		complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
-		timeouts: sortedSizeDatas
-			.filter((sizeData) => CORE_SIZES.some((size) => size === sizeData.size))
-			.reduce((sum, sizeData) => sum + sizeData.timeouts, 0),
-		timeoutNote: timeoutNotes.get(model) ?? null,
-		reasoning: modelReasoningMap.get(model) ?? false,
-		overallAccuracy: overallRuns > 0 ? (overallCorrect / overallRuns) * 100 : 0,
-		overallCorrect,
-		overallFailed,
-		overallTotal,
-		overallRuns,
-		bySize: sortedSizeDatas,
-	});
+  // Overall accuracy uses runs (excluding failed), not total
+  byModel.push({
+    model,
+    displayName,
+    familyDisplayName,
+    providerName: PROVIDERS[provider]?.name ?? provider,
+    // A model you serve yourself runs open weights by definition; the catalog has
+    // no entry for it, so the catalog lookup alone would report "unknown".
+    openWeights:
+      weightOverride?.openWeights ?? catalog?.openWeights ?? (metadata.local ? true : null),
+    addedAt: catalog?.addedAt ?? null,
+    provider,
+    family: metadata.family,
+    effort: metadata.effort,
+    legacy: !structuredModels.has(model),
+    harness: structuredModels.has(model) ? "v1.2" : "v1.0",
+    version: versionFor(model),
+    complete: corePuzzleIds.every((id) => successfulRuns.has(`${model}\u0000${id}`)),
+    timeouts: sortedSizeDatas
+      .filter((sizeData) => CORE_SIZES.some((size) => size === sizeData.size))
+      .reduce((sum, sizeData) => sum + sizeData.timeouts, 0),
+    timeoutNote: timeoutNotes.get(model) ?? null,
+    reasoning: modelReasoningMap.get(model) ?? false,
+    overallAccuracy: overallRuns > 0 ? (overallCorrect / overallRuns) * 100 : 0,
+    overallCorrect,
+    overallFailed,
+    overallTotal,
+    overallRuns,
+    bySize: sortedSizeDatas,
+  });
 }
 
 const hardSize = EXTENDED_SIZES[0];
 const hardPuzzles = PUZZLES.filter((puzzle) => `${puzzle.width}x${puzzle.height}` === hardSize);
 const hardRows = db
-	.query<{ model: string; puzzle_id: string; status: string; raw_output: string | null; finish_reason: string | null }, [string]>(
-		`SELECT model, puzzle_id, status, raw_output, ${optionalColumn("finish_reason")} FROM runs WHERE size = ? AND status != 'failed'`,
-	)
-	.all(hardSize);
+  .query<
+    {
+      model: string;
+      puzzle_id: string;
+      status: string;
+      raw_output: string | null;
+      finish_reason: string | null;
+    },
+    [string]
+  >(
+    `SELECT model, puzzle_id, status, raw_output, ${optionalColumn("finish_reason")} FROM runs WHERE size = ? AND status != 'failed'`,
+  )
+  .all(hardSize);
 const hardByModel = new Map<string, HardModeData["models"][number]["runs"]>();
 for (const row of hardRows) {
-	const puzzle = puzzlesById.get(row.puzzle_id);
-	if (!puzzle) continue;
-	const index = hardPuzzles.indexOf(puzzle) + 1;
-	const cells = puzzle.width * puzzle.height;
-	const grid = row.status === "success" ? extractOutputSolution(puzzle, row.raw_output) : null;
-	let run: HardModeData["models"][number]["runs"][number];
-	if (grid && grid.length === cells) {
-		const check = checkClues(puzzle, grid);
-		const violated = check.rowViolations.length + check.columnViolations.length;
-		const solution = puzzle.solution.replace(/\s/g, "");
-		run = check.correct
-			? { puzzle: index, outcome: "solved" }
-			: {
-				puzzle: index,
-				outcome: "wrong-grid",
-				cellsOff: [...grid].filter((cell, i) => cell !== solution[i]).length,
-				linesSatisfied: 1 - violated / (puzzle.width + puzzle.height),
-			};
-	} else {
-		const text = (row.raw_output ?? "").replace(/[\s{}"\[\]:]|solution/g, "");
-		const reason: HardModeReason = row.status === "timeout" ? "timed-out"
-			: row.finish_reason === "length" ? "cut-off"
-			: claimsNoSolution(row.raw_output) ? "gave-up"
-			: grid || (structuredRows(row.raw_output)?.length ?? 0) > 0 ? "wrong-size"
-			: text === "" ? "empty"
-			: "no-grid";
-		run = { puzzle: index, outcome: "no-grid", reason };
-	}
-	hardByModel.set(row.model, [...(hardByModel.get(row.model) ?? []), run]);
+  const puzzle = puzzlesById.get(row.puzzle_id);
+  if (!puzzle) continue;
+  const index = hardPuzzles.indexOf(puzzle) + 1;
+  const cells = puzzle.width * puzzle.height;
+  const grid = row.status === "success" ? extractOutputSolution(puzzle, row.raw_output) : null;
+  let run: HardModeData["models"][number]["runs"][number];
+  if (grid && grid.length === cells) {
+    const check = checkClues(puzzle, grid);
+    const violated = check.rowViolations.length + check.columnViolations.length;
+    const solution = puzzle.solution.replace(/\s/g, "");
+    run = check.correct
+      ? { puzzle: index, outcome: "solved" }
+      : {
+          puzzle: index,
+          outcome: "wrong-grid",
+          cellsOff: [...grid].filter((cell, i) => cell !== solution[i]).length,
+          linesSatisfied: 1 - violated / (puzzle.width + puzzle.height),
+        };
+  } else {
+    const text = (row.raw_output ?? "").replace(/[\s{}"\[\]:]|solution/g, "");
+    const reason: HardModeReason =
+      row.status === "timeout"
+        ? "timed-out"
+        : row.finish_reason === "length"
+          ? "cut-off"
+          : claimsNoSolution(row.raw_output)
+            ? "gave-up"
+            : grid || (structuredRows(row.raw_output)?.length ?? 0) > 0
+              ? "wrong-size"
+              : text === ""
+                ? "empty"
+                : "no-grid";
+    run = { puzzle: index, outcome: "no-grid", reason };
+  }
+  hardByModel.set(row.model, [...(hardByModel.get(row.model) ?? []), run]);
 }
 const hardMode: HardModeData = {
-	size: hardSize,
-	puzzles: hardPuzzles.length,
-	models: [...hardByModel]
-		.map(([model, runs]) => ({ model, runs: runs.sort((a, b) => a.puzzle - b.puzzle) }))
-		.sort((a, b) => a.model.localeCompare(b.model)),
+  size: hardSize,
+  puzzles: hardPuzzles.length,
+  models: [...hardByModel]
+    .map(([model, runs]) => ({ model, runs: runs.sort((a, b) => a.puzzle - b.puzzle) }))
+    .sort((a, b) => a.model.localeCompare(b.model)),
 };
 
 // Sort byModel by overall accuracy descending
@@ -508,16 +594,16 @@ byModel.sort((a, b) => b.overallAccuracy - a.overallAccuracy);
 
 // Build final results
 const results: BenchmarkResults = {
-	timestamp: new Date().toISOString(),
-	summary: {
-		models: byModel.map((m) => m.model),
-		sizes: sortSizes([...allSizes]),
-		coreSizes: [...CORE_SIZES],
-	},
-	byModel,
-	hardMode,
-	chartData,
-	errorsByModel,
+  timestamp: new Date().toISOString(),
+  summary: {
+    models: byModel.map((m) => m.model),
+    sizes: sortSizes([...allSizes]),
+    coreSizes: [...CORE_SIZES],
+  },
+  byModel,
+  hardMode,
+  chartData,
+  errorsByModel,
 };
 
 // Write to file
@@ -532,21 +618,21 @@ console.log(`  Sizes: ${results.summary.sizes.join(", ")}`);
 // Show per-model stats
 console.log(`\nModel Accuracy:`);
 for (const modelData of byModel) {
-	console.log(
-		`  ${modelData.model}: ${modelData.overallAccuracy.toFixed(2)}% (${modelData.overallCorrect}/${modelData.overallTotal})`,
-	);
+  console.log(
+    `  ${modelData.model}: ${modelData.overallAccuracy.toFixed(2)}% (${modelData.overallCorrect}/${modelData.overallTotal})`,
+  );
 }
 
 // Show error stats
 if (errorsByModel.length > 0) {
-	const totalErrors = errorsByModel.reduce((sum, m) => sum + m.totalErrors, 0);
-	console.log(`\nError Messages: ${totalErrors} total across ${errorsByModel.length} models`);
+  const totalErrors = errorsByModel.reduce((sum, m) => sum + m.totalErrors, 0);
+  console.log(`\nError Messages: ${totalErrors} total across ${errorsByModel.length} models`);
 }
 
 // Query and export raw results
 const rawResults = db
-	.query<RawRow, []>(
-		`
+  .query<RawRow, []>(
+    `
     SELECT
       model,
       puzzle_id,
@@ -571,36 +657,36 @@ const rawResults = db
     FROM runs
     ORDER BY model, size, timestamp
   `,
-	)
-	.all();
+  )
+  .all();
 
 // Transform to camelCase output format
 const rawResultsOutput: RawResults = {
-	timestamp: new Date().toISOString(),
-	runs: rawResults.map((row) => ({
-		model: row.model,
-		puzzleId: row.puzzle_id,
-		size: row.size,
-		timestamp: row.timestamp,
-		reasoning: row.reasoning === 1,
-		correct: correctRuns.has(`${row.model}\u0000${row.puzzle_id}`),
-		status: row.status,
-		durationMs: row.duration_ms,
-		tokens: row.tokens,
-		cost: row.cost,
-		errorMessage: row.error_message,
-		rawInput: row.raw_input,
-		rawOutput: row.raw_output,
-		outputMode: row.output_mode ?? "text",
-		harness: row.output_mode === null ? "v1.0" : "v1.2",
-		version: versionFor(row.model),
-		reasoningTokens: row.reasoning_tokens,
-		finishReason: row.finish_reason,
-		answerFormat: row.answer_format === "rows" ? "rows" : "flat",
-		providerName: row.provider_name,
-		quantization: row.quantization,
-		generationId: row.generation_id,
-	})),
+  timestamp: new Date().toISOString(),
+  runs: rawResults.map((row) => ({
+    model: row.model,
+    puzzleId: row.puzzle_id,
+    size: row.size,
+    timestamp: row.timestamp,
+    reasoning: row.reasoning === 1,
+    correct: correctRuns.has(`${row.model}\u0000${row.puzzle_id}`),
+    status: row.status,
+    durationMs: row.duration_ms,
+    tokens: row.tokens,
+    cost: row.cost,
+    errorMessage: row.error_message,
+    rawInput: row.raw_input,
+    rawOutput: row.raw_output,
+    outputMode: row.output_mode ?? "text",
+    harness: row.output_mode === null ? "v1.0" : "v1.2",
+    version: versionFor(row.model),
+    reasoningTokens: row.reasoning_tokens,
+    finishReason: row.finish_reason,
+    answerFormat: row.answer_format === "rows" ? "rows" : "flat",
+    providerName: row.provider_name,
+    quantization: row.quantization,
+    generationId: row.generation_id,
+  })),
 };
 
 // Write raw results to file

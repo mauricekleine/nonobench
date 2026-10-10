@@ -1,9 +1,8 @@
 {
   "name": "nonobench",
-  "module": "index.ts",
-  "type": "module",
   "private": true,
-  "packageManager": "bun@1.4.3",
+  "type": "module",
+  "module": "index.ts",
   "scripts": {
     "bench": "bun run bench.ts",
     "bench:local": "NONOBENCH_DB=local-results.db bun run bench.ts",
@@ -19,16 +18,17 @@
     "format": "oxfmt --write",
     "format:check": "oxfmt --check"
   },
-  "devDependencies": {
-    "@types/bun": "1.4.2",
-    "typescript": "7.0.2",
-    "oxfmt": "~0.72.0"
-  },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.62",
     "@openrouter/ai-sdk-provider": "^3.1.0",
     "@types/common-tags": "^1.8.4",
     "ai": "^7.0.126",
     "common-tags": "^1.8.2"
-  }
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2",
+    "oxfmt": "~0.72.0",
+    "typescript": "7.0.2"
+  },
+  "packageManager": "bun@1.4.3"
 }

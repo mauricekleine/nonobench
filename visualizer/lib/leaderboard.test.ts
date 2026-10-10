@@ -48,13 +48,12 @@ const variants = [
 ];
 
 test("best selection is overall, then rows rank by selected size", () => {
+  expect(applyFilters(variants, { size: "5x5" }).map((model) => model.model)).toEqual([
+    "b",
+    "a-high",
+  ]);
   expect(
-    applyFilters(variants, { size: "5x5" }).map((model) => model.model),
-  ).toEqual(["b", "a-high"]);
-  expect(
-    applyFilters(variants, { effort: "all", size: "5x5" }).map(
-      (model) => model.model,
-    ),
+    applyFilters(variants, { effort: "all", size: "5x5" }).map((model) => model.model),
   ).toEqual(["b", "a-low", "a-high"]);
 });
 
@@ -68,19 +67,15 @@ test("provider, family, reasoning, weights and effort filters compose", () => {
       effort: "low",
     }).map((model) => model.model),
   ).toEqual(["a-low"]);
-  expect(
-    applyFilters(variants, { openWeights: true }).map((model) => model.model),
-  ).toEqual(["b"]);
+  expect(applyFilters(variants, { openWeights: true }).map((model) => model.model)).toEqual(["b"]);
   expect(applyFilters(variants, { families: [] })).toEqual([]);
 });
 
 test("unknown filter values have helpful errors", () => {
-  expect(
-    validateFilters(variants, { providers: ["missing"] }, ["5x5"]),
-  ).toContain("Unknown provider");
-  expect(validateFilters(variants, { effort: "extreme" }, ["5x5"])).toContain(
-    "Unknown effort",
+  expect(validateFilters(variants, { providers: ["missing"] }, ["5x5"])).toContain(
+    "Unknown provider",
   );
+  expect(validateFilters(variants, { effort: "extreme" }, ["5x5"])).toContain("Unknown effort");
 });
 
 test("URL filters drop invalid keys while keeping valid filters", () => {
@@ -123,10 +118,17 @@ test("version filter uses explicit export tags before the legacy fallback", () =
     { ...variants[2], legacy: true },
   ];
   expect(tagged.map(variantVersion)).toEqual(["1.1", "1.2", "1.0"]);
-  expect(applyFilters(tagged, { versions: ["1.1"], effort: "all" }).map((model) => model.model)).toEqual(["a-low"]);
+  expect(
+    applyFilters(tagged, { versions: ["1.1"], effort: "all" }).map((model) => model.model),
+  ).toEqual(["a-low"]);
   expect(applyFilters(tagged, { versions: ["1.0", "1.2"], effort: "all" })).toHaveLength(2);
-  expect(validateFilters(tagged, { versions: ["9.9" as "1.0"] }, ["5x5"])).toContain("Unknown version");
-  expect(parseApiFilters(new URLSearchParams("version=1.1,1.2")).filters.versions).toEqual(["1.1", "1.2"]);
+  expect(validateFilters(tagged, { versions: ["9.9" as "1.0"] }, ["5x5"])).toContain(
+    "Unknown version",
+  );
+  expect(parseApiFilters(new URLSearchParams("version=1.1,1.2")).filters.versions).toEqual([
+    "1.1",
+    "1.2",
+  ]);
 });
 
 test("REST comma parsing trims and ignores empty entries", () => {
@@ -174,12 +176,20 @@ test("Hard mode best is each family's best Hard result, not its best Standard le
     complete: true,
     overallAccuracy,
     overallRuns: 30,
-    bySize: [{ size: "20x20", runs: 10, correct: hardCorrect, accuracy: hardCorrect * 10, totalCost: 40 }],
+    bySize: [
+      { size: "20x20", runs: 10, correct: hardCorrect, accuracy: hardCorrect * 10, totalCost: 40 },
+    ],
   });
   const fable = [family("fable-high", "high", 66.7, 5), family("fable-xhigh", "xhigh", 76.7, 1)];
-  expect(applyFilters(fable, { effort: "best", size: "20x20" }).map((model) => model.model)).toEqual(["fable-high"]);
-  expect(applyFilters(fable, { effort: "best" }).map((model) => model.model)).toEqual(["fable-xhigh"]);
+  expect(
+    applyFilters(fable, { effort: "best", size: "20x20" }).map((model) => model.model),
+  ).toEqual(["fable-high"]);
+  expect(applyFilters(fable, { effort: "best" }).map((model) => model.model)).toEqual([
+    "fable-xhigh",
+  ]);
   // Puzzle views follow the same rule on a Hard puzzle, and leave Standard puzzles alone.
-  expect(applyFilters(fable, filtersForPuzzle({ effort: "best" }, "20x20")).map((model) => model.model)).toEqual(["fable-high"]);
+  expect(
+    applyFilters(fable, filtersForPuzzle({ effort: "best" }, "20x20")).map((model) => model.model),
+  ).toEqual(["fable-high"]);
   expect(filtersForPuzzle({ effort: "best" }, "15x15")).toEqual({ effort: "best" });
 });

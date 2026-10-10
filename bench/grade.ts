@@ -21,14 +21,17 @@ function parseStructured(rawOutput: string): unknown {
 // the model returned.
 export function structuredRows(rawOutput: string | null): string[] | null {
   const solution = parseStructured(rawOutput ?? "");
-  return Array.isArray(solution) && solution.every((row) => typeof row === "string") ? solution : null;
+  return Array.isArray(solution) && solution.every((row) => typeof row === "string")
+    ? solution
+    : null;
 }
 
 // The prompt's "no solution" answer: "0", or an empty or ["0"] structured answer.
 export function claimsNoSolution(rawOutput: string | null): boolean {
   const solution = parseStructured(rawOutput ?? "");
-  if (Array.isArray(solution)) return solution.length === 0 || (solution.length === 1 && String(solution[0]).trim() === "0");
-  const text = typeof solution === "string" ? solution : rawOutput ?? "";
+  if (Array.isArray(solution))
+    return solution.length === 0 || (solution.length === 1 && String(solution[0]).trim() === "0");
+  const text = typeof solution === "string" ? solution : (rawOutput ?? "");
   return /^\s*0\s*$/.test(text);
 }
 
@@ -54,7 +57,8 @@ export function extractOutputSolution(puzzle: Puzzle, rawOutput: string | null):
   if (rows) {
     const clean = rows.map((row) => row.replace(/\s/g, ""));
     const rowPattern = new RegExp(`^[01]{${width}}$`);
-    if (clean.length === height && clean.every((row) => rowPattern.test(row))) return clean.join("");
+    if (clean.length === height && clean.every((row) => rowPattern.test(row)))
+      return clean.join("");
     const written = clean.join("").replace(/[^01]/g, "");
     return written.length === cells || !written ? null : written;
   }
@@ -73,7 +77,11 @@ export function extractOutputSolution(puzzle: Puzzle, rawOutput: string | null):
 
 // Row-format answers: the last run of exactly `height` consecutive lines that
 // each hold `width` cells. Spaces and separators between cells are tolerated.
-function lastRowBlock(text: string, width: number, height: number): { grid: string; end: number } | null {
+function lastRowBlock(
+  text: string,
+  width: number,
+  height: number,
+): { grid: string; end: number } | null {
   const rowPattern = new RegExp(`^[01]{${width}}$`);
   let block: string[] = [];
   let last: { grid: string; end: number } | null = null;

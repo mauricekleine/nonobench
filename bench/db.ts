@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import type { Puzzle } from "../visualizer/components/puzzles";
 
-export const dbPath = process.env.NONOBENCH_DB ?? fileURLToPath(new URL("./results.db", import.meta.url));
+export const dbPath =
+  process.env.NONOBENCH_DB ?? fileURLToPath(new URL("./results.db", import.meta.url));
 
 // Reading never initializes or migrates the database.
 export function openReadDb(): Database | null {
@@ -46,9 +47,26 @@ function openWriteDb(): Database {
     CREATE INDEX IF NOT EXISTS idx_runs_model_size ON runs(model, size);
     CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON runs(timestamp);
   `);
-  const columns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(runs)").all().map((row) => row.name));
+  const columns = new Set(
+    db
+      .query<{ name: string }, []>("PRAGMA table_info(runs)")
+      .all()
+      .map((row) => row.name),
+  );
   // output_mode: NULL for legacy free-text runs, "json_schema" for strict structured output.
-  for (const column of ["raw_input", "raw_output", "reasoning", "output_mode", "reasoning_tokens", "provider_name", "quantization", "generation_id", "finish_reason", "code_revision", "answer_format"] as const) {
+  for (const column of [
+    "raw_input",
+    "raw_output",
+    "reasoning",
+    "output_mode",
+    "reasoning_tokens",
+    "provider_name",
+    "quantization",
+    "generation_id",
+    "finish_reason",
+    "code_revision",
+    "answer_format",
+  ] as const) {
     const type = column === "reasoning" || column === "reasoning_tokens" ? "INTEGER" : "TEXT";
     if (!columns.has(column)) db.run(`ALTER TABLE runs ADD COLUMN ${column} ${type}`);
   }
@@ -79,8 +97,14 @@ function openWriteDb(): Database {
     CREATE TRIGGER IF NOT EXISTS attempts_no_delete BEFORE DELETE ON attempts
     BEGIN SELECT RAISE(ABORT, 'attempts are append-only'); END;
   `);
-  const attemptColumns = new Set(db.query<{ name: string }, []>("PRAGMA table_info(attempts)").all().map((row) => row.name));
-  if (!attemptColumns.has("answer_format")) db.run("ALTER TABLE attempts ADD COLUMN answer_format TEXT");
+  const attemptColumns = new Set(
+    db
+      .query<{ name: string }, []>("PRAGMA table_info(attempts)")
+      .all()
+      .map((row) => row.name),
+  );
+  if (!attemptColumns.has("answer_format"))
+    db.run("ALTER TABLE attempts ADD COLUMN answer_format TEXT");
   writeDb = db;
   return db;
 }
@@ -119,8 +143,16 @@ export function codeRevision(): string {
   if (cachedCodeRevision !== undefined) return cachedCodeRevision;
   try {
     const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-    const result = Bun.spawnSync({ cmd: ["git", "rev-parse", "--short", "HEAD"], cwd: repoRoot, stdout: "pipe", stderr: "ignore" });
-    cachedCodeRevision = result.exitCode === 0 ? new TextDecoder().decode(result.stdout).trim() || "unknown" : "unknown";
+    const result = Bun.spawnSync({
+      cmd: ["git", "rev-parse", "--short", "HEAD"],
+      cwd: repoRoot,
+      stdout: "pipe",
+      stderr: "ignore",
+    });
+    cachedCodeRevision =
+      result.exitCode === 0
+        ? new TextDecoder().decode(result.stdout).trim() || "unknown"
+        : "unknown";
   } catch {
     cachedCodeRevision = "unknown";
   }
@@ -135,9 +167,12 @@ export function getPuzzleId(puzzle: Puzzle): string {
 
 export function getSuccessfulPuzzlesByModel(): Map<string, Set<string>> {
   const db = openReadDb();
-  const results = db?.query<{ model: string; puzzle_id: string }, []>(
-    "SELECT model, puzzle_id FROM runs WHERE status IN ('success', 'timeout')"
-  ).all() ?? [];
+  const results =
+    db
+      ?.query<{ model: string; puzzle_id: string }, []>(
+        "SELECT model, puzzle_id FROM runs WHERE status IN ('success', 'timeout')",
+      )
+      .all() ?? [];
   db?.close();
   const successful = new Map<string, Set<string>>();
   for (const row of results) {
@@ -213,7 +248,7 @@ export function getSizeTally(model: string, size: string): { answered: number; c
   const db = openReadDb();
   const row = db
     ?.query<{ answered: number; correct: number | null }, [string, string]>(
-      "SELECT COUNT(*) AS answered, SUM(correct) AS correct FROM runs WHERE model = ? AND size = ? AND status = 'success'"
+      "SELECT COUNT(*) AS answered, SUM(correct) AS correct FROM runs WHERE model = ? AND size = ? AND status = 'success'",
     )
     .get(model, size);
   db?.close();

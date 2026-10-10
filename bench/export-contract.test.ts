@@ -30,34 +30,59 @@ test("temp export preserves committed fields and gives each variant one version"
     expect(new TextDecoder().decode(process.stderr)).toBe("");
     expect(process.exitCode).toBe(0);
 
-    const oldSummary = JSON.parse(readFileSync(join(import.meta.dir, "../visualizer/app/results.json"), "utf8"));
-    const oldRaw = JSON.parse(readFileSync(join(import.meta.dir, "../visualizer/public/results-raw.json"), "utf8"));
+    const oldSummary = JSON.parse(
+      readFileSync(join(import.meta.dir, "../visualizer/app/results.json"), "utf8"),
+    );
+    const oldRaw = JSON.parse(
+      readFileSync(join(import.meta.dir, "../visualizer/public/results-raw.json"), "utf8"),
+    );
     const summary = JSON.parse(readFileSync(paths.results, "utf8"));
     const raw = JSON.parse(readFileSync(paths.raw, "utf8"));
     // The checked-in exports must be exactly what the database produces
     // (apart from the timestamp), so commit them together with results.db.
-    const additions = new Set(["harness", "version", "reasoningTokens", "finishReason", "providerName", "quantization", "generationId", "answerFormat"]);
+    const additions = new Set([
+      "harness",
+      "version",
+      "reasoningTokens",
+      "finishReason",
+      "providerName",
+      "quantization",
+      "generationId",
+      "answerFormat",
+    ]);
     let correctedRawRuns = 0;
     const compare = (before: any, after: any, path = "root") => {
       if (Array.isArray(before)) {
         expect(after.length).toBe(before.length);
-        const key = path === "root.summary.models" ? (value: any) => value
-          : path === "root.byModel" ? (value: any) => value.model
-          : path === "root.chartData" ? (value: any) => `${value.model}\u0000${value.size}`
-          : null;
+        const key =
+          path === "root.summary.models"
+            ? (value: any) => value
+            : path === "root.byModel"
+              ? (value: any) => value.model
+              : path === "root.chartData"
+                ? (value: any) => `${value.model}\u0000${value.size}`
+                : null;
         const left = key ? [...before].sort((a, b) => key(a).localeCompare(key(b))) : before;
         const right = key ? [...after].sort((a, b) => key(a).localeCompare(key(b))) : after;
         left.forEach((value, index) => compare(value, right[index], `${path}[${index}]`));
       } else if (before !== null && typeof before === "object") {
         for (const key of Object.keys(before)) compare(before[key], after[key], `${path}.${key}`);
-        for (const key of Object.keys(after)) if (!(key in before)) expect(additions.has(key)).toBe(true);
+        for (const key of Object.keys(after))
+          if (!(key in before)) expect(additions.has(key)).toBe(true);
       } else if (path !== "root.timestamp") {
         if (/^root\.runs\[\d+\]\.correct$/.test(path) && before === false && after === true) {
           correctedRawRuns++;
           return;
         }
-        if (/^root\.(?:byModel|chartData)\[\d+\]\.(?:overallCorrect|overallAccuracy|correct|accuracy|bySize\[\d+\]\.(?:correct|accuracy))$/.test(path)
-          && typeof before === "number" && typeof after === "number" && after >= before) return;
+        if (
+          /^root\.(?:byModel|chartData)\[\d+\]\.(?:overallCorrect|overallAccuracy|correct|accuracy|bySize\[\d+\]\.(?:correct|accuracy))$/.test(
+            path,
+          ) &&
+          typeof before === "number" &&
+          typeof after === "number" &&
+          after >= before
+        )
+          return;
         expect(after).toEqual(before);
       }
     };
@@ -66,7 +91,14 @@ test("temp export preserves committed fields and gives each variant one version"
     expect(correctedRawRuns).toBe(0);
 
     const db = new Database(dbPath, { readonly: true, create: false });
-    const first = new Map(db.query<{ model: string; first_run: string }, []>("SELECT model, MIN(timestamp) AS first_run FROM runs GROUP BY model").all().map((row) => [row.model, row.first_run]));
+    const first = new Map(
+      db
+        .query<{ model: string; first_run: string }, []>(
+          "SELECT model, MIN(timestamp) AS first_run FROM runs GROUP BY model",
+        )
+        .all()
+        .map((row) => [row.model, row.first_run]),
+    );
     db.close();
     const expectedVersion = (model: string) => {
       const timestamp = first.get(model)!;

@@ -8,8 +8,18 @@ import { gradeOutput } from "./grade";
 const db = openReadDb();
 if (!db) throw new Error("Database does not exist");
 const puzzles = new Map(PUZZLES.map((puzzle) => [getPuzzleId(puzzle), puzzle]));
-type Row = { model: string; puzzle_id: string; raw_output: string | null; correct: number; status: string };
-const rows = db.query<Row, []>("SELECT model, puzzle_id, raw_output, correct, status FROM runs ORDER BY model, puzzle_id").all();
+type Row = {
+  model: string;
+  puzzle_id: string;
+  raw_output: string | null;
+  correct: number;
+  status: string;
+};
+const rows = db
+  .query<Row, []>(
+    "SELECT model, puzzle_id, raw_output, correct, status FROM runs ORDER BY model, puzzle_id",
+  )
+  .all();
 db.close();
 let upgrades = 0;
 let downgrades = 0;
@@ -27,5 +37,7 @@ for (const row of rows) {
   if (correct) upgrades++;
   else downgrades++;
 }
-console.log(`Regraded ${rows.length} rows: ${upgrades} upgrades, ${downgrades} downgrades, ${unknown} unknown puzzles.`);
+console.log(
+  `Regraded ${rows.length} rows: ${upgrades} upgrades, ${downgrades} downgrades, ${unknown} unknown puzzles.`,
+);
 if (downgrades || unknown) process.exitCode = 1;

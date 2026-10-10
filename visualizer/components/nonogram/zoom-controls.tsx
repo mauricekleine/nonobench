@@ -13,10 +13,24 @@ export function ZoomControls() {
   const zoomOut = useNonogramStore((state) => state.zoomOut);
   return (
     <div className="flex items-center gap-1.5" role="group" aria-label="Zoom">
-      <button type="button" className={button} onClick={zoomOut} disabled={zoomLevel === "xs"} aria-label="Zoom out" title="Zoom out">
+      <button
+        type="button"
+        className={button}
+        onClick={zoomOut}
+        disabled={zoomLevel === "xs"}
+        aria-label="Zoom out"
+        title="Zoom out"
+      >
         <MagnifyingGlassMinus size={16} />
       </button>
-      <button type="button" className={button} onClick={zoomIn} disabled={zoomLevel === "xl"} aria-label="Zoom in" title="Zoom in">
+      <button
+        type="button"
+        className={button}
+        onClick={zoomIn}
+        disabled={zoomLevel === "xl"}
+        aria-label="Zoom in"
+        title="Zoom in"
+      >
         <MagnifyingGlassPlus size={16} />
       </button>
     </div>

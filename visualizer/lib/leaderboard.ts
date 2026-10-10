@@ -63,22 +63,15 @@ export function resolveModel<T extends LeaderboardVariant>(
 ): T | undefined {
   const normalized = name.trim().toLocaleLowerCase();
   if (!normalized) return undefined;
-  const exact = variants.find(
-    (model) => model.model.toLocaleLowerCase() === normalized,
-  );
+  const exact = variants.find((model) => model.model.toLocaleLowerCase() === normalized);
   if (exact) return exact;
   const family = variants.find(
     (model) =>
       model.family.toLocaleLowerCase() === normalized ||
       model.familyDisplayName?.toLocaleLowerCase() === normalized,
   )?.family;
-  if (family)
-    return selectBestVariants(
-      variants.filter((model) => model.family === family),
-    )[0];
-  return variants.find(
-    (model) => model.displayName?.toLocaleLowerCase() === normalized,
-  );
+  if (family) return selectBestVariants(variants.filter((model) => model.family === family))[0];
+  return variants.find((model) => model.displayName?.toLocaleLowerCase() === normalized);
 }
 
 export function scoreForSize(model: LeaderboardVariant, size?: string) {
@@ -96,9 +89,7 @@ export function filtersForPuzzle(filters: Filters, size: string): Filters {
 
 function costForSize(model: LeaderboardVariant, size?: string) {
   return model.bySize
-    .filter((entry) =>
-      size ? entry.size === size : CORE_SIZES.has(entry.size),
-    )
+    .filter((entry) => (size ? entry.size === size : CORE_SIZES.has(entry.size)))
     .reduce((sum, entry) => sum + entry.totalCost, 0);
 }
 
@@ -115,9 +106,17 @@ function bestAtSize<T extends LeaderboardVariant>(variants: T[], size: string): 
   const byFamily = new Map<string, T>();
   for (const model of variants) {
     const current = byFamily.get(model.family);
-    if (!current) { byFamily.set(model.family, model); continue; }
-    const a = stats(model), b = stats(current);
-    if (a.correct > b.correct || (a.correct === b.correct && (a.cost < b.cost || (a.cost === b.cost && model.model < current.model))))
+    if (!current) {
+      byFamily.set(model.family, model);
+      continue;
+    }
+    const a = stats(model),
+      b = stats(current);
+    if (
+      a.correct > b.correct ||
+      (a.correct === b.correct &&
+        (a.cost < b.cost || (a.cost === b.cost && model.model < current.model)))
+    )
       byFamily.set(model.family, model);
   }
   return [...byFamily.values()];
@@ -133,10 +132,8 @@ export function applyFilters<T extends LeaderboardVariant>(
       (!filters.providers || filters.providers.includes(model.provider)) &&
       (!filters.families || filters.families.includes(model.family)) &&
       (!filters.versions || filters.versions.includes(variantVersion(model))) &&
-      (filters.reasoning === undefined ||
-        model.reasoning === filters.reasoning) &&
-      (filters.openWeights === undefined ||
-        model.openWeights === filters.openWeights) &&
+      (filters.reasoning === undefined || model.reasoning === filters.reasoning) &&
+      (filters.openWeights === undefined || model.openWeights === filters.openWeights) &&
       (!filters.effort ||
         filters.effort === "best" ||
         filters.effort === "all" ||
@@ -146,7 +143,9 @@ export function applyFilters<T extends LeaderboardVariant>(
   // result among the variants that ran it, not its best Standard level.
   const extended = filters.size && !CORE_SIZES.has(filters.size) ? filters.size : undefined;
   const pool = extended
-    ? eligible.filter((model) => model.bySize.some((entry) => entry.size === extended && entry.runs > 0))
+    ? eligible.filter((model) =>
+        model.bySize.some((entry) => entry.size === extended && entry.runs > 0),
+      )
     : eligible;
   const best = !filters.effort || filters.effort === "best";
   const selected = !best ? pool : extended ? bestAtSize(pool, extended) : selectBestVariants(pool);
@@ -154,18 +153,17 @@ export function applyFilters<T extends LeaderboardVariant>(
     .filter(
       (model) =>
         !filters.size ||
-        model.bySize.some(
-          (entry) => entry.size === filters.size && entry.runs > 0,
-        ),
+        model.bySize.some((entry) => entry.size === filters.size && entry.runs > 0),
     )
     .filter((model) => {
       const correct = filters.size
         ? (() => {
             const entry = model.bySize.find((row) => row.size === filters.size);
-            return entry?.correct ?? Math.round((entry?.accuracy ?? 0) * (entry?.runs ?? 0) / 100);
+            return (
+              entry?.correct ?? Math.round(((entry?.accuracy ?? 0) * (entry?.runs ?? 0)) / 100)
+            );
           })()
-        : model.overallCorrect ??
-          Math.round((model.overallAccuracy * model.overallRuns) / 100);
+        : (model.overallCorrect ?? Math.round((model.overallAccuracy * model.overallRuns) / 100));
       return correct >= (filters.minCorrect ?? 0);
     })
     .sort(
@@ -212,13 +210,7 @@ export function parseApiFilters(params: URLSearchParams): {
 } {
   const bool = (key: string): boolean | undefined | null => {
     const value = params.get(key);
-    return value === null
-      ? undefined
-      : value === "true"
-        ? true
-        : value === "false"
-          ? false
-          : null;
+    return value === null ? undefined : value === "true" ? true : value === "false" ? false : null;
   };
   const reasoning = bool("reasoning");
   const openWeights = bool("open_weights");
@@ -255,9 +247,7 @@ export function parseApiFilters(params: URLSearchParams): {
 }
 
 // Empty comma lists mean no restriction in REST, MCP, and page URLs.
-export function parseCommaList(
-  value: string | null | undefined,
-): string[] | undefined {
+export function parseCommaList(value: string | null | undefined): string[] | undefined {
   const entries = value
     ?.split(",")
     .map((entry) => entry.trim())
@@ -265,10 +255,7 @@ export function parseCommaList(
   return entries?.length ? entries : undefined;
 }
 
-type UrlQuery = Record<
-  "p" | "f" | "v" | "e" | "r" | "w" | "s" | "levels",
-  string | null
->;
+type UrlQuery = Record<"p" | "f" | "v" | "e" | "r" | "w" | "s" | "levels", string | null>;
 export function sanitizeUrlFilters(
   variants: LeaderboardVariant[],
   sizes: string[],
@@ -277,13 +264,11 @@ export function sanitizeUrlFilters(
   const invalidKeys: (keyof UrlQuery)[] = [];
   const providers = parseCommaList(query.p);
   const families = query.f === "~" ? [] : parseCommaList(query.f);
-  const versions = query.v === "~" ? [] : parseCommaList(query.v) as BenchmarkVersion[] | undefined;
+  const versions =
+    query.v === "~" ? [] : (parseCommaList(query.v) as BenchmarkVersion[] | undefined);
   const effort = query.e?.trim();
   const size = query.s?.trim();
-  if (
-    query.p !== null &&
-    (!providers || validateFilters(variants, { providers }, sizes))
-  )
+  if (query.p !== null && (!providers || validateFilters(variants, { providers }, sizes)))
     invalidKeys.push("p");
   if (
     query.f !== null &&
@@ -291,24 +276,19 @@ export function sanitizeUrlFilters(
     (!families || validateFilters(variants, { families }, sizes))
   )
     invalidKeys.push("f");
-  if (
-    query.e !== null &&
-    (!effort || validateFilters(variants, { effort }, sizes))
-  )
+  if (query.e !== null && (!effort || validateFilters(variants, { effort }, sizes)))
     invalidKeys.push("e");
-  if (query.v !== null && query.v !== "~" && (!versions || validateFilters(variants, { versions }, sizes)))
+  if (
+    query.v !== null &&
+    query.v !== "~" &&
+    (!versions || validateFilters(variants, { versions }, sizes))
+  )
     invalidKeys.push("v");
   if (query.s !== null && (!size || validateFilters(variants, { size }, sizes)))
     invalidKeys.push("s");
-  if (query.r !== null && query.r !== "true" && query.r !== "false")
-    invalidKeys.push("r");
-  if (query.w !== null && query.w !== "true" && query.w !== "false")
-    invalidKeys.push("w");
-  if (
-    query.levels !== null &&
-    query.levels !== "all" &&
-    query.levels !== "best"
-  )
+  if (query.r !== null && query.r !== "true" && query.r !== "false") invalidKeys.push("r");
+  if (query.w !== null && query.w !== "true" && query.w !== "false") invalidKeys.push("w");
+  if (query.levels !== null && query.levels !== "all" && query.levels !== "best")
     invalidKeys.push("levels");
   return {
     filters: {
@@ -320,14 +300,8 @@ export function sanitizeUrlFilters(
           ? "all"
           : "best"
         : (effort ?? (query.levels === "all" ? "all" : "best")),
-      reasoning:
-        invalidKeys.includes("r") || query.r === null
-          ? undefined
-          : query.r === "true",
-      openWeights:
-        invalidKeys.includes("w") || query.w === null
-          ? undefined
-          : query.w === "true",
+      reasoning: invalidKeys.includes("r") || query.r === null ? undefined : query.r === "true",
+      openWeights: invalidKeys.includes("w") || query.w === null ? undefined : query.w === "true",
       size: invalidKeys.includes("s") ? undefined : size || undefined,
     },
     invalidKeys,

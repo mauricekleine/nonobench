@@ -24,9 +24,7 @@ function flatPrompt(puzzle: Puzzle): string {
 		Solve the puzzle so ALL row AND column clues are satisfied simultaneously.
 
 		## Output Format
-		Output ONLY the solution as a single string of ${
-      puzzle.width * puzzle.height
-    } characters.
+		Output ONLY the solution as a single string of ${puzzle.width * puzzle.height} characters.
 		- Use "1" for filled cells, "0" for empty cells
 		- Read left-to-right, top-to-bottom (row 1 first, then row 2, etc.)
 

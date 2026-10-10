@@ -1,14 +1,28 @@
 // Public, unauthenticated catalog only. This prepares configs; it never calls a model.
 const modelIds = [
-  "anthropic/claude-opus-5.5", "anthropic/claude-fable-5.1", "anthropic/claude-sonnet-5.5",
+  "anthropic/claude-opus-5.5",
+  "anthropic/claude-fable-5.1",
+  "anthropic/claude-sonnet-5.5",
   "anthropic/claude-haiku-5.5",
-  "openai/gpt-6-sol", "openai/gpt-6-luna", "openai/gpt-6-astra", "openai/gpt-5.6-sol",
+  "openai/gpt-6-sol",
+  "openai/gpt-6-luna",
+  "openai/gpt-6-astra",
+  "openai/gpt-5.6-sol",
   "openai/gpt-6.1-sol",
-  "google/gemini-3.8-flash", "x-ai/grok-4.7",
-  "deepseek/deepseek-v4-pro-0813", "deepseek/deepseek-v4.1-flash",
-  "qwen/qwen3.8-max-0902", "qwen/qwen3.8-27b", "z-ai/glm-5.3", "z-ai/glm-5.3-flash",
-  "moonshotai/kimi-k3", "meta/muse-spark-1.3", "mistralai/mistral-medium-3-5",
-  "qwen/qwen3.8-flash", "xiaomi/mimo-v2.6-pro", "xiaomi/mimo-v2.6-flash",
+  "google/gemini-3.8-flash",
+  "x-ai/grok-4.7",
+  "deepseek/deepseek-v4-pro-0813",
+  "deepseek/deepseek-v4.1-flash",
+  "qwen/qwen3.8-max-0902",
+  "qwen/qwen3.8-27b",
+  "z-ai/glm-5.3",
+  "z-ai/glm-5.3-flash",
+  "moonshotai/kimi-k3",
+  "meta/muse-spark-1.3",
+  "mistralai/mistral-medium-3-5",
+  "qwen/qwen3.8-flash",
+  "xiaomi/mimo-v2.6-pro",
+  "xiaomi/mimo-v2.6-flash",
   "bytedance-seed/seed-2-1-turbo",
 ] as const;
 
@@ -35,18 +49,23 @@ const families: Record<string, unknown> = {};
 for (const modelId of modelIds) {
   const model = byId.get(modelId);
   if (!model) throw new Error(`Missing catalog model ${modelId}`);
-  const family = modelId.split("/")[1]!
+  const family = modelId
+    .split("/")[1]!
     .replace("deepseek-v4-pro-0813", "deepseek-v4-pro")
     .replace("qwen3.8-max-0902", "qwen3.8-max")
     .replace("mistral-medium-3-5", "mistral-medium-3.5")
     .replace("seed-2-1-turbo", "seed-2.1-turbo");
   const reasoning = model.reasoning;
   const supported = reasoning?.supported_efforts;
-  const effortControl = Array.isArray(supported) && supported.some((level) => level !== "none") &&
+  const effortControl =
+    Array.isArray(supported) &&
+    supported.some((level) => level !== "none") &&
     !(supported.length === 2 && supported.includes("high") && supported.includes("none"));
   const order = ["minimal", "low", "medium", "high", "xhigh", "max"];
   const native = nativeLevels[modelId];
-  const levels = effortControl ? order.filter((level) => supported!.includes(level) && (!native || native.includes(level))) : [];
+  const levels = effortControl
+    ? order.filter((level) => supported!.includes(level) && (!native || native.includes(level)))
+    : [];
   families[family] = {
     modelId,
     supportedEfforts: supported ?? null,
@@ -56,5 +75,8 @@ for (const modelId of modelIds) {
     levels,
   };
 }
-await Bun.write(new URL("./effort-levels.json", import.meta.url), JSON.stringify({ source, fetchedAt: new Date().toISOString(), families }, null, 2) + "\n");
+await Bun.write(
+  new URL("./effort-levels.json", import.meta.url),
+  JSON.stringify({ source, fetchedAt: new Date().toISOString(), families }, null, 2) + "\n",
+);
 console.log(`Recorded effort evidence for ${Object.keys(families).length} current families.`);

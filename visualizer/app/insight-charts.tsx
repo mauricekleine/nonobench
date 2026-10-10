@@ -4,11 +4,7 @@ import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info } from "@phosphor-icons/react";
 import { ProviderLogo } from "@/components/provider-logos/provider-logo";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   chartStats,
   logTicks,
@@ -85,9 +81,7 @@ export function AccuracyScatter({
   const lower = Number.isFinite(min) ? min / 1.25 : 1;
   const upper = Number.isFinite(max) ? max * 1.25 : 10;
   const xPosition = (x: number) =>
-    5 +
-    (90 * (Math.log(x) - Math.log(lower))) /
-      (Math.log(upper) - Math.log(lower));
+    5 + (90 * (Math.log(x) - Math.log(lower))) / (Math.log(upper) - Math.log(lower));
   const yPosition = (y: number) => 95 - y * 0.9;
   const path = frontier
     .map((point, index) =>
@@ -102,22 +96,47 @@ export function AccuracyScatter({
   // Labels are anchored on the point and nudged by a few pixels, so they stay
   // attached to their dot at any chart width; the % boxes below are only an
   // approximate footprint for collision scoring.
-  const LABEL_W = 11, LABEL_H = 6, GAP = 1;
+  const LABEL_W = 11,
+    LABEL_H = 6,
+    GAP = 1;
   const occupied: { left: number; right: number; top: number; bottom: number }[] = [];
   const labelPositions = new Map<string, { left: string; top: string; transform: string }>();
   for (const point of frontier) {
-    const px = xPosition(point.x), py = yPosition(point.y);
+    const px = xPosition(point.x),
+      py = yPosition(point.y);
     const candidates = [
       { transform: "translate(10px, -50%)", box: { left: px + GAP, top: py - LABEL_H / 2 } },
-      { transform: "translate(calc(-100% - 10px), -50%)", box: { left: px - GAP - LABEL_W, top: py - LABEL_H / 2 } },
-      { transform: "translate(-50%, calc(-100% - 10px))", box: { left: px - LABEL_W / 2, top: py - GAP - LABEL_H } },
+      {
+        transform: "translate(calc(-100% - 10px), -50%)",
+        box: { left: px - GAP - LABEL_W, top: py - LABEL_H / 2 },
+      },
+      {
+        transform: "translate(-50%, calc(-100% - 10px))",
+        box: { left: px - LABEL_W / 2, top: py - GAP - LABEL_H },
+      },
       { transform: "translate(-50%, 10px)", box: { left: px - LABEL_W / 2, top: py + GAP } },
     ];
     const score = ({ box }: (typeof candidates)[number]) => {
-      const right = box.left + LABEL_W, bottom = box.top + LABEL_H;
+      const right = box.left + LABEL_W,
+        bottom = box.top + LABEL_H;
       let penalty = box.left < 0 || right > 100 || box.top < 0 || bottom > 100 ? 100 : 0;
-      penalty += points.filter((other) => other.id !== point.id && xPosition(other.x) >= box.left && xPosition(other.x) <= right && yPosition(other.y) >= box.top && yPosition(other.y) <= bottom).length * 8;
-      penalty += occupied.filter((other) => box.left < other.right && right > other.left && box.top < other.bottom && bottom > other.top).length * 12;
+      penalty +=
+        points.filter(
+          (other) =>
+            other.id !== point.id &&
+            xPosition(other.x) >= box.left &&
+            xPosition(other.x) <= right &&
+            yPosition(other.y) >= box.top &&
+            yPosition(other.y) <= bottom,
+        ).length * 8;
+      penalty +=
+        occupied.filter(
+          (other) =>
+            box.left < other.right &&
+            right > other.left &&
+            box.top < other.bottom &&
+            bottom > other.top,
+        ).length * 12;
       return penalty;
     };
     const best = [...candidates].sort((a, b) => score(a) - score(b))[0];
@@ -134,8 +153,7 @@ export function AccuracyScatter({
             accuracy vs {metric}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Each point is a model variant. The stepped line traces the best
-            measured tradeoffs.
+            Each point is a model variant. The stepped line traces the best measured tradeoffs.
           </p>
         </div>
         <div
@@ -184,17 +202,14 @@ export function AccuracyScatter({
                     x - (xPosition(point.x) * bounds.width) / 100,
                     y - (yPosition(point.y) * bounds.height) / 100,
                   );
-                  return distance < best.distance
-                    ? { id: point.id, distance }
-                    : best;
+                  return distance < best.distance ? { id: point.id, distance } : best;
                 },
                 { id: null, distance: 18 },
               );
               setHoveredId(closest.id);
               setActiveFamily(
                 closest.id
-                  ? (points.find((point) => point.id === closest.id)?.model
-                      .family ?? null)
+                  ? (points.find((point) => point.id === closest.id)?.model.family ?? null)
                   : null,
               );
             }}
@@ -268,12 +283,7 @@ export function AccuracyScatter({
                   style={{
                     left: `${px}%`,
                     top: `${py}%`,
-                    zIndex:
-                      activeFamily === point.model.family
-                        ? 20
-                        : isFrontier
-                          ? 10
-                          : 1,
+                    zIndex: activeFamily === point.model.family ? 20 : isFrontier ? 10 : 1,
                   }}
                 >
                   <Tooltip>
@@ -284,10 +294,7 @@ export function AccuracyScatter({
                       aria-label={`${point.model.displayName}, ${effortDescription(point.model.effort)}, ${point.y.toFixed(1)}% accuracy, ${metricValue(point.x, metric)} per puzzle`}
                       className="pointer-events-none absolute -left-3 -top-3 flex size-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-bright"
                       style={{
-                        opacity:
-                          activeFamily && activeFamily !== point.model.family
-                            ? 0.22
-                            : 1,
+                        opacity: activeFamily && activeFamily !== point.model.family ? 0.22 : 1,
                       }}
                     >
                       <span
@@ -301,8 +308,7 @@ export function AccuracyScatter({
                     <TooltipContent side="top">
                       <strong>{point.model.displayName}</strong>
                       <p>
-                        {effortDescription(point.model.effort)} · {point.y.toFixed(1)}%
-                        accuracy
+                        {effortDescription(point.model.effort)} · {point.y.toFixed(1)}% accuracy
                       </p>
                       {effortTitle(point.model.effort) && <p>{effortTitle(point.model.effort)}</p>}
                       <p>{metricValue(point.x, metric)} per puzzle</p>
@@ -311,20 +317,26 @@ export function AccuracyScatter({
                 </div>
               );
             })}
-            {frontier.map((point) => <span key={`label-${point.id}`} className={`pointer-events-none absolute z-10 max-w-[150px] whitespace-nowrap items-center gap-1 rounded border border-border/60 bg-card px-1 py-0.5 text-[10px] leading-tight text-foreground sm:flex ${mobileLabelIds.has(point.id) ? "flex" : "hidden"}`} style={{ ...labelPositions.get(point.id), opacity: activeFamily && activeFamily !== point.model.family ? 0.25 : 1 }}><ProviderLogo provider={point.model.provider} size={12} className="shrink-0" /><span className="truncate">{point.model.familyDisplayName}</span></span>)}
+            {frontier.map((point) => (
+              <span
+                key={`label-${point.id}`}
+                className={`pointer-events-none absolute z-10 max-w-[150px] whitespace-nowrap items-center gap-1 rounded border border-border/60 bg-card px-1 py-0.5 text-[10px] leading-tight text-foreground sm:flex ${mobileLabelIds.has(point.id) ? "flex" : "hidden"}`}
+                style={{
+                  ...labelPositions.get(point.id),
+                  opacity: activeFamily && activeFamily !== point.model.family ? 0.25 : 1,
+                }}
+              >
+                <ProviderLogo provider={point.model.provider} size={12} className="shrink-0" />
+                <span className="truncate">{point.model.familyDisplayName}</span>
+              </span>
+            ))}
             {hovered && (
               <div
                 role="status"
                 className="pointer-events-none absolute z-30 w-max max-w-[190px] rounded-md bg-foreground px-3 py-2 text-xs text-background shadow-lg"
                 style={{
-                  left:
-                    xPosition(hovered.x) > 65
-                      ? undefined
-                      : `${xPosition(hovered.x)}%`,
-                  right:
-                    xPosition(hovered.x) > 65
-                      ? `${100 - xPosition(hovered.x)}%`
-                      : undefined,
+                  left: xPosition(hovered.x) > 65 ? undefined : `${xPosition(hovered.x)}%`,
+                  right: xPosition(hovered.x) > 65 ? `${100 - xPosition(hovered.x)}%` : undefined,
                   top: `${yPosition(hovered.y)}%`,
                   transform:
                     yPosition(hovered.y) < 25
@@ -334,10 +346,11 @@ export function AccuracyScatter({
               >
                 <strong>{hovered.model.displayName}</strong>
                 <div>
-                  {effortDescription(hovered.model.effort)} · {hovered.y.toFixed(1)}%
-                  accuracy
+                  {effortDescription(hovered.model.effort)} · {hovered.y.toFixed(1)}% accuracy
                 </div>
-                {effortTitle(hovered.model.effort) && <div>{effortTitle(hovered.model.effort)}</div>}
+                {effortTitle(hovered.model.effort) && (
+                  <div>{effortTitle(hovered.model.effort)}</div>
+                )}
                 <div>{metricValue(hovered.x, metric)} per puzzle</div>
               </div>
             )}
@@ -354,16 +367,14 @@ export function AccuracyScatter({
             ))}
           </div>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            {metricLabels[metric]} → <span className="text-dim">(log scale: each solid line is 10× the last)</span>
+            {metricLabels[metric]} →{" "}
+            <span className="text-dim">(log scale: each solid line is 10× the last)</span>
           </p>
           {points.length < models.length && (
             <p className="mt-1 text-center font-mono text-[10px] text-dim">
               {models.length - points.length}{" "}
-              {models.length - points.length === 1
-                ? "variant has"
-                : "variants have"}{" "}
-              no positive recorded {metric} value and cannot appear on a log
-              scale.
+              {models.length - points.length === 1 ? "variant has" : "variants have"} no positive
+              recorded {metric} value and cannot appear on a log scale.
             </p>
           )}
         </>
@@ -410,44 +421,129 @@ function LadderRow({ group, size }: { group: EffortGroup<ChartVariant>; size?: s
   const color = colorFor(first.provider);
   const domain = effortRowDomain(group, size);
   const levels = group.kind === "reasoning" ? ["off", "on"] : [...EFFORT_ORDER.map(effortLabel)];
-  const xPosition = (model: ChartVariant) => group.kind === "reasoning"
-    ? model.effort === "none" ? 12 : 88
-    : ladderX(effortRank(model.effort));
-  const yPosition = (accuracy: number) => 70 - 35 * (accuracy - domain.low) / (domain.high - domain.low);
-  const line = group.variants.map((model, index) => `${index ? "L" : "M"} ${xPosition(model)} ${yPosition(chartStats(model, size).accuracy)}`).join(" ");
-  return <div className="relative h-44 min-w-0 rounded-lg border border-border/70 bg-background/35 p-3" role="group" aria-label={`${first.familyDisplayName} ${group.kind === "reasoning" ? "reasoning off to on" : "effort ladder"}`}>
-    <div className="flex min-w-0 items-center gap-2 text-sm font-medium"><ProviderLogo provider={first.provider} size={15} className="shrink-0" /><span className="truncate" title={first.familyDisplayName}>{first.familyDisplayName}</span></div>
-    <div className="relative mt-1 h-[116px]">
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        {levels.map((_, index) => { const x = group.kind === "reasoning" ? index ? 88 : 12 : ladderX(index); return <line key={index} x1={x} x2={x} y1="15" y2="84" stroke="var(--border)" strokeWidth="0.12" vectorEffect="non-scaling-stroke" />; })}
-        <path d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
-      </svg>
-      {group.variants.map((model) => {
-        const value = chartStats(model, size), x = xPosition(model), y = yPosition(value.accuracy);
-        return <div key={model.model}>
-          <span aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-background/80 px-0.5 font-mono text-[10px] tabular-nums" style={{ left: `${x}%`, top: `calc(${y}% - 9px)` }}>{value.correct}/{value.runs}</span>
-          <Tooltip><TooltipTrigger type="button" className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ember-bright" style={{ left: `${x}%`, top: `${y}%` }} aria-label={`${model.familyDisplayName}, ${effortLabel(model.effort)}, ${value.correct} of ${value.runs} solved`}><span className="size-[10px] rounded-full border-2 border-card" style={{ backgroundColor: color }} /></TooltipTrigger><TooltipContent>{model.familyDisplayName} · {effortLabel(model.effort)}: {value.accuracy.toFixed(1)}% ({value.correct}/{value.runs} solved)</TooltipContent></Tooltip>
-        </div>;
-      })}
-      {group.variants.slice(1).map((model, index) => {
-        const previous = group.variants[index];
-        const delta = chartStats(model, size).correct - chartStats(previous, size).correct;
-        const x = (xPosition(previous) + xPosition(model)) / 2;
-        const y = (yPosition(chartStats(previous, size).accuracy) + yPosition(chartStats(model, size).accuracy)) / 2;
-        return <span key={model.model} aria-hidden="true" className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded border border-border bg-card px-1 font-mono text-[10px] tabular-nums" style={{ left: `${x}%`, top: `${y}%` }}>{delta > 0 ? `+${delta}` : delta < 0 ? `−${-delta}` : "0"}</span>;
-      })}
-      {levels.map((level, index) => <span key={level} className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] text-muted-foreground" style={{ left: `${group.kind === "reasoning" ? index ? 88 : 12 : ladderX(index)}%` }}>{level}</span>)}
+  const xPosition = (model: ChartVariant) =>
+    group.kind === "reasoning"
+      ? model.effort === "none"
+        ? 12
+        : 88
+      : ladderX(effortRank(model.effort));
+  const yPosition = (accuracy: number) =>
+    70 - (35 * (accuracy - domain.low)) / (domain.high - domain.low);
+  const line = group.variants
+    .map(
+      (model, index) =>
+        `${index ? "L" : "M"} ${xPosition(model)} ${yPosition(chartStats(model, size).accuracy)}`,
+    )
+    .join(" ");
+  return (
+    <div
+      className="relative h-44 min-w-0 rounded-lg border border-border/70 bg-background/35 p-3"
+      role="group"
+      aria-label={`${first.familyDisplayName} ${group.kind === "reasoning" ? "reasoning off to on" : "effort ladder"}`}
+    >
+      <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
+        <ProviderLogo provider={first.provider} size={15} className="shrink-0" />
+        <span className="truncate" title={first.familyDisplayName}>
+          {first.familyDisplayName}
+        </span>
+      </div>
+      <div className="relative mt-1 h-[116px]">
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {levels.map((_, index) => {
+            const x = group.kind === "reasoning" ? (index ? 88 : 12) : ladderX(index);
+            return (
+              <line
+                key={index}
+                x1={x}
+                x2={x}
+                y1="15"
+                y2="84"
+                stroke="var(--border)"
+                strokeWidth="0.12"
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })}
+          <path
+            d={line}
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        {group.variants.map((model) => {
+          const value = chartStats(model, size),
+            x = xPosition(model),
+            y = yPosition(value.accuracy);
+          return (
+            <div key={model.model}>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-background/80 px-0.5 font-mono text-[10px] tabular-nums"
+                style={{ left: `${x}%`, top: `calc(${y}% - 9px)` }}
+              >
+                {value.correct}/{value.runs}
+              </span>
+              <Tooltip>
+                <TooltipTrigger
+                  type="button"
+                  className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ember-bright"
+                  style={{ left: `${x}%`, top: `${y}%` }}
+                  aria-label={`${model.familyDisplayName}, ${effortLabel(model.effort)}, ${value.correct} of ${value.runs} solved`}
+                >
+                  <span
+                    className="size-[10px] rounded-full border-2 border-card"
+                    style={{ backgroundColor: color }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {model.familyDisplayName} · {effortLabel(model.effort)}:{" "}
+                  {value.accuracy.toFixed(1)}% ({value.correct}/{value.runs} solved)
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          );
+        })}
+        {group.variants.slice(1).map((model, index) => {
+          const previous = group.variants[index];
+          const delta = chartStats(model, size).correct - chartStats(previous, size).correct;
+          const x = (xPosition(previous) + xPosition(model)) / 2;
+          const y =
+            (yPosition(chartStats(previous, size).accuracy) +
+              yPosition(chartStats(model, size).accuracy)) /
+            2;
+          return (
+            <span
+              key={model.model}
+              aria-hidden="true"
+              className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded border border-border bg-card px-1 font-mono text-[10px] tabular-nums"
+              style={{ left: `${x}%`, top: `${y}%` }}
+            >
+              {delta > 0 ? `+${delta}` : delta < 0 ? `−${-delta}` : "0"}
+            </span>
+          );
+        })}
+        {levels.map((level, index) => (
+          <span
+            key={level}
+            className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] text-muted-foreground"
+            style={{ left: `${group.kind === "reasoning" ? (index ? 88 : 12) : ladderX(index)}%` }}
+          >
+            {level}
+          </span>
+        ))}
+      </div>
     </div>
-  </div>;
+  );
 }
 
-export function EffortLadder({
-  models,
-  filters,
-}: {
-  models: ChartVariant[];
-  filters: Filters;
-}) {
+export function EffortLadder({ models, filters }: { models: ChartVariant[]; filters: Filters }) {
   const ladders = effortLadders(models, { ...filters, minCorrect: 0 });
   const ordered = ladders.filter((group) => group.kind === "ordered");
   const reasoning = ladders.filter((group) => group.kind === "reasoning");
@@ -459,14 +555,40 @@ export function EffortLadder({
         effort ladder
       </h2>
       <p className="mt-2 text-sm text-foreground">
-        {insight}{insight.endsWith(".") ? "" : "."}
+        {insight}
+        {insight.endsWith(".") ? "" : "."}
       </p>
       <Popover>
-        <PopoverTrigger type="button" aria-label="How to read effort ladders" className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"><Info size={14} /> How to read</PopoverTrigger>
-        <PopoverContent>Every card shares the same effort axis, with its own score scale. Labels above the dots show puzzles solved, and the numbers between them show the change. The ladder always shows every measured level. “On” uses the provider’s default.</PopoverContent>
+        <PopoverTrigger
+          type="button"
+          aria-label="How to read effort ladders"
+          className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ember-bright"
+        >
+          <Info size={14} /> How to read
+        </PopoverTrigger>
+        <PopoverContent>
+          Every card shares the same effort axis, with its own score scale. Labels above the dots
+          show puzzles solved, and the numbers between them show the change. The ladder always shows
+          every measured level. “On” uses the provider’s default.
+        </PopoverContent>
       </Popover>
-      {ordered.length > 0 && <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-2">{ordered.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div>}
-      {reasoning.length > 0 && <div className="mt-7"><h3 className="mb-3 text-sm font-medium text-foreground">Reasoning off → on</h3><div className="grid min-w-0 gap-3 lg:grid-cols-2">{reasoning.map((group) => <LadderRow key={group.variants[0].family} group={group} size={size} />)}</div></div>}
+      {ordered.length > 0 && (
+        <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-2">
+          {ordered.map((group) => (
+            <LadderRow key={group.variants[0].family} group={group} size={size} />
+          ))}
+        </div>
+      )}
+      {reasoning.length > 0 && (
+        <div className="mt-7">
+          <h3 className="mb-3 text-sm font-medium text-foreground">Reasoning off → on</h3>
+          <div className="grid min-w-0 gap-3 lg:grid-cols-2">
+            {reasoning.map((group) => (
+              <LadderRow key={group.variants[0].family} group={group} size={size} />
+            ))}
+          </div>
+        </div>
+      )}
       {!ladders.length && (
         <p className="py-8 text-sm text-muted-foreground">
           No families with comparable levels match these filters.
