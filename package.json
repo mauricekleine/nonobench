@@ -2,6 +2,9 @@
   "name": "nonobench-root",
   "private": true,
   "packageManager": "bun@1.4.3",
+  "scripts": {
+    "deploy:verify": "bun run --cwd visualizer deploy:verify"
+  },
   "devDependencies": {
     "taze": "21.3.0"
   }
