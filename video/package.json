@@ -16,26 +16,27 @@
     "remotion": "4.0.532"
   },
   "devDependencies": {
-    "@remotion/eslint-config-flat": "4.0.532",
     "@types/bun": "^1.4.2",
     "@types/react": "19.3.0",
-    "eslint": "10.11.0",
-    "prettier": "3.9.9",
-    "typescript": "npm:@typescript/typescript6@6.0.2"
+    "typescript": "7.0.2",
+    "oxlint": "~1.87.0",
+    "oxfmt": "~0.72.0",
+    "oxlint-tsgolint": "~7.0.2003"
   },
   "scripts": {
     "dev": "remotion studio",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
-    "lint": "eslint src && bun --check",
+    "lint": "oxlint --type-aware --deny-warnings",
     "render": "remotion render",
     "sync-data": "bun scripts/sync-data.ts",
     "synth-sfx": "bun scripts/synth-sfx.ts",
     "generate-sfx": "bun scripts/generate-sfx.ts",
     "compose-music": "bun scripts/compose-music.ts",
-    "master": "bun scripts/master.ts"
-  },
-  "overrides": {
-    "typescript-eslint": "8.71.0"
+    "master": "bun scripts/master.ts",
+    "lint:fix": "oxlint --type-aware --deny-warnings --fix",
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check",
+    "typecheck": "bun --check"
   }
 }

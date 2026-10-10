@@ -20,7 +20,7 @@ const encodeValue = (value: string) =>
 		.replace(/`/g, "%60")
 		.replace(/</g, "%3C")
 		.replace(/>/g, "%3E")
-		// eslint-disable-next-line no-control-regex -- escapes control characters, as nuqs does
+		// oxlint-disable-next-line no-control-regex -- escapes control characters, as nuqs does
 		.replace(/[\x00-\x1F]/g, (char) => encodeURIComponent(char));
 
 export function stringifySearch(search: Record<string, unknown>): string {
