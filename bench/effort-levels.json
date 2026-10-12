@@ -1,6 +1,6 @@
 {
   "source": "https://openrouter.ai/api/v1/models",
-  "fetchedAt": "2026-10-08T11:37:03.011Z",
+  "fetchedAt": "2026-10-12T18:28:23.739Z",
   "families": {
     "claude-opus-5.5": {
       "modelId": "anthropic/claude-opus-5.5",
@@ -393,6 +393,28 @@
       "mandatory": false,
       "supportsMaxTokens": false,
       "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    "muse-wonder": {
+      "modelId": "meta/muse-wonder",
+      "supportedEfforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low",
+        "minimal"
+      ],
+      "defaultEffort": "medium",
+      "mandatory": true,
+      "supportsMaxTokens": false,
+      "levels": [
+        "minimal",
         "low",
         "medium",
         "high",

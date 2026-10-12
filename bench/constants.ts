@@ -787,6 +787,14 @@ const configuredModels: Model[] = (
     // New release (2026-10-07): Claude Haiku 5.5, full ladder to compare with
     // Sonnet 5.5 at a twentieth of the price. Anthropic's endpoint supports structured outputs.
     reasoningModel("anthropic/claude-haiku-5.5", "claude-haiku-5.5", "low"),
+    // New release (2026-10-12): Muse Wonder, full ladder to compare with Muse
+    // Spark 1.3. Same Meta API limits as Spark, so it streams in text mode.
+    {
+      ...reasoningModel("meta/muse-wonder", "muse-wonder", "low"),
+      outputMode: "text",
+      stream: true,
+      providerTimeLimit: MUSE_TIME_LIMIT,
+    },
     // No effort control on OpenRouter: reasoning on at the provider default.
     { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
     defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),

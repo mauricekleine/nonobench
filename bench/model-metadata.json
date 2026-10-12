@@ -84,6 +84,11 @@
     "openWeights": false,
     "addedAt": "2026-09-02T19:45:59.000Z"
   },
+  "meta/muse-wonder": {
+    "displayName": "Muse Wonder",
+    "openWeights": false,
+    "addedAt": "2026-10-12T12:25:45.000Z"
+  },
   "minimax/minimax-m2.1": {
     "displayName": "MiniMax M2.1",
     "openWeights": true,
