@@ -19,6 +19,7 @@ const modelIds = [
   "z-ai/glm-5.3-flash",
   "moonshotai/kimi-k3",
   "meta/muse-spark-1.3",
+  "meta/muse-wonder",
   "mistralai/mistral-medium-3-5",
   "qwen/qwen3.8-flash",
   "xiaomi/mimo-v2.6-pro",

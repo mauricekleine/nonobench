@@ -990,6 +990,22 @@
         }
       ]
     },
+    "meta/muse-wonder": {
+      "pins": [
+        "meta"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Meta",
+          "tag": "meta",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
     "minimax/minimax-m2.1": {
       "pins": [
         "minimax"
