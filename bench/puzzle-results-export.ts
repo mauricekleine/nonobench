@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { parseClues } from "../visualizer/lib/nonogram";
-import { getPuzzleId, openReadDb } from "./db";
+import { getPuzzleId, openExportDb } from "./db";
 import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { solveByLines } from "./line-solver";
 import { MULTIPLE_SOLUTION_PUZZLE_NUMBERS } from "./puzzles-check";
@@ -93,7 +93,7 @@ type PuzzleResults = {
 
 /** Write the model-by-puzzle view consumed by the puzzle explorer. */
 export async function writePuzzleResultsExport(): Promise<void> {
-  const db = openReadDb();
+  const db = openExportDb();
   if (!db) throw new Error("Database does not exist");
 
   try {

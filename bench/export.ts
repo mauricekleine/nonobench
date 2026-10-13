@@ -1,6 +1,6 @@
 import { PUZZLES } from "../visualizer/components/puzzles";
 import { MODELS, localRegistryEntryFor, type Model } from "./constants";
-import { getPuzzleId, openReadDb } from "./db";
+import { getPuzzleId, openExportDb } from "./db";
 import { claimsNoSolution, extractOutputSolution, gradeOutput, structuredRows } from "./grade";
 import { checkClues } from "../visualizer/lib/nonogram";
 import { CORE_SIZES, EXTENDED_SIZES, sortSizes } from "./sizes";
@@ -9,7 +9,7 @@ import familyDisplayNames from "./family-display-names.json";
 import metadataOverrides from "./model-metadata-overrides.json";
 import { PROVIDERS } from "../visualizer/lib/providers";
 
-const db = openReadDb();
+const db = openExportDb();
 if (!db) throw new Error("Database does not exist");
 
 // Correctness is re-derived from each stored output (any grid satisfying all

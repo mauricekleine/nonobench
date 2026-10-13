@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import type { Puzzle } from "../visualizer/components/puzzles";
+import hiddenFamilies from "./hidden-families.json";
 
 export const dbPath =
   process.env.NONOBENCH_DB ?? fileURLToPath(new URL("./results.db", import.meta.url));
@@ -10,6 +11,22 @@ export const dbPath =
 // Reading never initializes or migrates the database.
 export function openReadDb(): Database | null {
   return existsSync(dbPath) ? new Database(dbPath, { readonly: true, create: false }) : null;
+}
+
+// Exports read through this handle. A temporary `runs` view shadows the table
+// and leaves out the families in hidden-families.json, so their runs stay in
+// the database but stay off the site until they can be measured reliably.
+export function openExportDb(): Database | null {
+  const db = openReadDb();
+  if (!db) return null;
+  const families = JSON.stringify(Object.keys(hiddenFamilies));
+  db.run(
+    `CREATE TEMP VIEW runs AS SELECT * FROM main.runs WHERE NOT EXISTS (
+      SELECT 1 FROM json_each('${families.replaceAll("'", "''")}') AS family
+      WHERE model = family.value OR model LIKE family.value || '-%'
+    )`,
+  );
+  return db;
 }
 
 let writeDb: Database | undefined;

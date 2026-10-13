@@ -1,0 +1,4 @@
+{
+  "muse-spark-1.3": "Meta's endpoint drops streams after 300s without data, so long puzzles time out (OpenRouterTeam/ai-sdk-provider#579).",
+  "muse-wonder": "Meta's endpoint drops streams after 300s without data, so long puzzles time out (OpenRouterTeam/ai-sdk-provider#579)."
+}
