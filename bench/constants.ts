@@ -97,6 +97,10 @@ export type Model = {
   // A provider-side cap on request duration; runs cut off there count as
   // unsolved attempts (status "timeout") rather than being retried.
   providerTimeLimit?: { seconds: number; note: string };
+  // Keeps the zero-reasoning breaker in bench.ts from stopping this variant,
+  // for an effort level the model answers without thinking. Not inherited by
+  // the other levels of its ladder.
+  allowZeroReasoning?: boolean;
   // True for a model from the user's own OpenAI-compatible server, see
   // localModels below. Such a model has no OpenRouter provider pin, no cost,
   // and no endpoint availability to check.
@@ -795,6 +799,14 @@ const configuredModels: Model[] = (
       stream: true,
       providerTimeLimit: MUSE_TIME_LIMIT,
     },
+    // New release (2026-10-13): Gemini 4 Argon, Google's new flagship, full
+    // ladder to compare with GPT-6.1 Sol and Claude Sonnet 5.5 at the same price.
+    // AI Studio's endpoint supports structured outputs. At "low" it answers
+    // without thinking (0 reasoning tokens, also in text mode); recorded as is.
+    {
+      ...reasoningModel("google/gemini-4-argon", "gemini-4-argon", "low"),
+      allowZeroReasoning: true,
+    },
     // No effort control on OpenRouter: reasoning on at the provider default.
     { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
     defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),
@@ -839,6 +851,7 @@ for (const [family, evidence] of Object.entries(effortFamilies)) {
       name,
       effort,
       reasoning: true,
+      allowZeroReasoning: false,
     });
     configuredNames.add(name);
   }

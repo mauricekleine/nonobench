@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-13T04:23:28.675Z",
+  "timestamp": "2026-10-13T17:26:36.423Z",
   "puzzles": [
     {
       "id": "046ea1e67d21fb59",
@@ -9,9 +9,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 106,
-      "solveRate": 0.8217054263565892,
+      "attempts": 132,
+      "solved": 109,
+      "solveRate": 0.8257575757575758,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -576,6 +576,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302005-aP5QhDmvXz57T9gA2r3W"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1101011111010110110100111",
+          "tokens": 1812,
+          "cost": 0.019348,
+          "durationMs": 17574.753423000002,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-C0f01azXDJNXaybWiDXo"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "1101011111010110110100111",
+          "tokens": 46,
+          "cost": 0.001688,
+          "durationMs": 2787.9131580000003,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-TP7OsoU8rad3lRKhU8l2"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "1101011111010110110100111",
+          "tokens": 475,
+          "cost": 0.005978,
+          "durationMs": 5816.911522,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-tqSgOpRAkQEGy29wzrQ4"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -1715,9 +1754,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 92,
-      "solveRate": 0.7131782945736435,
+      "attempts": 132,
+      "solved": 95,
+      "solveRate": 0.7196969696969697,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -2283,6 +2322,45 @@
           "providerName": "Google",
           "quantization": null,
           "generationId": "gen-1790302005-im0YoCYGfw7MxHSn5YFx"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0000100011111101100100011",
+          "tokens": 1207,
+          "cost": 0.01329,
+          "durationMs": 11571.646656,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-llI2zKe2RVKKFD5LmHhA"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "0000100011111101100100011",
+          "tokens": 46,
+          "cost": 0.00168,
+          "durationMs": 2940.862951,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-yw5jfY3AhJPNHsX7gwkl"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "0000100011111101100100011",
+          "tokens": 362,
+          "cost": 0.00484,
+          "durationMs": 6598.380795,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-yYyCGZNHfraH6H3LM7BT"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -3433,9 +3511,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 101,
-      "solveRate": 0.7829457364341085,
+      "attempts": 132,
+      "solved": 103,
+      "solveRate": 0.7803030303030303,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -4001,6 +4079,45 @@
           "providerName": "Google",
           "quantization": null,
           "generationId": "gen-1790302005-oatWqGuuEcmQnqdBFZBK"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1111110111110100110000100",
+          "tokens": 1086,
+          "cost": 0.012084,
+          "durationMs": 10941.448688,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-VfmRnOxQvnedkJX4CI9O"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "1111110111110100111000100",
+          "tokens": 46,
+          "cost": 0.001684,
+          "durationMs": 2730.859727,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-dl1e0MUjnSsnfAABWtgy"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "1111110111110100110000100",
+          "tokens": 507,
+          "cost": 0.006294,
+          "durationMs": 5737.402023,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-URctHx6615uI3jxR973O"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -5147,9 +5264,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 106,
-      "solveRate": 0.8217054263565892,
+      "attempts": 132,
+      "solved": 109,
+      "solveRate": 0.8257575757575758,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -5714,6 +5831,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302005-648uWw0Mp2QjhoYK0NHg"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0100101010101110101001100",
+          "tokens": 1625,
+          "cost": 0.017486,
+          "durationMs": 14298.779492000001,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-5ra5gf1WtbBDWxImIdV1"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "0100101010101110101001100",
+          "tokens": 46,
+          "cost": 0.001696,
+          "durationMs": 2625.3704369999996,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909829-NQpDQZMLzITMWa5Qhb1x"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "0100101010101110101001100",
+          "tokens": 702,
+          "cost": 0.008256,
+          "durationMs": 8677.753247999999,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-MRdJgTQ0rHkiMW4sjKnX"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -6848,9 +7004,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 105,
-      "solveRate": 0.813953488372093,
+      "attempts": 132,
+      "solved": 108,
+      "solveRate": 0.8181818181818182,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -7417,6 +7573,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302005-gkITVTER5sqMupGP07af"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1111110000011011010101000",
+          "tokens": 1182,
+          "cost": 0.01306,
+          "durationMs": 12074.818177000001,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-IDlXCiWKK96V8W0uxl7f"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "1111110000011011010101000",
+          "tokens": 46,
+          "cost": 0.0017,
+          "durationMs": 2610.8130029999998,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-eOtw2wRaJ2GknSFKrB8q"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "1111110000011011010101000",
+          "tokens": 372,
+          "cost": 0.00496,
+          "durationMs": 4801.208593,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-aTlvPOaAt5tgZ5KRP0Gv"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -8559,9 +8754,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 111,
-      "solveRate": 0.8604651162790697,
+      "attempts": 132,
+      "solved": 114,
+      "solveRate": 0.8636363636363636,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -9125,6 +9320,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302015-KZkY7sxkaHsXtnH8vIpz"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0110110111000110010011101",
+          "tokens": 1201,
+          "cost": 0.013246,
+          "durationMs": 11174.760909999999,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-BBw27FUPXcmu8pjok8mL"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "0110110111000110010011101",
+          "tokens": 46,
+          "cost": 0.001696,
+          "durationMs": 2997.930148,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-p5wV4O0KDGKKy3sFrgX3"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "0110110111000110010011101",
+          "tokens": 450,
+          "cost": 0.005736,
+          "durationMs": 5955.376597,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-vV4sWmYvBc5tWCtx6vAx"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -10258,9 +10492,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 106,
-      "solveRate": 0.8217054263565892,
+      "attempts": 132,
+      "solved": 109,
+      "solveRate": 0.8257575757575758,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -10822,6 +11056,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302016-g1YtW1wONqWQTmHUJYEl"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0110111001100101111100010",
+          "tokens": 2605,
+          "cost": 0.027282,
+          "durationMs": 22036.936953,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-HZxABIyU1PMNGAfFuiXZ"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "0110111001100101111100010",
+          "tokens": 46,
+          "cost": 0.001692,
+          "durationMs": 3060.5745779999997,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-nY31V0pexf0WTYLGMvUf"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "0110111001100101111100010",
+          "tokens": 894,
+          "cost": 0.010172,
+          "durationMs": 9895.179796999999,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-bJuvcHac41YHWF4eaIqb"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -11958,9 +12231,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 104,
-      "solveRate": 0.8062015503875969,
+      "attempts": 132,
+      "solved": 106,
+      "solveRate": 0.803030303030303,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -12523,6 +12796,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302020-tP1NPLhcvt1nyod99YJC"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0001110010100000010111100",
+          "tokens": 2692,
+          "cost": 0.028144,
+          "durationMs": 25065.150289,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-5pLJ1PKVXHWpPMvEXLfq"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "1100010001000101010000111",
+          "tokens": 46,
+          "cost": 0.001684,
+          "durationMs": 2902.362002,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-jtgn2zx8MDQEWiVe10Zu"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "0001110010100000010111100",
+          "tokens": 1089,
+          "cost": 0.012114,
+          "durationMs": 11282.896,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-fKzKftW2Agx0k5r3xdFz"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -13663,9 +13975,9 @@
       "height": 5,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 107,
-      "solveRate": 0.8294573643410853,
+      "attempts": 132,
+      "solved": 110,
+      "solveRate": 0.8333333333333334,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -14231,6 +14543,45 @@
           "providerName": "Google",
           "quantization": null,
           "generationId": "gen-1790302021-BBW91e1ZnzVrg7z9HeJe"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0101000001000101110010000",
+          "tokens": 2839,
+          "cost": 0.02961,
+          "durationMs": 28243.233824,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-wzGSvMu7M7TE1gxcahjR"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "0101010000100000111000001",
+          "tokens": 46,
+          "cost": 0.00168,
+          "durationMs": 2604.49375,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-CtRz59fBiOBj9rdNSTlY"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "0101010000100000111000001",
+          "tokens": 480,
+          "cost": 0.00602,
+          "durationMs": 7609.831606,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-fm2JvXuptA7DiDCVtUZW"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -15367,9 +15718,9 @@
       "height": 5,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 105,
-      "solveRate": 0.813953488372093,
+      "attempts": 132,
+      "solved": 108,
+      "solveRate": 0.8181818181818182,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -15932,6 +16283,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302021-ao8vESbLGiKyKRH7rV09"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0011111111001000101111001",
+          "tokens": 1172,
+          "cost": 0.012952,
+          "durationMs": 11091.409981,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-xVDhnGLYt7m6ASumylV5"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "0011111111001000101111001",
+          "tokens": 46,
+          "cost": 0.001692,
+          "durationMs": 2943.01733,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-C8GLtnMickzujrDVhQCK"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "0011111111001000101111001",
+          "tokens": 532,
+          "cost": 0.006552,
+          "durationMs": 6481.534027000001,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909828-LwI1ACZjaiQde7iNlhND"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -17070,9 +17460,9 @@
       "height": 10,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 54,
-      "solveRate": 0.4186046511627907,
+      "attempts": 132,
+      "solved": 55,
+      "solveRate": 0.4166666666666667,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -17657,6 +18047,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302043-HtokITKxSYODKqhRdP4c"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0010011111011110000111000100111100111000111011011100001111010100111100001010110101000110111001100111",
+          "tokens": 12479,
+          "cost": 0.126308,
+          "durationMs": 102788.109496,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-CPEq3VD4nI1OQ10jC3HO"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "0010111110011110000111000100111100110001111011011101001111000001011110010011010110000011110010110111",
+          "tokens": 121,
+          "cost": 0.002728,
+          "durationMs": 2989.680806,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-2BsPpYnm6D7jGZaMXZH5"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "0100111111111100000111000010111100111000001110110100001111010100011110000101101110100011010000110111",
+          "tokens": 121,
+          "cost": 0.002728,
+          "durationMs": 3458.6812709999995,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909839-PM9bUS3a7dMi0G7XxBFf"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -18841,9 +19270,9 @@
       "height": 10,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 56,
-      "solveRate": 0.43410852713178294,
+      "attempts": 132,
+      "solved": 57,
+      "solveRate": 0.4318181818181818,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -19422,6 +19851,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302043-0grqnRXhntNZYPm2Pmcw"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1110011011110111110000101100110011100000000110100000100101000010100010000011000100101101101111001011",
+          "tokens": 12151,
+          "cost": 0.123028,
+          "durationMs": 98138.132674,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-0FWqB0uskNFpxTFsyHbi"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "1110110011110111110000101101100011100000000001100100101000100010101000000011000100101100111111010011",
+          "tokens": 121,
+          "cost": 0.002728,
+          "durationMs": 2809.217224,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-KBJCg714nRKBFWEBRuiJ"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "1110110011110011111000101100010011100000000011001000100010010010010100001101000000101100111111010011",
+          "tokens": 121,
+          "cost": 0.002728,
+          "durationMs": 2360.068341,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909840-VkorSDLw6TBVH3EIvlml"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -20611,9 +21079,9 @@
       "height": 10,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 61,
-      "solveRate": 0.4728682170542636,
+      "attempts": 132,
+      "solved": 62,
+      "solveRate": 0.4696969696969697,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -21195,6 +21663,45 @@
           "providerName": "Google",
           "quantization": null,
           "generationId": "gen-1790302043-FZGZDnkFOf5qvZeAtGP2"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0010111010100001110001111111000011001000101111101110110001010010101010011010010001101101101011011011",
+          "tokens": 7429,
+          "cost": 0.075816,
+          "durationMs": 63522.49507800001,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-k1RGRsKAnX2x0pPHPacB"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "1011101000000111100001111111000011001010101111101110110001010010101010011010100001101101101011110110",
+          "tokens": 121,
+          "cost": 0.002736,
+          "durationMs": 2810.2052049999998,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-Rr3qr6TSnl11D0RZB3pT"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "1011100010000100111001111111000011001000101111101110110000110110101000011010000000101101101011110110",
+          "tokens": 121,
+          "cost": 0.002736,
+          "durationMs": 2578.3531569999996,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909839-EQu9WIexkvmEGdzQMjJI"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -22375,9 +22882,9 @@
       "height": 10,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 60,
-      "solveRate": 0.46511627906976744,
+      "attempts": 132,
+      "solved": 62,
+      "solveRate": 0.4696969696969697,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -22956,6 +23463,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302043-1GbQUZMLDsc5fjfkCpDW"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1000000100011110110111111100011001111101101100000001011110011111011101111111100001110001101101101110",
+          "tokens": 4674,
+          "cost": 0.048242,
+          "durationMs": 39127.475781,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-yZPvOkblHSYze0ZRKmuS"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "1001000100011110110111111100011001111101100110000001010111111111011101111111100001110001111101100111",
+          "tokens": 121,
+          "cost": 0.002712,
+          "durationMs": 2928.5676289999997,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-xFAfhkLODgA0ibQb88gm"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "1000000100011110110111111100011001111101101100000001011110011111011101111111100001110001101101101110",
+          "tokens": 1981,
+          "cost": 0.021312,
+          "durationMs": 17863.647227,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909839-alhFCvyMfNfI8maOKxPn"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -24143,9 +24689,9 @@
       "height": 10,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 53,
-      "solveRate": 0.4108527131782946,
+      "attempts": 132,
+      "solved": 55,
+      "solveRate": 0.4166666666666667,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -24733,6 +25279,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302043-V3B6uoMm7d2InFvVUOJY"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1111000110001000011111100011110111101100000100000111110110101101110000000111100101010010010111110100",
+          "tokens": 7731,
+          "cost": 0.078808,
+          "durationMs": 61904.079912999994,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-7Dkv40V82IyD27KdHkNK"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "1111011000001000111001110111101111000110000100010011110110100110001110000111100110010000111111100000",
+          "tokens": 121,
+          "cost": 0.002708,
+          "durationMs": 2989.678552,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-FgDpfjDCh5aGrbnpJs3k"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "1111000110001000011111100011110111101100000100000111110110101101110000000111100101010010010111110100",
+          "tokens": 4614,
+          "cost": 0.047638,
+          "durationMs": 34910.071235,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909839-O5llkrwImTv4mw2DzlV5"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -25915,9 +26500,9 @@
       "height": 10,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 65,
-      "solveRate": 0.5038759689922481,
+      "attempts": 132,
+      "solved": 66,
+      "solveRate": 0.5,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -26490,6 +27075,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302057-8Hw8FlxZidndWaS9UFGF"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0000000111000011111100001110110000110111100011011001111111110001111111100111111001000011101111111111",
+          "tokens": 4171,
+          "cost": 0.04316,
+          "durationMs": 33613.458931,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-nzzzepBVgl4ATqHJRTWy"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "0000000111000011111100001100111000110111000011001111111111100001111111100011111101000001111111111111",
+          "tokens": 121,
+          "cost": 0.00266,
+          "durationMs": 2858.460892,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-5m4d4z3Ltn54iAZpjIAX"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "0000001110000011111100001110110000110111100011001101111111110001111111110111111001000011101111111111",
+          "tokens": 121,
+          "cost": 0.00266,
+          "durationMs": 2831.6120339999998,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909840-q86dqvPRSnpWG8Y2fj8S"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -27671,9 +28295,9 @@
       "height": 10,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 62,
-      "solveRate": 0.4806201550387597,
+      "attempts": 132,
+      "solved": 63,
+      "solveRate": 0.4772727272727273,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -28244,6 +28868,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302098-hbMRgd61gDCYkOYXKsah"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0101000001010010001001011111100111101000111111100011111100101111111110111110100111111011101000000110",
+          "tokens": 5143,
+          "cost": 0.052884,
+          "durationMs": 41843.01429199999,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909857-6qdNcj93nBsWzAiBhAZH"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "0101000010010010101001001111110111101000111111100011111100101111111110111110100111111011100001100100",
+          "tokens": 121,
+          "cost": 0.002664,
+          "durationMs": 2374.7073170000003,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-Tx6aOI9iqlKSKaazUc6p"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "0101000010000000101001001111111111101000111111100011111100101111111110111110100101111011100101100001",
+          "tokens": 121,
+          "cost": 0.002664,
+          "durationMs": 2513.239409,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909840-e4Gwr1Prbhy3S9JeTzjG"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -29424,9 +30087,9 @@
       "height": 10,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 64,
-      "solveRate": 0.49612403100775193,
+      "attempts": 132,
+      "solved": 65,
+      "solveRate": 0.49242424242424243,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -30008,6 +30671,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302123-tzbdbejCTPUAWbBj7dpX"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0100001110011001011110111011010001110111000111110100011111110001111111011111111111111111111000111111",
+          "tokens": 4294,
+          "cost": 0.04439,
+          "durationMs": 35503.686376,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909857-pEQG5p5dniYjdriNQzBs"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "0000010111011010011110111011010001110111000111110100011111110001111111011111111111111111111000111111",
+          "tokens": 121,
+          "cost": 0.00266,
+          "durationMs": 2751.215768,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-Xn5ArRoIDdslOdVNtc2N"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "0000010111011000011111101011110001110111000111110100011111110001111111111111111011111111110100111111",
+          "tokens": 121,
+          "cost": 0.00266,
+          "durationMs": 2634.217981,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909840-AYjwaqHNYEDcyhtsFCyS"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -31197,9 +31899,9 @@
       "height": 10,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 50,
-      "solveRate": 0.3875968992248062,
+      "attempts": 132,
+      "solved": 51,
+      "solveRate": 0.38636363636363635,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -31766,6 +32468,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302133-O4FXlqU25oAxVsPe4vwY"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0110010000001101001110010010000101111011001000001001100000110100111001010010100001101010110001111100",
+          "tokens": 14879,
+          "cost": 0.150292,
+          "durationMs": 117019.33413199999,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-bJOpPHpCkcnkNSCv51aj"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "0011000001011001001100010100000101111011100000001001001101100100111000011010100101001010110011111000",
+          "tokens": 121,
+          "cost": 0.002712,
+          "durationMs": 3050.176155,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-tWoCCxxVIl6Y0baWHGOU"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "0011000001010010101100101010000101111011001000001001100011000100111010010010100011001010110111110000",
+          "tokens": 121,
+          "cost": 0.002712,
+          "durationMs": 2189.6269730000004,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909840-1fxDwVd6Xdt7SdME91pk"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -32960,9 +33701,9 @@
       "height": 10,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 57,
-      "solveRate": 0.4418604651162791,
+      "attempts": 132,
+      "solved": 58,
+      "solveRate": 0.4393939393939394,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -33542,6 +34283,45 @@
           "providerName": "Google",
           "quantization": null,
           "generationId": "gen-1790302140-XIrw2Ufc4Q5jtPJqO0gm"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0011000010001111110101111111111111110111111111011101011111110110110100011111110100010001010000110110",
+          "tokens": 3823,
+          "cost": 0.039688,
+          "durationMs": 31109.833646000003,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909856-o4mzdOxIl0Xaf7BoFPz5"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "0001100100011111101001111111111111110111111111011101011111110110011001001111111000010001100011110011",
+          "tokens": 121,
+          "cost": 0.002668,
+          "durationMs": 3511.906486,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-UzbHsXXUsX71PQEQ28ed"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "0001100100011111101001111111111111110111111111011101011111110011000110001111111100001001010011011000",
+          "tokens": 121,
+          "cost": 0.002668,
+          "durationMs": 2674.2692770000012,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909840-FnzdRBPzUEYCwmELv6rP"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -34732,9 +35512,9 @@
       "height": 15,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 52,
-      "solveRate": 0.40310077519379844,
+      "attempts": 132,
+      "solved": 53,
+      "solveRate": 0.4015151515151515,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -35319,6 +36099,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302252-9YQhScwMeuQIlzjzQw5I"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "011111000000000111111111111101100011111111111111111111111110111111100000110111111110000000011111110000000110111111000000110110000000000110111100110000111111101111100111111111111111011111111111111011111111111111001111111111101",
+          "tokens": 7185,
+          "cost": 0.073532,
+          "durationMs": 50182.256743000005,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-gHbcMxfuFTKFitPMIuxs"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "111110000000000111111111111101100111111111110111111111111110111111100000110011111111000000011111110000000011011111100000000001100110000001101111011000111111101111100111111111111111111111111111110111111111111110111111111110001",
+          "tokens": 246,
+          "cost": 0.004142,
+          "durationMs": 3040.7774489999997,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-EPxRUcGxGOMgNHgu2h5x"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "000111110000000111111111111101100011111111111111111111111110111111100000110011111111000000011111110000000000011011111100000011000011000110011110001100111111100111110111111111111111111111111111110111111111111110111111111110001",
+          "tokens": 246,
+          "cost": 0.004142,
+          "durationMs": 3662.8489490000065,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-zhuYQNwTnhMUd3Th4WVF"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -36532,9 +37351,9 @@
       "height": 15,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 33,
-      "solveRate": 0.2558139534883721,
+      "attempts": 132,
+      "solved": 34,
+      "solveRate": 0.25757575757575757,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -37118,6 +37937,47 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302252-MWGRBoviN72tj1gDksLe"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "100000000000010011110001000000011110111100001010010001111000000000000111110000000011101110000010111111110000011111101010000101101101110000101111001110001111111001110001111111001100000100110001010100101110101110010011111110001",
+          "tokens": 24018,
+          "cost": 0.241928,
+          "durationMs": 152219.88816699997,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-xBwK0PkukVMqnl3JT3Ae"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 226,
+          "tokens": 247,
+          "cost": 0.004218,
+          "durationMs": 3987.162064,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-QBL1lYmvUwRxbcAEnrTL"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "000010001000000000111101000000001111011110010001010010001111000000000011111000000111001110000010111111110000111111001010000101101100111000100111100111000111111101110000111111100110010000110100001010100011101111100111111100100",
+          "tokens": 246,
+          "cost": 0.004208,
+          "durationMs": 3700.6837220000016,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-dpGDUmAxJc9mJvXiM64U"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -38322,9 +39182,9 @@
       "height": 15,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
+      "attempts": 132,
       "solved": 5,
-      "solveRate": 0.03875968992248062,
+      "solveRate": 0.03787878787878788,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -38927,6 +39787,46 @@
           "providerName": "Google",
           "quantization": null,
           "generationId": "gen-1790302252-XN96VIjNBRkMEy1NaYoK"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.657246,
+          "durationMs": 561415.965329,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-Rz0oAeKvCkcscToBBql0"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "000000100000010011111101100000010000101110010010011010001010010011010000010010000100110010110001010001000100010101100010010100100011011000111001000011011101110010010000101000100010001110101000100101010101001101110010001011000",
+          "tokens": 246,
+          "cost": 0.004346,
+          "durationMs": 3849.008162,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-ULEZbCxcTDc1qV12BNJ4"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "000000101000000011111101100000010000101110010010110101001010010011000000101010000110000010110010010000010100100010110010010010011001100001110000010101000111011100101100101000100010011101010010000100101001011010011001001000011",
+          "tokens": 246,
+          "cost": 0.004346,
+          "durationMs": 3979.6749439999985,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-bDBLS7ideLYByr324mjX"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -40143,9 +41043,9 @@
       "height": 15,
       "multipleSolutions": false,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 31,
-      "solveRate": 0.24031007751937986,
+      "attempts": 132,
+      "solved": 32,
+      "solveRate": 0.24242424242424243,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -40731,6 +41631,45 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302252-FH9EyhYuWTGf6dPOcWNY"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "000000010000000000011111110000000111101111000001111000001100011001001100110011011111110110011001111010110110001011110011011001011110110011001011110110011001001100110001100000111100000111101111000000011111110000000000010000000",
+          "tokens": 5822,
+          "cost": 0.059944,
+          "durationMs": 45703.249993000005,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-M8VgD97m5Yjq2WOG4wMC"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": "000000010000000000011111110000001111000111100001111000001100011001001100011011011111110011011011110010011110001011110011011001011110011011001011110011011001001100011001100000111100001111000111100000011111110000000000010000000",
+          "tokens": 245,
+          "cost": 0.004174,
+          "durationMs": 3224.276903,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-SDzoyRYRRvdC8JyMAw8L"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "000000010000000000011111110000001111000111100001111000001100011001001100110011011111110110011011110010110110001011110011011001011110110011001011110110011001001100110001100000111100001111000111100000011111110000000000010000000",
+          "tokens": 246,
+          "cost": 0.004184,
+          "durationMs": 3527.0475430000006,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-Z9KYKOdsEHWFinyAQUvy"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -41936,9 +42875,9 @@
       "height": 15,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
+      "attempts": 132,
       "solved": 6,
-      "solveRate": 0.046511627906976744,
+      "solveRate": 0.045454545454545456,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -42545,6 +43484,50 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302252-Fh3nKCIkqnlhHnCyEguB"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.657198,
+          "durationMs": 537767.357383,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910543-Zgu9B5ftikGG87wxOKV1"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 224,
+          "tokens": 245,
+          "cost": 0.004288,
+          "durationMs": 3226.1318690000003,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-saf4DJNmS0fMPOhexL5y"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 226,
+          "tokens": 247,
+          "cost": 0.004308,
+          "durationMs": 3101.002051999996,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-xxwRkAPhnK5nvcUR29ZC"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -43762,9 +44745,9 @@
       "height": 15,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 58,
-      "solveRate": 0.4496124031007752,
+      "attempts": 132,
+      "solved": 60,
+      "solveRate": 0.45454545454545453,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -44349,6 +45332,47 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302263-vbj31HF7vpQ2sq9ZFtpJ"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "111111110111111111111110011111111111100011111111111100001111111111110000111111100001000111111000000000111111101100000011110001110000011110001110000011111000000000011111000000000111111100000000111111110000000111111111000011111",
+          "tokens": 4073,
+          "cost": 0.04242,
+          "durationMs": 31327.367819000006,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-DMGg4ZSOdRmPd8WQb1Ds"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "111111110111111111111110011111111111100011111111111100001111111111110000111111100001000111111000000000111111101100000011110001110000011110001110000011111000000000011111000000000111111100000000111111110000000111111111000011111",
+          "tokens": 246,
+          "cost": 0.00415,
+          "durationMs": 3303.6612099999998,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-7K4omhVnTjubU21OuD9V"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 226,
+          "tokens": 247,
+          "cost": 0.00416,
+          "durationMs": 2814.210248999996,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-BP2MLk1Zx3TLisbDqKsU"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -45561,9 +46585,9 @@
       "height": 15,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
-      "solved": 46,
-      "solveRate": 0.35658914728682173,
+      "attempts": 132,
+      "solved": 47,
+      "solveRate": 0.3560606060606061,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -46150,6 +47174,49 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302266-msCR4gDLIxxdwfCVwMzR"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "011111111110000011111111111000011111111111100011111111111110010000000000010100000000000000010000000000000010000000001100011111111111110001111111111110001110000000011001100000011011001110001111111001111111110000001111000000000",
+          "tokens": 9132,
+          "cost": 0.093002,
+          "durationMs": 79771.89553500002,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-KpUCiCdFOLDqPSxY9zrM"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 226,
+          "tokens": 247,
+          "cost": 0.004152,
+          "durationMs": 3315.1998580000004,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-cn7hELBQKZVBKILanWGB"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 226,
+          "tokens": 247,
+          "cost": 0.004152,
+          "durationMs": 3573.8774249999988,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-84oDMeMFfjKt9HYGiX4z"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -47365,9 +48432,9 @@
       "height": 15,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 23,
-      "solveRate": 0.17829457364341086,
+      "attempts": 132,
+      "solved": 24,
+      "solveRate": 0.18181818181818182,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -48004,6 +49071,49 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302273-susOxfnM1fO8mERinR3R"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 224,
+          "tokens": 3076,
+          "cost": 0.032422,
+          "durationMs": 25797.740238,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-Y8XVWqQhj1PrAXARSlmS"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 224,
+          "tokens": 244,
+          "cost": 0.004102,
+          "durationMs": 3117.5908369999997,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-yMqbgEbNIDrTgWKg1Gtu"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": true,
+          "answer": "111111111111111111111111111111111111111111111111000010000111110000000000011110000000000011110000000000011110000000000011111000000000111111100000001111111110000011111111111101111111111111111111111111111111111111111111111111111",
+          "tokens": 246,
+          "cost": 0.004122,
+          "durationMs": 3005.628958000001,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-C8ylglbaMTY6tKlvi8t1"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -49249,9 +50359,9 @@
       "height": 15,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 129,
-      "solved": 40,
-      "solveRate": 0.31007751937984496,
+      "attempts": 132,
+      "solved": 42,
+      "solveRate": 0.3181818181818182,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -49855,6 +50965,47 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302291-YPJrXMTC24W8cGchcT8b"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "001111111111111001110000000111001110000000111001110000001111001110000000111001110000000111001110000000111001111111111111001111111111111011111111111111011111111111111111111111111111111111111111111111111111111111000000011111111",
+          "tokens": 2574,
+          "cost": 0.027382,
+          "durationMs": 20261.344347000006,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-00aKV0Xkdm8x20F0u83w"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": true,
+          "answer": "001111111111111001110000000111001110000000111001110000001111001110000000111001110000000111001110000000111001111111111111001111111111111011111111111111011111111111111111111111111111111111111111111111111111111111000000011111111",
+          "tokens": 246,
+          "cost": 0.004102,
+          "durationMs": 2842.7481199999997,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-5LxoO5BimvzGmZCPmlig"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 224,
+          "tokens": 1295,
+          "cost": 0.014592,
+          "durationMs": 9968.814837000005,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-fKBfCnKxmDnYs71ySK53"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -51102,9 +52253,9 @@
       "height": 15,
       "multipleSolutions": true,
       "lineSolvable": false,
-      "attempts": 129,
+      "attempts": 132,
       "solved": 6,
-      "solveRate": 0.046511627906976744,
+      "solveRate": 0.045454545454545456,
       "runs": [
         {
           "model": "claude-4.5-opus-high",
@@ -51705,6 +52856,48 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790302295-Ads5ZLv4vhz71XdlR396"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.657126,
+          "durationMs": 553683.6792220001,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909974-53b9zeZ8BMv3TvrF3J2H"
+        },
+        {
+          "model": "gemini-4-argon-low",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "wrong-size",
+          "answerCells": 223,
+          "tokens": 244,
+          "cost": 0.004206,
+          "durationMs": 3261.5900749999996,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791910547-Z9IolGsUuUjYjaqiLYth"
+        },
+        {
+          "model": "gemini-4-argon-medium",
+          "status": "success",
+          "correct": false,
+          "answer": "011100000001110100010001000011000001111111000001110000011100000011000000010011000000000011001100000000001000000000000001000110000000011000001100000110000001100011000000011000010000001100001100000110100101001110100010100100011",
+          "tokens": 246,
+          "cost": 0.004226,
+          "durationMs": 3571.673673999998,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791909874-Ghn9FwrpliJZiD8GHxxi"
         },
         {
           "model": "glm-4.7-non-reasoning",
@@ -52928,9 +54121,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 15,
-      "solved": 4,
-      "solveRate": 0.26666666666666666,
+      "attempts": 16,
+      "solved": 5,
+      "solveRate": 0.3125,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -53011,6 +54204,19 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373445-qhCoj89yFOOwDvPnWNGe"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "0100110101111111100110011110101111100100011011111110001111100111110011100101101010111111111000001101101111000111010101010001111000000110000111110010111110111010101111110011011110010110010001001101111001011100010010011110011001110111011011000011011000111110010101111100111000010111001111000001111100011111001111101111001101011011110101110011000111110000110101010010001111111000111111101110001110111100",
+          "tokens": 39321,
+          "cost": 0.395642,
+          "durationMs": 254249.01917800002,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-V1x76q30RmVj9fnmC4mw"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -53146,9 +54352,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 14,
-      "solved": 3,
-      "solveRate": 0.21428571428571427,
+      "attempts": 15,
+      "solved": 4,
+      "solveRate": 0.26666666666666666,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -53230,6 +54436,19 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373445-QqOKV6g8c8PR30K12pQY"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1000001111001100001000011100111111100000011100010111111001001000010001000001010001011011011101000111010001111111111001001010001111010000010110111110110111010011000011010111001110110011110110011010001110001101110101001101000110010011010111001001111001110000000011101111010001110010101101011101111010110010101010101100000010111101001110110101110110111111010010001001000010001101100000011111111011011100",
+          "tokens": 60265,
+          "cost": 0.605112,
+          "durationMs": 478150.134295,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-Iyi4tVmdjXji3FHnbLsL"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -53351,9 +54570,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 15,
+      "attempts": 16,
       "solved": 5,
-      "solveRate": 0.3333333333333333,
+      "solveRate": 0.3125,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -53434,6 +54653,20 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373445-a1yD9fjOxovtUtzupR0k"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.657842,
+          "durationMs": 527653.1784430001,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-ebtm67CNXSYwFluiBfd0"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -53570,9 +54803,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 15,
-      "solved": 3,
-      "solveRate": 0.2,
+      "attempts": 16,
+      "solved": 4,
+      "solveRate": 0.25,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -53653,6 +54886,19 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373608-gZyjywsGUfBszTf97XYW"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": true,
+          "answer": "1101000011011111110011110110100111110010111101111100011001010011011111000110010010110011101010100101000100010101100101110001001000100111011101111110001101011110100011011110111100110010001011101100110101000101111110011000111100000100011111011110000111001100101010011001011010111001010111101110011101101010000101010111011010110100111000110110001100001110111100011110011110100011111001100111111001110101",
+          "tokens": 59719,
+          "cost": 0.599648,
+          "durationMs": 440905.229573,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911949-SyQtShjf2dFsmlXofbgP"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -53788,9 +55034,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": true,
-      "attempts": 15,
+      "attempts": 16,
       "solved": 3,
-      "solveRate": 0.2,
+      "solveRate": 0.1875,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -53872,6 +55118,20 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373614-sRnqpZLfKz4SnjaZunA7"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.657836,
+          "durationMs": 517823.785757,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-qrmAL9e0JiKdrLnk8ufA"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -54007,9 +55267,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": false,
-      "attempts": 15,
+      "attempts": 16,
       "solved": 2,
-      "solveRate": 0.13333333333333333,
+      "solveRate": 0.125,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -54091,6 +55351,20 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373630-autnWkcWwmsfNDFhJKIn"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.65784,
+          "durationMs": 529190.855756,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-d8XkUq16c2SuSIxIjTqC"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -54226,9 +55500,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": false,
-      "attempts": 15,
+      "attempts": 16,
       "solved": 1,
-      "solveRate": 0.06666666666666667,
+      "solveRate": 0.0625,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -54311,6 +55585,20 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373777-akDcEwDAktGEJP6nmHWB"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.657808,
+          "durationMs": 503538.677789,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-tG9Fpzp2DDoK4fVafO1u"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -54452,9 +55740,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": false,
-      "attempts": 15,
+      "attempts": 16,
       "solved": 2,
-      "solveRate": 0.13333333333333333,
+      "solveRate": 0.125,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -54536,6 +55824,20 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373799-zT8vli8FGg8B9VQrNzQl"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.65782,
+          "durationMs": 539275.09146,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-mi7kssMGdj80V7HdkQFX"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -54672,9 +55974,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": false,
-      "attempts": 15,
+      "attempts": 16,
       "solved": 2,
-      "solveRate": 0.13333333333333333,
+      "solveRate": 0.125,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -54757,6 +56059,20 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373809-eRiPK12klK2aDs5skxCT"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.65782,
+          "durationMs": 522682.31678399997,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-8II7SBS8yBMfeOkda44u"
         },
         {
           "model": "gpt-6-astra-xhigh",
@@ -54896,9 +56212,9 @@
       "height": 20,
       "multipleSolutions": false,
       "lineSolvable": false,
-      "attempts": 15,
+      "attempts": 16,
       "solved": 1,
-      "solveRate": 0.06666666666666667,
+      "solveRate": 0.0625,
       "runs": [
         {
           "model": "claude-fable-5.1-high",
@@ -54981,6 +56297,20 @@
           "providerName": "Google AI Studio",
           "quantization": null,
           "generationId": "gen-1790373983-MeMa5oBWM8wjqKmWbkSs"
+        },
+        {
+          "model": "gemini-4-argon-high",
+          "status": "success",
+          "correct": false,
+          "answer": null,
+          "answerIssue": "empty",
+          "tokens": 65536,
+          "cost": 0.657848,
+          "durationMs": 548656.096547,
+          "harness": "v1.2",
+          "providerName": "Google AI Studio",
+          "quantization": null,
+          "generationId": "gen-1791911358-IkyeWK5c5ONXMStpgXb1"
         },
         {
           "model": "gpt-6-astra-xhigh",

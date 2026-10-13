@@ -974,6 +974,46 @@
         }
       ]
     },
+    "google/gemini-4-argon": {
+      "pins": [
+        "google-ai-studio"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google",
+          "tag": "google-vertex/global/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Google AI Studio",
+          "tag": "google-ai-studio/priority",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
     "meta/muse-spark-1.3": {
       "pins": [
         "meta"
