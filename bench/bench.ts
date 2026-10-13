@@ -479,7 +479,7 @@ const BREAKER_MAX_ZERO_SHARE = 0.5;
 function reasoningLooksBroken(model: Model, results: BenchmarkResult[]): boolean {
   // Local servers rarely report reasoning tokens at all; the zero-token signal
   // only means "the endpoint dropped reasoning" for OpenRouter endpoints.
-  if (model.local || !model.reasoning) return false;
+  if (model.local || !model.reasoning || model.allowZeroReasoning) return false;
   const answered = results.filter((result) => result.status === "success").slice(0, BREAKER_SAMPLE);
   if (answered.length < BREAKER_SAMPLE) return false;
   const zero = answered.filter((result) => result.reasoningTokens === 0).length;

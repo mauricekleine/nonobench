@@ -253,5 +253,10 @@
     "displayName": "Claude Haiku 5.5",
     "openWeights": false,
     "addedAt": "2026-10-07T18:31:23.000Z"
+  },
+  "google/gemini-4-argon": {
+    "displayName": "Gemini 4 Argon",
+    "openWeights": false,
+    "addedAt": "2026-10-13T16:04:37.000Z"
   }
 }
