@@ -300,10 +300,10 @@ async function runBenchmark(puzzle: Puzzle, model: Model): Promise<BenchmarkResu
   const size = `${puzzle.height}x${puzzle.width}`;
   const puzzleId = getPuzzleId(puzzle);
 
-  let cost = 0;
-  let tokens = 0;
-  let correct = false;
-  let status: BenchmarkResult["status"] = "success";
+  let cost: number;
+  let tokens: number;
+  let correct: boolean;
+  let status: BenchmarkResult["status"];
   let errorMessage: string | undefined;
   let rawOutput = "";
   let reasoningTokens: number | null = null;
@@ -319,7 +319,7 @@ async function runBenchmark(puzzle: Puzzle, model: Model): Promise<BenchmarkResu
   const rawInput = `${systemPrompt}\n\n${puzzle.clues.canonical}`;
   const startedAt = new Date().toISOString();
   const requestStart = performance.now();
-  let attemptDurationMs = 0;
+  let attemptDurationMs: number;
 
   try {
     // Strict structured output: the provider constrains the final answer to the

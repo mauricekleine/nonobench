@@ -919,14 +919,16 @@ function readLocalRegistry(): Record<string, LocalModelRegistryEntry> {
   } catch (err) {
     // Absent is normal: a clone has no local models before its first local run.
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return {};
-    throw new Error(`${localRegistryPath.pathname} is unreadable: ${String(err)}`);
+    throw new Error(`${localRegistryPath.pathname} is unreadable: ${String(err)}`, { cause: err });
   }
   try {
     return JSON.parse(text) as Record<string, LocalModelRegistryEntry>;
   } catch (err) {
     // A truncated write must not read as "no local models": that would silently
     // drop a benched model from the export.
-    throw new Error(`${localRegistryPath.pathname} is not valid JSON: ${String(err)}`);
+    throw new Error(`${localRegistryPath.pathname} is not valid JSON: ${String(err)}`, {
+      cause: err,
+    });
   }
 }
 
