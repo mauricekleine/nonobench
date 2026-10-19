@@ -17,8 +17,6 @@
     "compose-music": "bun scripts/compose-music.ts",
     "master": "bun scripts/master.ts",
     "lint:fix": "bun run lint --fix",
-    "format": "oxfmt --write",
-    "format:check": "oxfmt --check",
     "typecheck": "bun --check"
   },
   "dependencies": {
@@ -33,7 +31,6 @@
   "devDependencies": {
     "@types/bun": "^1.4.2",
     "@types/react": "19.3.0",
-    "oxfmt": "~0.72.0",
     "oxlint": "~1.87.0",
     "oxlint-tsgolint": "~7.0.2003",
     "typescript": "7.0.2"

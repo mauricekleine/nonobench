@@ -1,11 +1,13 @@
 {
   "name": "nonobench-root",
   "private": true,
-  "packageManager": "bun@1.4.3",
   "scripts": {
-    "deploy:verify": "bun run --cwd visualizer deploy:verify"
+    "deploy:verify": "bun run --cwd visualizer deploy:verify",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "~9.1.7",
     "taze": "21.3.0"
-  }
+  },
+  "packageManager": "bun@1.4.3"
 }

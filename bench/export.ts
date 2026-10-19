@@ -564,7 +564,7 @@ for (const row of hardRows) {
           linesSatisfied: 1 - violated / (puzzle.width + puzzle.height),
         };
   } else {
-    const text = (row.raw_output ?? "").replace(/[\s{}"\[\]:]|solution/g, "");
+    const text = (row.raw_output ?? "").replace(/[\s{}"[\]:]|solution/g, "");
     const reason: HardModeReason =
       row.status === "timeout"
         ? "timed-out"

@@ -2,3 +2,37 @@
 # Only resolve package versions published at least 3 days ago, so a freshly
 # compromised release is not installed before it is caught and yanked.
 minimumReleaseAge = 259200
+
+# bun fmt and bun lint come from bun-canary until a Bun release ships them; the pre-commit hook runs both on staged files.
+[fmt]
+# Keep oxfmt's style (100 columns, sorted package.json), which formatted the repo before.
+flavor = "oxfmt"
+# vendored skills (skills-lock.json hashes them) and generated output
+ignorePatterns = [
+  ".agents/**",
+  ".claude/**",
+  "skills/**",
+  "**/.wrangler/**",
+  "**/.tanstack/**",
+  "bench/results.db",
+  "bench/effort-levels.json",
+  "bench/provider-pins.json",
+  "bench/model-metadata.json",
+  "video/src/data/nonobench.json",
+  "video/public/music/candidate-*.json",
+  "visualizer/app/routeTree.gen.ts",
+  "visualizer/app/results.json",
+  "visualizer/components/puzzles/puzzles-20x20.ts",
+  "visualizer/public/api/deploy.json",
+  "visualizer/public/opengraph-image.png",
+  "visualizer/public/puzzle-results.json",
+  "visualizer/public/results-raw.json",
+]
+
+# video/ and visualizer/ keep their .oxlintrc.json; this section covers bench/ and the root.
+[lint]
+ignorePatterns = [".agents/**", ".claude/**", "skills/**"]
+
+[lint.rules]
+# bench parses untyped JSON and SDK errors on purpose; video/ and visualizer/ still enforce it in their own configs.
+"@typescript-eslint/no-explicit-any" = "off"

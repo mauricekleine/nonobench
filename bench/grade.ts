@@ -87,7 +87,7 @@ function lastRowBlock(
   let last: { grid: string; end: number } | null = null;
   let offset = 0;
   for (const line of [...text.split(/(?<=\n)/), ""]) {
-    const cells = line.replace(/[\s,|"'\[\]]/g, "");
+    const cells = line.replace(/[\s,|"'[\]]/g, "");
     if (line && rowPattern.test(cells)) {
       block.push(cells);
     } else {

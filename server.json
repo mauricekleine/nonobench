@@ -10,10 +10,6 @@
     "source": "github",
     "id": "1124680684"
   },
-  "icons": [
-    { "src": "https://www.nonobench.com/icon.svg", "mimeType": "image/svg+xml" }
-  ],
-  "remotes": [
-    { "type": "streamable-http", "url": "https://www.nonobench.com/mcp" }
-  ]
+  "icons": [{ "src": "https://www.nonobench.com/icon.svg", "mimeType": "image/svg+xml" }],
+  "remotes": [{ "type": "streamable-http", "url": "https://www.nonobench.com/mcp" }]
 }

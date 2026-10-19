@@ -27,9 +27,6 @@ function random(): number {
 function between(min: number, max: number): number {
   return min + random() * (max - min);
 }
-function integer(min: number, max: number): number {
-  return Math.floor(between(min, max + 1));
-}
 
 // Random fills, not pictures: smooth symmetric shapes let a model complete the
 // picture instead of solving the clues (see LEARNINGS.md). Density varies a

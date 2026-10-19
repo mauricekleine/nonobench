@@ -170,13 +170,13 @@ Make sure that the plan lists your model as `[local, text]`.
 
 #### Environment variables for a local model
 
-| Variable | Meaning |
-| --- | --- |
-| `NONOBENCH_LOCAL_BASE_URL` | The `/v1` endpoint of the server. Ollama uses port `11434`. |
-| `NONOBENCH_LOCAL_MODEL` | The model `id` that the server returns from `GET /v1/models`. |
-| `NONOBENCH_LOCAL_NAME` | The display name and the value for `--model`. Defaults to the model `id`. Must not match a cloud model name. |
-| `NONOBENCH_LOCAL_EFFORT` | The reasoning effort your server is configured with (`none`, `low`, `xhigh`, …). Label only — the runner never sends reasoning settings to a local server. Defaults to `none`. |
-| `NONOBENCH_LOCAL_API_KEY` | The bearer token, when the server requires one. Defaults to `local`. |
+| Variable                   | Meaning                                                                                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NONOBENCH_LOCAL_BASE_URL` | The `/v1` endpoint of the server. Ollama uses port `11434`.                                                                                                                    |
+| `NONOBENCH_LOCAL_MODEL`    | The model `id` that the server returns from `GET /v1/models`.                                                                                                                  |
+| `NONOBENCH_LOCAL_NAME`     | The display name and the value for `--model`. Defaults to the model `id`. Must not match a cloud model name.                                                                   |
+| `NONOBENCH_LOCAL_EFFORT`   | The reasoning effort your server is configured with (`none`, `low`, `xhigh`, …). Label only — the runner never sends reasoning settings to a local server. Defaults to `none`. |
+| `NONOBENCH_LOCAL_API_KEY`  | The bearer token, when the server requires one. Defaults to `local`.                                                                                                           |
 
 The runner adds the local model to the plan only when you set both `NONOBENCH_LOCAL_BASE_URL` and `NONOBENCH_LOCAL_MODEL`.
 
@@ -228,6 +228,7 @@ nonobench.com exposes the benchmark data to agents, with no authentication:
   It's listed in the [Claude Connectors Directory](https://claude.ai/directory/nonobench), the [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.mauricekleine/nonobench) (`io.github.mauricekleine/nonobench`), [Smithery](https://smithery.ai/servers/mauricekleine/nonobench), [Glama](https://glama.ai/mcp/connectors/com.nonobench/nonobench) and [mcpservers.org](https://mcpservers.org/servers/mauricekleine/nonobench).
 
   [![Nonobench MCP connector](https://glama.ai/mcp/connectors/com.nonobench/nonobench/badges/score.svg)](https://glama.ai/mcp/connectors/com.nonobench/nonobench) [![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/mauricekleine/nonobench)
+
 - **WebMCP** tools registered in the browser via `navigator.modelContext`.
 - **Markdown**: `/` and `/puzzles` return markdown when requested with `Accept: text/markdown`. `/llms.txt` gives an overview.
 - **Discovery**: `robots.txt` (with Content Signals), `sitemap.xml`, `Link` headers on the homepage, an agent skill at `/.well-known/agent-skills/index.json`, and an ARD manifest at `/.well-known/ai-catalog.json`.
@@ -263,12 +264,14 @@ Edit `bench/constants.ts` to configure:
 ## Tech Stack
 
 **Benchmark Runner**
+
 - [Bun](https://bun.sh) - JavaScript runtime and SQLite
 - [AI SDK](https://ai-sdk.dev) - Unified LLM interface
 - [OpenRouter](https://openrouter.ai) - LLM API gateway
 - TypeScript
 
 **Visualizer**
+
 - [TanStack Start](https://tanstack.com/start) - React framework, prerendered pages
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/) - hosting, with static assets
 - [React 19](https://react.dev) - UI library
