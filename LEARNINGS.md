@@ -43,7 +43,7 @@ endpoints differ: Moonshot serves Kimi at mxfp4.
 with fallbacks disabled. Provider and quantization are recorded for every
 run, and results from the earlier endpoints were rerun.
 
-**Open.** Results measure a model *as served*, including the lab's own
+**Open.** Results measure a model _as served_, including the lab's own
 quantization and serving choices. Reproducing a result needs the provider,
 not just the model name.
 
@@ -89,6 +89,7 @@ characters. Separators between items improve counting by 13–40 points
 Models can also hold the right count internally and still emit the wrong
 one ([Repeated-Token Counting](https://arxiv.org/html/2605.09239v1)).
 Common grid formats are row by row:
+
 - ARC-AGI stores every grid as a list of rows.
 - The webpbn nonogram format stores one string per row.
 - Rosetta Code's nonogram solver prints one row per line.
@@ -102,20 +103,22 @@ as a major problem even with 2D JSON arrays
 models were rerun with one row per line (structured output: an array of row
 strings):
 
-| Model | 20x20 flat | 20x20 rows |
-|---|---|---|
-| GPT-6 Sol high | 0/10 | 10/10 |
-| Claude Opus 5.5 high | 2/10 | 10/10 |
-| Claude Fable 5.1 high | 0/10 | 7/10 |
+| Model                 | 20x20 flat | 20x20 rows |
+| --------------------- | ---------- | ---------- |
+| GPT-6 Sol high        | 0/10       | 10/10      |
+| Claude Opus 5.5 high  | 2/10       | 10/10      |
+| Claude Fable 5.1 high | 0/10       | 7/10       |
 
 At 15x15 the same change made no difference (separate experiment database,
 four models): 23/40 solved with the flat string, 21/40 with rows. Per model:
+
 - Claude Opus 5.5: 8 → 7
 - GPT-6 Sol: 7 → 4
 - Gemini 3.8 Flash: 5 → 5
 - DeepSeek V4.1 Flash: 3 → 5
 
 Per puzzle, the picture is mixed:
+
 - Of the 14 answers with the wrong number of cells in the flat format, four
   became solves with rows. Examples: Claude Opus 5.5 on puzzle 28 (219 cells
   instead of 225 on an easy puzzle), and DeepSeek V4.1 Flash on 28 and 29.
@@ -166,12 +169,12 @@ much harder (Sol 7/10, Opus 8/10).
 line, mirror symmetry near 50%, all unique. Five puzzles are line-solvable
 and five stall line logic with 28–174 cells left. On this set:
 
-| Variant | Solved | Notes |
-|---|---|---|
-| Claude Opus 5.5 high | 8/10 | all five deep puzzles |
-| GPT-6 Astra xhigh | 5/10 | all five line-solvable, none of the deep ones |
-| Claude Fable 5.1 high | 5/10 | |
-| 11 other families | 0/10 | |
+| Variant               | Solved | Notes                                         |
+| --------------------- | ------ | --------------------------------------------- |
+| Claude Opus 5.5 high  | 8/10   | all five deep puzzles                         |
+| GPT-6 Astra xhigh     | 5/10   | all five line-solvable, none of the deep ones |
+| Claude Fable 5.1 high | 5/10   |                                               |
+| 11 other families     | 0/10   |                                               |
 
 The other families mostly ran out of the 128k budget, gave up with "no
 solution", or returned a wrong or malformed grid; Muse Spark hit Meta's
@@ -202,7 +205,7 @@ is a retryable failure. Variants with timeouts are labelled "incomplete".
 Retries are only ever for API errors, never for wrong answers.
 
 **Open.** Timeouts penalise slow-but-careful reasoning on that provider. The
-score measures the model *under its provider's limits*.
+score measures the model _under its provider's limits_.
 
 ## 7. Guards must be per model, not per answer
 
@@ -280,24 +283,28 @@ code revision, provider, output mode and raw output.
 **Saw.** Breaking down the misses of 14 current models on the ten 15x15s
 (best observed level each), only 2 of about 70 misses were complete grids
 that broke some clues. The rest were:
+
 - answers with the wrong number of cells;
 - "no solution" give-ups;
 - answers cut off by the output limit;
 - empty answers.
 
 Each model misses in its own way:
+
 - Grok 4.7 gives up (4 of 10).
 - Gemini 3.8 Flash miscounts (5 of 10).
 - Muse Spark 1.3 and Claude Fable 5.1 run out of tokens (6 and 3 of 10).
 
 Where models do return full grids, as in Hard mode with the row format, the
 distance to the solution separates them further:
+
 - Claude Opus 5.5 missed by 2 cells (twice) and GPT-6 Astra by 1.
 - Gemini 3.8 Flash's grids had 33% of the 400 cells wrong.
 - Qwen 3.8 Max's grids had 45% wrong, close to chance on puzzles that are
   about half filled.
 
 **Changed.** "Solved" stays the headline. Beside it:
+
 - a per-model breakdown of how misses happen;
 - for complete wrong grids, the cells off and the share of clue lines
   satisfied. "Cells off" only applies to puzzles with a single solution;
@@ -335,13 +342,13 @@ native level a request got: the endpoint's `reasoning` is null and the
 generation record only reports tokens. Our runs fall into three token
 groups, which fits minimal → low and high → xhigh:
 
-| Sent | Avg tokens 5x5 / 10x10 / 15x15 | Solved |
-|---|---|---|
-| minimal | 3.1k / 36.7k / 39.9k | 18/30 |
-| low | 3.1k / 34.4k / 45.1k | 18/30 |
-| medium | 4.2k / 38.5k / 38.3k | 14/30 |
-| high | 4.7k / 30.1k / 55.9k | 18/30 |
-| xhigh | 5.6k / 32.6k / 58.6k | 18/30 |
+| Sent    | Avg tokens 5x5 / 10x10 / 15x15 | Solved |
+| ------- | ------------------------------ | ------ |
+| minimal | 3.1k / 36.7k / 39.9k           | 18/30  |
+| low     | 3.1k / 34.4k / 45.1k           | 18/30  |
+| medium  | 4.2k / 38.5k / 38.3k           | 14/30  |
+| high    | 4.7k / 30.1k / 55.9k           | 18/30  |
+| xhigh   | 5.6k / 32.6k / 58.6k           | 18/30  |
 
 A Reddit reader asked why "Best" showed Qwen3.8 Max at minimal. It was the
 cheapest of four levels tied at 18/30, and was most likely Qwen's low.
