@@ -14,9 +14,7 @@
     "test": "bun test",
     "typecheck": "bun --check",
     "regrade": "bun run regrade.ts",
-    "generate-puzzles": "bun run generate-puzzles.ts",
-    "format": "oxfmt --write",
-    "format:check": "oxfmt --check"
+    "generate-puzzles": "bun run generate-puzzles.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.62",
@@ -27,7 +25,6 @@
   },
   "devDependencies": {
     "@types/bun": "1.4.2",
-    "oxfmt": "~0.72.0",
     "typescript": "7.0.2"
   },
   "packageManager": "bun@1.4.3"
