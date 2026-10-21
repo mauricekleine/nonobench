@@ -8,7 +8,10 @@ const allowedSiteOrigins = new Set([
   site.origin,
   `${site.protocol}//${site.hostname.replace(/^www\./, "")}`,
 ]);
-const handler = createMcpHandler(createMcpServer);
+export const MCP_MAX_REQUEST_BODY_SIZE = 64 * 1024; // Covers 20 model IDs or a 20x20 grid plus JSON-RPC metadata with headroom.
+const handler = createMcpHandler(createMcpServer, {
+  maxRequestBodySize: MCP_MAX_REQUEST_BODY_SIZE,
+});
 
 function allowedOrigin(origin: string) {
   if (allowedSiteOrigins.has(origin)) return true;

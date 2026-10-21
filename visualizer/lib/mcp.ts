@@ -22,6 +22,7 @@ import { filteredModelIds, loadPuzzleResults } from "@/lib/puzzle-results-server
 import { runState } from "@/lib/puzzle-insights";
 
 export const MCP_SERVER_INFO = { name: "nonobench", title: "Nonobench", version: "1.1.0" };
+export const MCP_MAX_TOOL_INPUT_ELEMENTS = 22; // The largest valid input has one key and 20 model IDs, with one spare element.
 
 const readOnly = (title: string) => ({ title, readOnlyHint: true, openWorldHint: false }) as const;
 
@@ -170,6 +171,7 @@ export function createMcpServer() {
     instructions: `Nonobench measures how well LLMs solve nonogram (picross) puzzles: 40 puzzles across ${SIZES.join(", ")} grids. Standard is 5x5, 10x10 and 15x15, and overall accuracy covers those 30 puzzles. Hard mode is ten 20x20 puzzles, reported only per size (size "20x20"). Accuracy is the share of puzzles where the model's grid satisfies every row and column clue. Results last updated ${RESULTS_TIMESTAMP}.`,
     capabilities: { tools: { listChanged: false } },
     cacheHints: { "tools/list": { ttlMs: 3_600_000, cacheScope: "public" } },
+    maxToolInputElements: MCP_MAX_TOOL_INPUT_ELEMENTS,
   });
 
   server.registerTool(
