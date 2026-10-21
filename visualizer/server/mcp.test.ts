@@ -7,6 +7,9 @@ import {
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
 
+import { MCP_MAX_TOOL_INPUT_ELEMENTS } from "@/lib/mcp";
+
+import { MCP_MAX_REQUEST_BODY_SIZE } from "./mcp";
 import { site } from "./test-site";
 
 const url = new URL("http://localhost:3000/mcp");
@@ -156,6 +159,32 @@ test("modern header mismatch and unknown method are rejected by the SDK", async 
   );
   expect(unknown.status).toBe(404);
   expect((await unknown.json()).error.code).toBe(-32601);
+});
+
+test("MCP calls enforce input and body limits while normal calls succeed", async () => {
+  const client = await connect(true, []);
+  const tooManyKeys = Object.fromEntries(
+    Array.from({ length: MCP_MAX_TOOL_INPUT_ELEMENTS + 1 }, (_, index) => [`extra_${index}`, true]),
+  );
+  const rejectedCall = await client.callTool({
+    name: "list_providers",
+    arguments: tooManyKeys,
+  });
+  expect(rejectedCall.isError).toBe(true);
+
+  const normalCall = await client.callTool({ name: "list_providers", arguments: {} });
+  expect(normalCall.isError).not.toBe(true);
+  expect(normalCall.structuredContent).toHaveProperty("providers");
+
+  const oversized = request(
+    modernRequest(90, "tools/call", {
+      name: "get_model_results",
+      arguments: { model: "x".repeat(MCP_MAX_REQUEST_BODY_SIZE) },
+    }),
+    { "MCP-Protocol-Version": "2026-07-28", "Mcp-Method": "tools/call" },
+  );
+  const response = await site(oversized);
+  expect(response.status).toBe(413);
 });
 
 test("Origin and browser preflight are restricted to allowed sites", async () => {
