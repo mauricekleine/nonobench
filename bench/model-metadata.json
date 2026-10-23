@@ -258,5 +258,10 @@
     "displayName": "Gemini 4 Argon",
     "openWeights": false,
     "addedAt": "2026-10-13T16:04:37.000Z"
+  },
+  "moonshotai/kimi-k3.1-pro": {
+    "displayName": "Kimi K3.1 Pro",
+    "openWeights": false,
+    "addedAt": "2026-10-23T17:56:28.000Z"
   }
 }
