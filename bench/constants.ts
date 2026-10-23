@@ -807,6 +807,9 @@ const configuredModels: Model[] = (
       ...reasoningModel("google/gemini-4-argon", "gemini-4-argon", "low"),
       allowZeroReasoning: true,
     },
+    // New release (2026-10-23): Kimi K3.1 Pro, full ladder to compare with
+    // Kimi K3. Text mode like K3, whose schema-forced output scored 0/30 on the same endpoint.
+    { ...reasoningModel("moonshotai/kimi-k3.1-pro", "kimi-k3.1-pro", "low"), outputMode: "text" },
     // No effort control on OpenRouter: reasoning on at the provider default.
     { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
     defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),

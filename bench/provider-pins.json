@@ -1412,6 +1412,28 @@
         }
       ]
     },
+    "moonshotai/kimi-k3.1-pro": {
+      "pins": [
+        "moonshotai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "mxfp4",
+      "endpoints": [
+        {
+          "providerName": "Moonshot AI",
+          "tag": "moonshotai/mxfp4",
+          "quantization": "mxfp4",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "Moonshot AI",
+          "tag": "moonshotai/highspeed",
+          "quantization": "mxfp4",
+          "structuredOutputs": true
+        }
+      ]
+    },
     "openai/gpt-5.2": {
       "pins": [
         "openai"
