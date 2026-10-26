@@ -810,6 +810,9 @@ const configuredModels: Model[] = (
     // New release (2026-10-23): Kimi K3.1 Pro, full ladder to compare with
     // Kimi K3. Text mode like K3, whose schema-forced output scored 0/30 on the same endpoint.
     { ...reasoningModel("moonshotai/kimi-k3.1-pro", "kimi-k3.1-pro", "low"), outputMode: "text" },
+    // New release (2026-10-26): GPT-6.1 Terra, full ladder to compare with
+    // GPT-6.1 Sol at half the price. OpenAI's endpoint supports structured outputs.
+    reasoningModel("openai/gpt-6.1-terra", "gpt-6.1-terra", "low"),
     // No effort control on OpenRouter: reasoning on at the provider default.
     { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
     defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),

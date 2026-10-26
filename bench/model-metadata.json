@@ -263,5 +263,10 @@
     "displayName": "Kimi K3.1 Pro",
     "openWeights": false,
     "addedAt": "2026-10-23T17:56:28.000Z"
+  },
+  "openai/gpt-6.1-terra": {
+    "displayName": "GPT-6.1 Terra",
+    "openWeights": false,
+    "addedAt": "2026-10-26T18:13:29.000Z"
   }
 }

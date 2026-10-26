@@ -9,6 +9,7 @@ const modelIds = [
   "openai/gpt-6-astra",
   "openai/gpt-5.6-sol",
   "openai/gpt-6.1-sol",
+  "openai/gpt-6.1-terra",
   "google/gemini-3.8-flash",
   "google/gemini-4-argon",
   "x-ai/grok-4.7",
