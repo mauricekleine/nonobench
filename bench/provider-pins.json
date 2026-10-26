@@ -1768,6 +1768,34 @@
         }
       ]
     },
+    "openai/gpt-6.1-terra": {
+      "pins": [
+        "openai"
+      ],
+      "firstPartyAvailable": true,
+      "firstPartyStructuredOutputs": true,
+      "firstPartyQuantization": "unknown",
+      "endpoints": [
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/flex",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        },
+        {
+          "providerName": "OpenAI",
+          "tag": "openai/fast",
+          "quantization": "unknown",
+          "structuredOutputs": true
+        }
+      ]
+    },
     "openai/gpt-oss-120b": {
       "pins": [
         "openai"
