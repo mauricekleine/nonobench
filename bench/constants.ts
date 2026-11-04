@@ -792,12 +792,13 @@ const configuredModels: Model[] = (
     // Sonnet 5.5 at a twentieth of the price. Anthropic's endpoint supports structured outputs.
     reasoningModel("anthropic/claude-haiku-5.5", "claude-haiku-5.5", "low"),
     // New release (2026-10-12): Muse Wonder, full ladder to compare with Muse
-    // Spark 1.3. Same Meta API limits as Spark, so it streams in text mode.
+    // Spark 1.3. Meta caps non-streaming requests like Spark's, so it streams in
+    // text mode. Its streams have no time limit: they stay open through 600s+
+    // without data (OpenRouterTeam/ai-sdk-provider#579).
     {
       ...reasoningModel("meta/muse-wonder", "muse-wonder", "low"),
       outputMode: "text",
       stream: true,
-      providerTimeLimit: MUSE_TIME_LIMIT,
     },
     // New release (2026-10-13): Gemini 4 Argon, Google's new flagship, full
     // ladder to compare with GPT-6.1 Sol and Claude Sonnet 5.5 at the same price.
