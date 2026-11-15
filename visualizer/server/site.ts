@@ -1,4 +1,4 @@
-import { bindAssets, type AssetFetcher } from "@/lib/assets";
+import { AssetUnavailableError, bindAssets, type AssetFetcher } from "@/lib/assets";
 
 import * as agent from "./agent";
 import * as api from "./api";
@@ -64,12 +64,22 @@ function matchRoute(pathname: string) {
 }
 
 // Route handler semantics: HEAD runs GET without a body, OPTIONS lists the
-// allowed methods, and any other method is 405.
+// allowed methods, and any other method is 405. A handler that throws answers
+// a JSON error: 503 when a dataset could not be loaded, 500 otherwise.
 async function dispatch(request: Request, route: Route, params: Record<string, string>) {
   const methods = (["GET", "POST"] as const).filter((method) => route[method]);
   const handler = request.method === "HEAD" ? route.GET : route[request.method as "GET" | "POST"];
   if (handler) {
-    const response = await handler(request, params);
+    let response: Response;
+    try {
+      response = await handler(request, params);
+    } catch (error) {
+      console.error(error);
+      response =
+        error instanceof AssetUnavailableError
+          ? api.apiError(503, "Results data is temporarily unavailable. Try again shortly.")
+          : api.apiError(500, "Internal error.");
+    }
     return request.method === "HEAD" ? new Response(null, response) : response;
   }
   if (request.method === "OPTIONS") {

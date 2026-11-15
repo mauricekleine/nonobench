@@ -27,6 +27,39 @@ export function apiError(status: number, message: string) {
   return Response.json({ error: message }, { status });
 }
 
+// POST bodies are tiny: 20 model ids or a 20x20 grid fit in well under 1 KiB.
+const MAX_REQUEST_BODY_SIZE = 8 * 1024;
+
+const BODY_TOO_LARGE = () =>
+  apiError(413, `Request body exceeds ${MAX_REQUEST_BODY_SIZE / 1024} KiB.`);
+
+// Reads a JSON body of at most MAX_REQUEST_BODY_SIZE bytes. Returns a 413
+// Response when it is larger, and undefined when it is not valid JSON.
+async function readJsonBody(request: Request): Promise<unknown> {
+  if (Number(request.headers.get("Content-Length")) > MAX_REQUEST_BODY_SIZE)
+    return BODY_TOO_LARGE();
+  if (!request.body) return undefined;
+  const decoder = new TextDecoder();
+  let text = "";
+  let size = 0;
+  const reader = request.body.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_REQUEST_BODY_SIZE) {
+      await reader.cancel();
+      return BODY_TOO_LARGE();
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  try {
+    return JSON.parse(text + decoder.decode());
+  } catch {
+    return undefined;
+  }
+}
+
 const leaderboardVariants = () =>
   getVariants().map((model) => ({
     ...model,
@@ -59,12 +92,9 @@ export function families() {
 }
 
 export async function compare(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError(400, "Expected JSON body with a models array.");
-  }
+  const body = await readJsonBody(request);
+  if (body instanceof Response) return body;
+  if (body === undefined) return apiError(400, "Expected JSON body with a models array.");
   const names = (body as { models?: unknown })?.models;
   if (
     !Array.isArray(names) ||
@@ -85,7 +115,7 @@ export async function compare(request: Request) {
 }
 
 export function model(_request: Request, { model }: Params) {
-  const data = getModel(decodeURIComponent(model));
+  const data = getModel(model);
   return data
     ? Response.json(data)
     : apiError(404, `Unknown model "${model}". See /api/v1/leaderboard for model names.`);
@@ -132,7 +162,8 @@ export function puzzle(request: Request, { id }: Params) {
 export async function checkPuzzle(request: Request, { id }: Params) {
   const found = findPuzzle(id);
   if (!found) return apiError(404, `Unknown puzzle "${id}".`);
-  const body = (await request.json().catch(() => null)) as { grid?: unknown } | null;
+  const body = (await readJsonBody(request)) as { grid?: unknown } | Response | undefined;
+  if (body instanceof Response) return body;
   if (typeof body?.grid !== "string") return apiError(400, 'Send JSON like {"grid": "0110..."}.');
   return Response.json(checkClues(found.puzzle, body.grid.replace(/\s/g, "")));
 }

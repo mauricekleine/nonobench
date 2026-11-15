@@ -185,3 +185,26 @@ test("a puzzle check reports clue violations", async () => {
     404,
   );
 });
+
+test("a malformed escape in a path parameter is a JSON 404, not a crash", async () => {
+  const { status, body } = await json("/api/v1/models/%25zz");
+  expect(status).toBe(404);
+  expect(body.error).toBe('Unknown model "%zz". See /api/v1/leaderboard for model names.');
+});
+
+test("POST bodies over the size cap are refused with 413", async () => {
+  const oversized = JSON.stringify({ models: ["a", "b"], padding: "x".repeat(9 * 1024) });
+  const compare = await json("/api/v1/compare", { method: "POST", body: oversized });
+  expect(compare.status).toBe(413);
+  expect(compare.body.error).toContain("8 KiB");
+  const check = await json(`/api/v1/puzzles/${id}/check`, { method: "POST", body: oversized });
+  expect(check.status).toBe(413);
+  // A streamed body without Content-Length is measured as it arrives.
+  const stream = new Blob([oversized]).stream();
+  const streamed = await json("/api/v1/compare", {
+    method: "POST",
+    body: stream,
+    duplex: "half",
+  } as RequestInit);
+  expect(streamed.status).toBe(413);
+});
