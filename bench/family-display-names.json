@@ -52,5 +52,8 @@
   "claude-sonnet-5.5": "Claude Sonnet 5.5",
   "claude-haiku-5.5": "Claude Haiku 5.5",
   "gemini-4-argon": "Gemini 4 Argon",
-  "gpt-6.1-terra": "GPT-6.1 Terra"
+  "gpt-6.1-terra": "GPT-6.1 Terra",
+  "gemini-4-neon": "Gemini 4 Neon",
+  "gemini-4-carbon": "Gemini 4 Carbon",
+  "gemini-4-hydrogen": "Gemini 4 Hydrogen"
 }

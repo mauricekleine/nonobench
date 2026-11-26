@@ -1,6 +1,6 @@
 {
   "source": "https://openrouter.ai/api/v1/models",
-  "fetchedAt": "2026-10-26T19:06:56.627Z",
+  "fetchedAt": "2026-11-26T09:27:50.107Z",
   "families": {
     "claude-opus-5.5": {
       "modelId": "anthropic/claude-opus-5.5",
@@ -474,6 +474,58 @@
         "high",
         "xhigh",
         "max"
+      ]
+    },
+    "gemini-4-neon": {
+      "modelId": "google/gemini-4-neon",
+      "supportedEfforts": [
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "medium",
+      "mandatory": true,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ]
+    },
+    "gemini-4-carbon": {
+      "modelId": "google/gemini-4-carbon",
+      "supportedEfforts": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "medium",
+      "mandatory": true,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "gemini-4-hydrogen": {
+      "modelId": "google/gemini-4-hydrogen",
+      "supportedEfforts": [
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "defaultEffort": "medium",
+      "mandatory": true,
+      "supportsMaxTokens": false,
+      "levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
       ]
     }
   }
