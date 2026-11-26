@@ -233,10 +233,6 @@ function printTable<T extends Record<string, unknown>>(data: T[]): void {
   console.log(`└${"─".repeat(sep.length)}┘`);
 }
 
-// Streaming changes only the transport: OpenRouter sends keepalive comments
-// while the model thinks, so no idle timer (ours or upstream) cuts off long,
-// silent requests. Used for models whose endpoints drop responses that take
-// more than five minutes.
 function hardModeOutputTokens(model: Model): number {
   const endpointMax = (maxOutputEvidence.models as Record<string, number | null>)[
     model.llm.modelId
@@ -244,6 +240,10 @@ function hardModeOutputTokens(model: Model): number {
   return Math.min(HARD_MODE_OUTPUT_TOKENS, endpointMax ?? HARD_MODE_OUTPUT_TOKENS);
 }
 
+// Streaming changes only the transport: OpenRouter sends keepalive comments
+// while the model thinks, so no idle timer (ours or upstream) cuts off long,
+// silent requests. Used for models whose endpoints drop responses that take
+// more than five minutes.
 async function callModel(model: Model, options: Parameters<typeof generateText>[0]) {
   if (!model.stream) return generateText(options);
   let streamError: unknown;
