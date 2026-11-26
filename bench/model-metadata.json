@@ -268,20 +268,5 @@
     "displayName": "GPT-6.1 Terra",
     "openWeights": false,
     "addedAt": "2026-10-26T18:13:29.000Z"
-  },
-  "google/gemini-4-neon": {
-    "displayName": "Gemini 4 Neon",
-    "openWeights": false,
-    "addedAt": "2026-11-18T13:02:57.000Z"
-  },
-  "google/gemini-4-carbon": {
-    "displayName": "Gemini 4 Carbon",
-    "openWeights": false,
-    "addedAt": "2026-11-10T16:07:51.000Z"
-  },
-  "google/gemini-4-hydrogen": {
-    "displayName": "Gemini 4 Hydrogen",
-    "openWeights": false,
-    "addedAt": "2026-11-12T18:01:00.000Z"
   }
 }
