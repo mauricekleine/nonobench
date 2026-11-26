@@ -131,6 +131,15 @@ const MUSE_TIME_LIMIT = {
   note: "Meta's API ends requests after about 5 minutes, before the model answered",
 };
 
+// Gemini 4 requests through OpenRouter end at 300s with a 504 "A Timeout
+// Occurred", on AI Studio and Vertex alike and with or without streaming; cut-off
+// requests are never billed. Which side sets the limit is unconfirmed, and
+// Gemini 4 Argon's runs (October) went to 561s.
+const GEMINI_4_TIME_LIMIT = {
+  seconds: 300,
+  note: "Gemini 4 requests through OpenRouter end after 5 minutes, before the model answered",
+};
+
 // A reasoning variant at an explicit effort, named "<family>-<effort>".
 function reasoningModel(id: string, family: string, effort: string): Model {
   return {
@@ -814,6 +823,23 @@ const configuredModels: Model[] = (
     // New release (2026-10-26): GPT-6.1 Terra, full ladder to compare with
     // GPT-6.1 Sol at half the price. OpenAI's endpoint supports structured outputs.
     reasoningModel("openai/gpt-6.1-terra", "gpt-6.1-terra", "low"),
+    // New release (2026-11-18): Gemini 4 Neon, full ladder at Google's four
+    // native thinking levels, to compare with Gemini 4 Argon at 1.5x the price.
+    // AI Studio's endpoint supports structured outputs.
+    {
+      ...reasoningModel("google/gemini-4-neon", "gemini-4-neon", "low"),
+      providerTimeLimit: GEMINI_4_TIME_LIMIT,
+    },
+    // New releases (2026-11-10, 2026-11-12): Gemini 4 Carbon and Hydrogen, the
+    // other two Gemini 4 models, run alongside Neon. Native levels match OpenRouter's.
+    {
+      ...reasoningModel("google/gemini-4-carbon", "gemini-4-carbon", "low"),
+      providerTimeLimit: GEMINI_4_TIME_LIMIT,
+    },
+    {
+      ...reasoningModel("google/gemini-4-hydrogen", "gemini-4-hydrogen", "low"),
+      providerTimeLimit: GEMINI_4_TIME_LIMIT,
+    },
     // No effort control on OpenRouter: reasoning on at the provider default.
     { ...defaultReasoningModel("qwen/qwen3.8-flash", "qwen3.8-flash"), outputMode: "text" },
     defaultReasoningModel("xiaomi/mimo-v2.6-pro", "mimo-v2.6-pro"),

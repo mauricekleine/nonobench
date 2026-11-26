@@ -4,6 +4,7 @@ type Variant = {
   effort: string;
   overallAccuracy: number;
   overallRuns: number;
+  overallTotal?: number;
   complete?: boolean;
   bySize: { size: string; totalCost: number }[];
 };
@@ -31,12 +32,17 @@ function averageCost(model: Variant): number {
   return model.overallRuns > 0 ? totalCost / model.overallRuns : 0;
 }
 
+// Timeouts are finished attempts that count as unsolved, so a variant with
+// one for every missing success has finished even though it isn't `complete`.
+function isFinished(model: Variant): boolean {
+  if (model.complete !== false) return true;
+  return model.overallTotal !== undefined && model.overallRuns >= model.overallTotal;
+}
+
 function isBetter(candidate: Variant, current: Variant): boolean {
   // A finished variant always beats one still running: a few early (mostly
   // 5x5) results would otherwise inflate its accuracy.
-  if ((candidate.complete !== false) !== (current.complete !== false)) {
-    return candidate.complete !== false;
-  }
+  if (isFinished(candidate) !== isFinished(current)) return isFinished(candidate);
   if (candidate.overallAccuracy !== current.overallAccuracy) {
     return candidate.overallAccuracy > current.overallAccuracy;
   }

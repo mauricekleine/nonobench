@@ -33,6 +33,7 @@ export type LeaderboardVariant = {
   complete?: boolean;
   overallAccuracy: number;
   overallRuns: number;
+  overallTotal?: number;
   overallCorrect?: number;
   bySize: {
     size: string;

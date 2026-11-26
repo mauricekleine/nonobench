@@ -53,6 +53,16 @@ test("prefers a complete variant over a higher-scoring one that is still running
   expect(selectBestVariants(models).map((model) => model.model)).toEqual(["a-low"]);
 });
 
+test("treats a variant whose missing successes are all timeouts as finished", () => {
+  const models = [
+    { ...variant("a-low", "a", "low", 40, 1), overallTotal: 10 },
+    { ...variant("a-medium", "a", "medium", 90, 1, false), overallTotal: 10 },
+    { ...variant("b-low", "b", "low", 40, 1), overallTotal: 10 },
+    { ...variant("b-medium", "b", "medium", 90, 1, false), overallRuns: 6, overallTotal: 10 },
+  ];
+  expect(selectBestVariants(models).map((model) => model.model)).toEqual(["a-medium", "b-low"]);
+});
+
 test("ignores extended-tier cost in tie-breaks", () => {
   const cheapCore = {
     ...variant("a-low", "a", "low", 90, 1),
